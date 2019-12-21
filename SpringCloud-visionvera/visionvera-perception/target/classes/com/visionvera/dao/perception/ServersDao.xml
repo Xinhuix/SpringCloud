@@ -1,0 +1,39 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+        "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+
+<mapper namespace="com.visionvera.dao.perception.ServersDao">
+	<!-- 获取不同区号服务器信息 Start -->
+	<select id="getZoneServers" parameterType="List" resultType="map">
+		SELECT
+		omcid,type,zoneno,devno,v2vno,globaldevno,termac,svrmac,svrname
+		FROM
+		v_tersvr_all
+		<where>
+			v2vno in
+			<foreach item="device" index="index" collection="deviceList" open="("
+			separator="," close=")">
+				#{device.zonedevno}
+			</foreach>
+		</where>
+	</select>
+	<!-- 获取不同区号服务器信息 End -->
+	
+	<!-- 通过行政区域ID查询行政区域信息 Start -->
+	<select id="selectRegionByRegionId" parameterType="java.lang.String" resultType="com.visionvera.bean.cms.RegionVO">
+		SELECT
+			id AS id,
+			pid AS pid,
+			name AS name,
+			gradeid AS gradeId,
+			isleaf AS isLeaf
+		FROM 
+			t_regionb
+		WHERE
+			id = #{regionId}
+	</select>
+	<select id="selectYwTreeByUUid" resultType="java.lang.Integer">
+		select bits from t_ywtreeb where uuid=#{regionId}
+	</select>
+	<!-- 通过行政区域ID查询行政区域信息 End -->
+</mapper>

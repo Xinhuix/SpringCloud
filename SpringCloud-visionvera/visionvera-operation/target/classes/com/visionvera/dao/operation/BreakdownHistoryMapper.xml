@@ -1,0 +1,358 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.visionvera.dao.operation.BreakdownHistoryDao">
+
+    <!-- 通用查询映射结果 -->
+    <resultMap id="BaseResultMap" type="com.visionvera.bean.operation.BreakdownHistory">
+        <id column="id" property="id"/>
+        <result column="breakdownId" property="breakdownId"/>
+        <result column="meetingId" property="meetingId"/>
+        <result column="sketch" property="sketch"/>
+        <result column="detail" property="detail"/>
+        <result column="visitStatus" property="visitStatus"/>
+        <result column="statusInfo" property="statusInfo"/>
+        <result column="isSolve" property="isSolve"/>
+        <result column="isNeedVisit" property="isNeedVisit"/>
+        <result column="isVisit" property="isVisit"/>
+        <result column="expectVisitTime" property="expectVisitTime"/>
+        <result column="actualVisitTime" property="actualVisitTime"/>
+        <result column="visitContent" property="visitContent"/>
+        <result column="creatTime" property="creatTime"/>
+        <result column="lastUpdateTime" property="lastUpdateTime"/>
+    </resultMap>
+
+    <!-- 通用查询结果列 -->
+    <sql id="Base_Column_List">
+        <!-- id, breakdownId, meetingId, sketch, detail, visitStatus,statusInfo, isSolve, isNeedVisit, isVisit, expectVisitTime, actualVisitTime, visitContent, creatTime, lastUpdateTime -->
+        id, breakdownId, meetingId, sketch, detail, visitStatus,statusInfo, isSolve, 
+        isNeedVisit, isVisit, DATE_FORMAT(expectVisitTime,'%Y-%m-%d %H:%i:%s') AS expectVisitTime, 
+        DATE_FORMAT(actualVisitTime,'%Y-%m-%d %H:%i:%s') AS actualVisitTime, 
+        visitContent, DATE_FORMAT(creatTime,'%Y-%m-%d %H:%i:%s') AS creatTime, DATE_FORMAT(lastUpdateTime,'%Y-%m-%d %H:%i:%s') AS lastUpdateTime
+    </sql>
+
+  <!-- 通用查询条件 -->
+  <sql id="Where_Common">
+  		<if test="null != id">
+			AND id = #{id}
+		</if>
+		<if test="null != breakdownId">
+			AND breakdownId = #{breakdownId}
+		</if>
+		<if test="null != meetingId">
+			AND meetingId = #{meetingId}
+		</if>
+		<if test="null != sketch">
+			AND sketch = #{sketch}
+		</if>
+		<if test="null != detail">
+			AND detail = #{detail}
+		</if>
+		<if test="null != visitStatus">
+			AND visitStatus = #{visitStatus}
+		</if>
+		<if test="null != statusInfo">
+			AND statusInfo = #{statusInfo}
+		</if>
+		<if test="null != isSolve">
+			AND isSolve = #{isSolve}
+		</if>
+		<if test="null != isNeedVisit">
+			AND isNeedVisit = #{isNeedVisit}
+		</if>
+		<if test="null != isVisit">
+			AND isVisit = #{isVisit}
+		</if>
+		<if test="null != expectVisitTime">
+			AND expectVisitTime = #{expectVisitTime}
+		</if>
+		<if test="null != actualVisitTime">
+			AND actualVisitTime = #{actualVisitTime}
+		</if>
+		<if test="null != visitContent">
+			AND visitContent = #{visitContent}
+		</if>
+		<if test="null != creatTime">
+			AND creatTime = #{creatTime}
+		</if>
+		<if test="null != lastUpdateTime">
+			AND lastUpdateTime = #{lastUpdateTime}
+		</if>
+	   </sql>
+ 	<select id="selectByPrimaryKey" resultType="com.visionvera.bean.operation.BreakdownHistory">
+		SELECT <include refid="Base_Column_List" /> FROM vc_breakdown_history WHERE id = #{id}
+	</select>
+	
+	<select id="get" resultType="com.visionvera.bean.operation.BreakdownHistory">
+		SELECT <include refid="Base_Column_List" /> FROM vc_breakdown_history
+		<where>
+     		 <include refid="Where_Common"/>
+ 		</where>
+		limit 1
+	</select>
+	
+	<select id="queryList" resultType="com.visionvera.bean.operation.BreakdownHistory" parameterType="com.visionvera.bean.operation.BreakdownHistory">
+		SELECT <include refid="Base_Column_List" /> FROM vc_breakdown_history 
+		 <where>
+     		 <include refid="Where_Common"/>
+ 		</where>
+ 		ORDER BY creatTime 
+	</select>
+	
+	<select id="queryCount" resultType="java.lang.Integer" parameterType="com.visionvera.bean.operation.BreakdownHistory">
+		SELECT count(*) FROM vc_breakdown_history
+		<where>
+     		 <include refid="Where_Common"/>
+ 		</where>
+	</select>
+	
+    <insert id="insert" parameterType="com.visionvera.bean.operation.BreakdownHistory">
+		INSERT INTO vc_breakdown_history
+		<trim prefix="(" suffix=")" suffixOverrides="," >
+			breakdownId,
+			meetingId,
+			sketch,
+			detail,
+			visitStatus,
+			statusInfo,
+			isSolve,
+			isNeedVisit,
+			isVisit,
+			expectVisitTime,
+			actualVisitTime,
+			visitContent,
+			creatTime,
+			lastUpdateTime,
+		</trim>	
+		<trim prefix="values (" suffix=")" suffixOverrides="," >
+			#{breakdownId},
+			#{meetingId},
+			#{sketch},
+			#{detail},
+			#{visitStatus},
+			#{statusInfo},
+			#{isSolve},
+			#{isNeedVisit},
+			#{isVisit},
+			#{expectVisitTime},
+			#{actualVisitTime},
+			#{visitContent},
+			now(),
+			#{lastUpdateTime},
+		</trim>	
+	</insert>
+	
+    <insert id="insertSelective" parameterType="com.visionvera.bean.operation.BreakdownHistory">
+		INSERT INTO vc_breakdown_history
+		<trim prefix="(" suffix=")" suffixOverrides="," >
+		<if test="null != breakdownId">
+			breakdownId,
+		</if>
+		<if test="null != meetingId">
+			meetingId,
+		</if>
+		<if test="null != sketch">
+			sketch,
+		</if>
+		<if test="null != detail">
+			detail,
+		</if>
+		<if test="null != visitStatus">
+			visitStatus,
+		</if>
+		<if test="null != statusInfo">
+			statusInfo,
+		</if>
+		<if test="null != isSolve">
+			isSolve,
+		</if>
+		<if test="null != isNeedVisit">
+			isNeedVisit,
+		</if>
+		<if test="null != isVisit">
+			isVisit,
+		</if>
+		<if test="null != expectVisitTime">
+			expectVisitTime,
+		</if>
+		<if test="null != actualVisitTime">
+			actualVisitTime,
+		</if>
+		<if test="null != visitContent">
+			visitContent,
+		</if>
+		creatTime,
+		<if test="null != lastUpdateTime">
+			lastUpdateTime,
+		</if>
+	</trim>	
+	<trim prefix="values (" suffix=")" suffixOverrides="," >
+		<if test="null != breakdownId">
+			#{breakdownId},
+		</if>
+		<if test="null != meetingId">
+			#{meetingId},
+		</if>
+		<if test="null != sketch">
+			#{sketch},
+		</if>
+		<if test="null != detail">
+			#{detail},
+		</if>
+		<if test="null != visitStatus">
+			#{visitStatus},
+		</if>
+		<if test="null != statusInfo">
+			#{statusInfo},
+		</if>
+		<if test="null != isSolve">
+			#{isSolve},
+		</if>
+		<if test="null != isNeedVisit">
+			#{isNeedVisit},
+		</if>
+		<if test="null != isVisit">
+			#{isVisit},
+		</if>
+		<if test="null != expectVisitTime">
+			#{expectVisitTime},
+		</if>
+		<if test="null != actualVisitTime">
+			#{actualVisitTime},
+		</if>
+		<if test="null != visitContent">
+			#{visitContent},
+		</if>
+			now(),
+		<if test="null != lastUpdateTime">
+			#{lastUpdateTime},
+		</if>
+	</trim>	
+	</insert>
+	
+	 <update id="updateByPrimaryKeySelective" parameterType="com.visionvera.bean.operation.BreakdownHistory" >
+	 update vc_breakdown_history
+    <set>
+    <trim suffixOverrides="," >
+    <if test="null != breakdownId">
+		breakdownId = #{breakdownId},
+	</if>
+	<if test="null != meetingId">
+		meetingId = #{meetingId},
+	</if>
+	<if test="null != sketch">
+		sketch = #{sketch},
+	</if>
+	<if test="null != detail">
+		detail = #{detail},
+	</if>
+	<if test="null != visitStatus">
+		visitStatus = #{visitStatus},
+	</if>
+	<if test="null != statusInfo">
+		statusInfo = #{statusInfo},
+	</if>
+	<if test="null != isSolve">
+		isSolve = #{isSolve},
+	</if>
+	<if test="null != isNeedVisit">
+		isNeedVisit = #{isNeedVisit},
+	</if>
+	<if test="null != isVisit">
+		isVisit = #{isVisit},
+	</if>
+	<if test="null != expectVisitTime">
+		expectVisitTime = #{expectVisitTime},
+	</if>
+	<if test="null != actualVisitTime">
+		actualVisitTime = #{actualVisitTime},
+	</if>
+	<if test="null != visitContent">
+		visitContent = #{visitContent},
+	</if>
+	<if test="null != creatTime">
+		creatTime = #{creatTime},
+	</if>
+		lastUpdateTime = now(),
+	</trim>
+</set>
+   WHERE id = #{id}
+  </update>
+	
+	 <update id="updateByPrimaryKey" parameterType="com.visionvera.bean.operation.BreakdownHistory" >
+	 update vc_breakdown_history
+    <set>
+    <trim suffixOverrides="," >
+    		breakdownId = #{breakdownId},
+			meetingId = #{meetingId},
+			sketch = #{sketch},
+			detail = #{detail},
+			visitStatus = #{visitStatus},
+			statusInfo = #{statusInfo},
+			isSolve = #{isSolve},
+			isNeedVisit = #{isNeedVisit},
+			isVisit = #{isVisit},
+			expectVisitTime = #{expectVisitTime},
+			actualVisitTime = #{actualVisitTime},
+			visitContent = #{visitContent},
+			creatTime = #{creatTime},
+			lastUpdateTime = now(),
+	</trim>
+</set>
+   WHERE id = #{id}
+  </update>
+  
+  <delete id="deleteByPrimaryKey" parameterType="java.lang.Integer" >
+    delete from vc_breakdown_history
+    where id = #{id}
+  </delete>
+  
+  <delete id="delete" parameterType="com.visionvera.bean.operation.BreakdownHistory" >
+    delete from vc_breakdown_history
+    where 1=1
+    <if test="null != id">
+		and id = #{id}
+	</if>
+	<if test="null != breakdownId">
+		and breakdownId = #{breakdownId}
+	</if>
+	<if test="null != meetingId">
+		and meetingId = #{meetingId}
+	</if>
+	<if test="null != sketch">
+		and sketch = #{sketch}
+	</if>
+	<if test="null != detail">
+		and detail = #{detail}
+	</if>
+	<if test="null != visitStatus">
+		and visitStatus = #{visitStatus}
+	</if>
+	<if test="null != statusInfo">
+		and statusInfo = #{statusInfo}
+	</if>
+	<if test="null != isSolve">
+		and isSolve = #{isSolve}
+	</if>
+	<if test="null != isNeedVisit">
+		and isNeedVisit = #{isNeedVisit}
+	</if>
+	<if test="null != isVisit">
+		and isVisit = #{isVisit}
+	</if>
+	<if test="null != expectVisitTime">
+		and expectVisitTime = #{expectVisitTime}
+	</if>
+	<if test="null != actualVisitTime">
+		and actualVisitTime = #{actualVisitTime}
+	</if>
+	<if test="null != visitContent">
+		and visitContent = #{visitContent}
+	</if>
+	<if test="null != creatTime">
+		and creatTime = #{creatTime}
+	</if>
+	<if test="null != lastUpdateTime">
+		and lastUpdateTime = #{lastUpdateTime}
+	</if>
+	</delete>
+</mapper>

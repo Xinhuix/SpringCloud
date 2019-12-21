@@ -1,0 +1,24 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<project version="4">
+  <component name="Encoding">
+    <file url="file://$PROJECT_DIR$/serverwatchV2" charset="UTF-8" />
+    <file url="file://$PROJECT_DIR$/slweomsV2" charset="UTF-8" />
+    <file url="file://$PROJECT_DIR$/visionvera-alarm" charset="UTF-8" />
+    <file url="file://$PROJECT_DIR$/visionvera-analysis" charset="UTF-8" />
+    <file url="file://$PROJECT_DIR$/visionvera-app-server" charset="UTF-8" />
+    <file url="file://$PROJECT_DIR$/visionvera-authentication" charset="UTF-8" />
+    <file url="file://$PROJECT_DIR$/visionvera-common" charset="UTF-8" />
+    <file url="file://$PROJECT_DIR$/visionvera-common-api" charset="UTF-8" />
+    <file url="file://$PROJECT_DIR$/visionvera-device-manage" charset="UTF-8" />
+    <file url="file://$PROJECT_DIR$/visionvera-dispatchment" charset="UTF-8" />
+    <file url="file://$PROJECT_DIR$/visionvera-eureka-server" charset="UTF-8" />
+    <file url="file://$PROJECT_DIR$/visionvera-gateway" charset="UTF-8" />
+    <file url="file://$PROJECT_DIR$/visionvera-operation" charset="UTF-8" />
+    <file url="file://$PROJECT_DIR$/visionvera-parent" charset="UTF-8" />
+    <file url="file://$PROJECT_DIR$/visionvera-perception" charset="UTF-8" />
+    <file url="file://$PROJECT_DIR$/visionvera-resource" charset="UTF-8" />
+    <file url="file://$PROJECT_DIR$/visionvera-server-test" charset="UTF-8" />
+    <file url="file://$PROJECT_DIR$/visionvera-serverwatch" charset="UTF-8" />
+    <file url="file://$PROJECT_DIR$/visionvera-serverwatch-upgrade" charset="UTF-8" />
+  </component>
+</project>

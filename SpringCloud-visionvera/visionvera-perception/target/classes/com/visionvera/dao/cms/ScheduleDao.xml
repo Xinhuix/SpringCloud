@@ -1,0 +1,611 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+        "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+
+<mapper namespace="com.visionvera.dao.cms.ScheduleDao">
+
+ <!-- 通用查询结果列 -->
+    <sql id="Base_Column_List">
+        uuid, name, start_time AS startTime, end_time AS endTime, create_time AS createTime, status,  create_type AS createType, level, meet_time AS meetTime, type, master_no AS masterNo, state
+        ,platform_type AS platformType,platform_id AS platformId,customer_name AS customerName
+    </sql>
+      <!-- 通用查询条件 -->
+  <sql id="Where_Common">
+  		<if test="null != uuid">
+			AND uuid = #{uuid}
+		</if>
+		<if test="null != name">
+			AND name = #{name}
+		</if>
+		<if test="null != startTime">
+			AND start_time = #{startTime}
+		</if>
+		<if test="null != endTime">
+			AND end_time = #{endTime}
+		</if>
+		<if test="null != createTime">
+			AND create_time = #{createTime}
+		</if>
+		<if test="null != status">
+			AND status = #{status}
+		</if>
+
+		<if test="null != createType">
+			AND create_type = #{createType}
+		</if>
+
+		<if test="null != meetTime">
+			AND meet_time = #{meetTime}
+		</if>
+		<if test="null != type">
+			AND type = #{type}
+		</if>
+		<if test="null != masterNo">
+			AND master_no = #{masterNo}
+		</if>
+
+		<if test="null != devNum">
+			AND dev_num = #{devNum}
+		</if>
+		<if test="null != title">
+			AND title = #{title}
+		</if>
+	   </sql>
+	<select id="selectScheduleDev" resultType="java.util.Map" parameterType="java.lang.String">
+		SELECT
+			GROUP_CONCAT(DISTINCT(device.`devno`)) AS devIds,
+			GROUP_CONCAT(DISTINCT (device.`zonedevno`)) AS zonedevno
+		FROM
+			vc_schedule_dev AS scheduleDev
+				LEFT JOIN vc_dev AS device ON scheduleDev.`dev_id` = device.`id`
+		WHERE
+			scheduleDev.`schedule_id` = #{uuid}
+		GROUP BY scheduleDev.`schedule_id`
+	</select>
+	<!-- 获取正在进行中的会议列表，携带会议对应的设备ID, 给大网提供数据 Start -->
+	<select id="selectMeetingInfo" resultType="java.util.Map" parameterType="java.util.Map">
+		SELECT
+			vmi.uuid AS uuid,
+			vmi.name AS name,
+			vmi.start_time AS start_time,
+			vmi.end_time AS end_time,
+			vmi.master_no AS master_no,
+			vmi.speaker_1 as speaker_1,
+			vmi.speaker_2 as speaker_2,
+			vmi.level as level,
+			vmi.host as host,
+			vmi.createType as createType,
+			<!--vmi.platformType as platformType,-->
+			<!--vmi.platformId as platformId,-->
+			vmi.creatorName as creatorName,
+			IF(vr.gradeid=1,vmi.regionName,CONCAT(vmi.regionName,'-',vr.`name`)) as regionName,
+			vmi.appointment as appointment,
+			vmi.customerUnit as customerUnit,
+			vmi.customerPosition as customerPosition,
+			vmi.scheduleOperator as scheduleOperator,
+			vmi.customerName as customerName,
+			vmi.devCount as devCount,
+			scheduleDev.`svr_region_id` as svrRegionId
+		FROM view_meeting_info AS vmi
+		LEFT JOIN vc_schedule_dev AS scheduleDev
+		ON vmi.`uuid` = scheduleDev.`schedule_id`
+		LEFT JOIN vc_dev AS device
+		ON scheduleDev.`dev_id` = device.`id` and vmi.master_no = device.devno
+		LEFT JOIN vc_region vr ON vr.id=device.region_id
+		<where>
+			device.id is not null
+			<if test="time != null and time != '' ">
+				AND (UNIX_TIMESTAMP(#{time}) BETWEEN UNIX_TIMESTAMP(vmi.start_time) AND UNIX_TIMESTAMP(vmi.end_time)
+				OR (UNIX_TIMESTAMP(vmi.start_time) &lt;= UNIX_TIMESTAMP(#{time}) and vmi.end_time = '0000-00-00 00:00:00'))
+			</if>
+			<if test="masterNo != null and masterNo != '' ">
+				AND vmi.master_no = #{masterNo}
+			</if>
+			<if test="keyWord != null and keyWord != '' ">
+				AND vmi.name like CONCAT('%', #{keyWord}, '%')
+			</if>
+			<if test="level != null and level != '' ">
+				AND vmi.level in
+				<foreach item="item" index="index" collection="level.split(',')"  open="(" separator="," close=")">
+					#{item}
+				</foreach>
+			</if>
+
+			<if test="createType != null and createType != '' ">
+				AND vmi.createType in
+				<foreach item="item" index="index" collection="createType.split(',')"  open="(" separator="," close=")">
+					#{item}
+				</foreach>
+			</if>
+			<if test="createType == null or createType == '' ">
+				AND vmi.createType = -100
+			</if>
+			<if test="level == null or level == '' ">
+				AND vmi.level = -100
+			</if>
+			<if test="regionId != null and regionId != '' and regionId !='000000000000' ">
+				AND device.region_id like CONCAT(#{regionId}, '%')
+			</if>
+
+		</where>
+		GROUP BY  vmi.`uuid`
+        ORDER BY ${orderBy} ${orderType}
+	</select>
+
+
+	<!-- 获取所有进行中的会议以及未来指定时间内已通过审批的会议 Start -->
+	<select id="getAllMeetingList" parameterType="map" resultType="map">
+		SELECT
+			t1.*
+		FROM (
+			SELECT
+			vs.`uuid` AS scheduleId,
+			vs.`name`,
+			DATE_FORMAT(vs.`start_time`,'%Y-%m-%d %H:%i:%s') AS startTime,
+			DATE_FORMAT(vs.`end_time`,'%Y-%m-%d %H:%i:%s') AS endTime,
+			vd.`devNo` AS masterNo,
+			vs.`level`,
+			vs.`status`,
+			vs.`create_type` AS createType,
+			(case when (isnull(`vs`.`dev_num`) or (`vs`.`dev_num` = 0)) then `vs`.`plan_dev_num` else `vs`.`dev_num` end) AS `devNum`,
+			vr.`name` AS province,
+			vu.`name` AS userName,
+			vs.`customer_unit` AS customerUnit,
+			vs.`customer_name` AS customerName,
+			vs.`customer_position` AS customerPosition
+		FROM
+			vc_schedule AS vs
+		LEFT JOIN
+			vc_dev AS vd
+		ON
+			vs.`master_no`=vd.`id`
+		LEFT JOIN
+			vc_region AS vr
+		ON
+			CONCAT(SUBSTRING(vd.`region_id`,1,2), '0000000000')=vr.`id`
+		LEFT JOIN
+			vc_user AS vu
+		ON
+			vs.`creator_id`=vu.`uuid`
+		<where>
+			vs.`status` = 4
+			<if test="regionId != null and regionId != '' ">
+				and vd.`region_id` like CONCAT(#{regionId}, '%')
+			</if>
+			<if test="createType != null and createType != '' ">
+				and vs.`create_type` = #{createType}
+			</if>
+			<if test="name != null and name != '' ">
+				and vs.`name` = #{name}
+			</if>
+		</where>
+		ORDER BY vs.`start_time`) as t1
+		UNION
+		SELECT
+			t2.*
+		FROM (
+		SELECT
+			vs.`uuid` AS scheduleId,
+			vs.`name`,
+			DATE_FORMAT(vs.`start_time`,'%Y-%m-%d %H:%i:%s') AS startTime,
+			DATE_FORMAT(vs.`end_time`,'%Y-%m-%d %H:%i:%s') AS endTime,
+			vd.`devNo` AS masterNo,
+			vs.`level`,
+			vs.`status`,
+			vs.`create_type` AS createType,
+			(case when (isnull(`vs`.`dev_num`) or (`vs`.`dev_num` = 0)) then `vs`.`plan_dev_num` else `vs`.`dev_num` end) AS `devNum`,
+			vr.`name` AS province,
+			vu.`name` AS userName,
+			vs.`customer_unit` AS customerUnit,
+			vs.`customer_name` AS customerName,
+			vs.`customer_position` AS customerPosition
+		FROM
+			vc_schedule AS vs
+		LEFT JOIN
+			vc_dev AS vd
+		ON
+			vs.`master_no`=vd.`id`
+		LEFT JOIN
+			vc_region AS vr
+		ON
+			CONCAT(SUBSTRING(vd.`region_id`,1,2), '0000000000')=vr.`id`
+		LEFT JOIN
+			vc_user AS vu
+		ON
+			vs.`creator_id`=vu.`uuid`
+		<where>
+			vs.`status` = 2
+			<if test="regionId != null and regionId != '' ">
+				and vd.`region_id` like CONCAT(#{regionId}, '%')
+			</if>
+			<if test="createType != null and createType != '' ">
+				and vs.`create_type` = #{createType}
+			</if>
+			<if test="name != null and name != '' ">
+				and vs.`name` = #{name}
+			</if>
+			<if test="hours != null and hours != '' ">
+				AND (
+					(UNIX_TIMESTAMP(vs.start_time) BETWEEN UNIX_TIMESTAMP(NOW()) AND UNIX_TIMESTAMP(DATE_SUB(NOW(), INTERVAL -#{hours} HOUR)))
+					OR
+					(UNIX_TIMESTAMP(vs.end_time) BETWEEN UNIX_TIMESTAMP(NOW()) AND UNIX_TIMESTAMP(DATE_SUB(NOW(), INTERVAL -#{hours} HOUR)))
+					OR
+					(UNIX_TIMESTAMP(vs.start_time) &lt;= UNIX_TIMESTAMP(NOW()) AND UNIX_TIMESTAMP(vs.end_time) &gt;= UNIX_TIMESTAMP(DATE_SUB(NOW(), INTERVAL -#{hours} HOUR)))
+				)
+			</if>
+		</where>
+		ORDER BY vs.`start_time`) as t2
+	</select>
+	<!-- 获取所有进行中的会议以及未来指定时间内已通过审批的会议 End -->
+
+	<!-- 通过businessType查询预约列表 Start -->
+	<select id="selectScheduleListByBusinessType" parameterType="java.util.Map" resultType="java.util.Map">
+		SELECT
+			vs.`uuid` AS scheduleId,
+			vs.`name`,
+			DATE_FORMAT((CASE WHEN (`vs`.`status` IN (4,5)) THEN `vmm`.`start_time` ELSE `vs`.`start_time` END),'%Y-%m-%d %H:%i:%s') AS `startTime`,
+			DATE_FORMAT(vs.`end_time`,'%Y-%m-%d %H:%i:%s') AS endTime,
+			vd.`devNo` AS masterNo,
+			vs.`level`,
+			vs.`status`,
+			vs.`create_type` AS createType,
+			(CASE WHEN (ISNULL(`vs`.`dev_num`) OR (`vs`.`dev_num` = 0)) THEN `vs`.`plan_dev_num` ELSE `vs`.`dev_num` END) AS `devNum`,
+			vr.`name` AS province,
+			vu.`name` AS userName,
+			(CASE WHEN ISNULL(`vu`.`status`) THEN 0 ELSE `vu`.`status` END) AS `operatorStatus`,
+			vs.`customer_unit` AS customerUnit,
+			vs.`customer_name` AS customerName,
+			vs.`customer_position` AS customerPosition,
+			vs.`svr_region_id` AS svrRegionId,
+			vr1.name AS svrRegionName
+		FROM
+			vc_schedule AS vs
+		LEFT JOIN
+			vc_dev AS vd
+		ON
+			vs.`master_no` = vd.`id`
+		LEFT JOIN
+			vc_region AS vr
+		ON
+			CONCAT(SUBSTRING(vd.`region_id`, 1, 2),'0000000000') = vr.`id`
+		LEFT JOIN
+			vc_region AS vr1
+		ON
+			vs.`svr_region_id` = vr1.`id`
+		LEFT JOIN
+			`vc_meeting` AS `vmm`
+		ON
+			`vmm`.`uuid` = `vs`.`uuid`
+		LEFT JOIN
+			vc_user AS vu
+		ON
+			vmm.operator_id = vu.`uuid`
+		<where>
+			<if test="businessType == 1">
+				AND vs.`status` = 4
+				AND ((UNIX_TIMESTAMP(NOW()) - UNIX_TIMESTAMP(vs.end_time)) &lt; 3600 OR vs.end_time = '0000-00-00 00:00:00')
+				AND ((vu.status = 1 AND vs.`create_type` IN ('1','7','8')) OR vs.create_type NOT IN ('1','7','8'))
+			</if>
+			<if test="businessType == 2">
+				AND vs.`status` = 2
+				AND vs.end_time &gt;= NOW()
+				<if test="hours != null and hours != '' ">
+					AND (
+						(UNIX_TIMESTAMP(vs.start_time) BETWEEN UNIX_TIMESTAMP(NOW()) AND UNIX_TIMESTAMP(DATE_SUB(NOW(), INTERVAL -#{hours} HOUR)))
+						OR
+						(UNIX_TIMESTAMP(vs.end_time) BETWEEN UNIX_TIMESTAMP(NOW()) AND UNIX_TIMESTAMP(DATE_SUB(NOW(), INTERVAL -#{hours} HOUR)))
+						OR
+						(UNIX_TIMESTAMP(vs.start_time) &lt;= UNIX_TIMESTAMP(NOW()) AND UNIX_TIMESTAMP(vs.end_time) &gt;= UNIX_TIMESTAMP(DATE_SUB(NOW(), INTERVAL -#{hours} HOUR)))
+					)
+				</if>
+			</if>
+			<if test="businessType == 3">
+				AND vs.`status` = 5
+			</if>
+			<if test="businessType == 4">
+				AND vs.`status` = 4
+				AND ((UNIX_TIMESTAMP(NOW()) - UNIX_TIMESTAMP(vs.end_time)) >= 3600 AND vs.end_time != '0000-00-00 00:00:00'
+					OR (((vu.status = 0 OR vu.status IS NULL OR vu.status = '') AND vs.`create_type` IN ('1', '7', '8'))))
+			</if>
+			<if test="regionId != null and regionId != '' ">
+				AND vd.`region_id` LIKE CONCAT(#{regionId}, '%')
+			</if>
+			<if test="createType != null and createType != '' ">
+				AND vs.`create_type` = #{createType}
+			</if>
+			<if test="name != null and name != '' ">
+				AND vs.`name` = #{name}
+			</if>
+		</where>
+		ORDER BY
+		<if test="businessType == 2">
+			startTime, level
+		</if>
+		<if test="businessType != 2">
+			startTime desc, level
+		</if>
+	</select>
+	<!-- 通过businessType查询预约列表 End -->
+
+	<!-- 通用添加预约  -->
+	<insert id="insertScheduleSelective" parameterType="com.visionvera.bean.cms.ScheduleVO">
+		INSERT INTO vc_schedule
+		<trim prefix="(" suffix=")" suffixOverrides=",">
+			<if test="null != uuid">
+				uuid,
+			</if>
+			<if test="null != name">
+				name,
+			</if>
+			<if test="null != startTime">
+				start_time,
+			</if>
+			<if test="null != endTime">
+				end_time,
+			</if>
+			<if test="null != createTime">
+				create_time,
+			</if>
+			<if test="null != status">
+				status,
+			</if>
+			<if test="null != createType">
+				create_type,
+			</if>
+			<if test="null != meetTime">
+				meet_time,
+			</if>
+			<if test="null != type">
+				type,
+			</if>
+			<if test="null != masterNo">
+				master_no,
+			</if>
+			<if test="null != devNum">
+				dev_num,
+			</if>
+			<if test="null != title">
+				title,
+			</if>
+			<if test="null != platformType">
+				platform_type,
+			</if>
+			<if test="null != platformId">
+				platform_id,
+			</if>
+			<if test="null != customerName">
+				customer_name,
+			</if>
+		</trim>
+		<trim prefix="values (" suffix=")" suffixOverrides=",">
+			<if test="null != uuid">
+				#{uuid},
+			</if>
+			<if test="null != name">
+				#{name},
+			</if>
+			<if test="null != startTime">
+				#{startTime},
+			</if>
+			<if test="null != endTime">
+				#{endTime},
+			</if>
+			<if test="null != createTime">
+				#{createTime},
+			</if>
+			<if test="null != status">
+				#{status},
+			</if>
+			<if test="null != createType">
+				#{createType},
+			</if>
+			<if test="null != meetTime">
+				#{meetTime},
+			</if>
+			<if test="null != type">
+				#{type},
+			</if>
+			<if test="null != masterNo">
+				#{masterNo},
+			</if>
+			<if test="null != devNum">
+				#{devNum},
+			</if>
+			<if test="null != title">
+				#{title},
+			</if>
+			<if test="null != platformType">
+				#{platformType},
+			</if>
+			<if test="null != platformId">
+				#{platformId},
+			</if>
+			<if test="null != customerName">
+				#{customerName},
+			</if>
+		</trim>
+	</insert>
+
+	<!--通用查询  -->
+	<select id="qureyByEntity" parameterType="com.visionvera.bean.cms.ScheduleVO"
+		resultType="com.visionvera.bean.cms.ScheduleVO">
+		SELECT
+		<include refid="Base_Column_List" />
+		from vc_schedule
+		<where>
+			<include refid="Where_Common" />
+		</where>
+		limit 1
+	</select>
+
+	<!--通用修改 -->
+	<update id="updateByPrimaryKeySelective" parameterType="com.visionvera.bean.cms.ScheduleVO">
+		update vc_schedule
+		<set>
+			<trim suffixOverrides=",">
+				<if test="null != name">
+					name = #{name},
+				</if>
+				<if test="null != startTime">
+					start_time = #{startTime},
+				</if>
+				<if test="null != endTime">
+					end_time = #{endTime},
+				</if>
+				<if test="null != createTime">
+					create_time = #{createTime},
+				</if>
+				<if test="null != status">
+					status = #{status},
+				</if>
+				<if test="null != createType">
+					create_type = #{createType},
+				</if>
+				<if test="null != meetTime">
+					meet_time = #{meetTime},
+				</if>
+				<if test="null != type">
+					type = #{type},
+				</if>
+				<if test="null != masterNo">
+					master_no = #{masterNo},
+				</if>
+				<if test="null != title">
+					title = #{title},
+				</if>
+				<if test="null != state">
+					state = #{state},
+				</if>
+				<if test="null != devNum">
+					dev_num = #{devNum},
+				</if>
+				<if test="null != platformType">
+					platform_type =#{platformType},
+			    </if>
+				<if test="null != platformId">
+					platform_id =#{platformId},
+				</if>
+				<if test="null != customerName">
+					customer_name=#{customerName},
+				</if>
+				<if test="null != creatorName">
+					creator_name=#{creatorName},
+				</if>
+				<if test="null != stopStatus">
+					stop_status=#{stopStatus},
+				</if>
+			</trim>
+		</set>
+		WHERE uuid = #{uuid}
+	</update>
+
+	<!-- 新增预约与设备关联 -->
+	<insert id="addDevs2Schedule" parameterType="list">
+		INSERT IGNORE INTO vc_schedule_dev(`uuid`,schedule_id,dev_id,dev_name)
+		VALUES
+		<foreach collection="list" item="item" index="index"
+			separator=",">
+			(replace(uuid(), '-', ''), #{item.id},#{item.no},#{item.name})
+		</foreach>
+	</insert>
+
+	<!--添加会议表 -->
+	<insert id="addMeetings" parameterType="java.util.Map">
+		insert into
+		vc_meeting(uuid,operator_id,start_time,stop_time,status)
+		values(#{uuid},#{operatorId},#{startTime},#{stopTime},#{status})
+	</insert>
+
+	<!--修改会议表 -->
+	<insert id="updateMeetings" parameterType="java.util.Map">
+		update vc_meeting
+		<set>
+			<trim suffixOverrides=",">
+			<if test="operatorId !=null">
+				operator_id =#{operatorId},
+			</if>
+			<if test="startTime !=null">
+				start_time =#{startTime},
+			</if>
+			<if test="stopTime !=null">
+				stop_time =#{stopTime} ,
+			</if>
+			<if test="status !=null">
+				status =#{status} ,
+			</if>
+			</trim>
+		</set>
+		where uuid=#{uuid}
+	</insert>
+
+	<!--查询设备id -->
+	<select id="qureyDevIdByDevNo" parameterType="java.util.Map"
+		resultType="java.util.Map">
+		SELECT vd.id AS devId,vd.zoneno AS zoneno,vd.zonedevno AS zonedevno,vd.`type` from vc_dev vd where vd.devno =#{devNo}
+		<choose>
+			<when test="devMac!=null and devMac!=''">
+				and vd.mac =#{devMac}
+			</when>
+			<otherwise>
+				and vd.zoneno =(SELECT cd.`value` from vc_const_data cd where
+				cd.const_id='local_zoneno')
+			</otherwise>
+		</choose>
+	</select>
+
+	<!--查询会管用户 -->
+	<select id="getUserByLoginName" parameterType="String" resultType="com.visionvera.bean.cms.UserVO">
+		select DISTINCT(vc_user.uuid) AS uuid,
+		vc_user.`name` as name,
+		vc_user.login_name as loginName
+		from vc_user where vc_user.login_name = #{loginName}
+	</select>
+
+     <!--删除预约设备关系  -->
+    <delete id="delScheduleDevRel" parameterType="String">
+     delete from vc_schedule_dev where schedule_id =#{scheduleId}
+    </delete>
+
+    <!--根据uuid查询预约表关联设备表  -->
+	<select id="qureyByScheduleUuid" parameterType="com.visionvera.bean.cms.ScheduleVO"
+		resultType="com.visionvera.bean.cms.ScheduleVO">
+		SELECT
+		vs.platform_type AS platformType,
+		vs.platform_id AS platformId,
+		vs.create_type AS createType,
+		vs.master_no AS masterNo,
+		vd.devno AS devno
+	    FROM
+		vc_schedule vs
+	    LEFT JOIN vc_dev vd ON vs.master_no = vd.id
+		<where>
+			<include refid="Where_Common" />
+		</where>
+		limit 1
+	</select>
+	<select id="queryByUuid" parameterType="java.lang.String"
+		resultType="com.visionvera.bean.cms.ScheduleVO">
+		SELECT
+		vs.name as name,
+		vs.platform_type AS platformType,
+		vs.platform_id AS platformId,
+		vs.create_type AS createType,
+		vs.master_no AS masterNo,
+	    FROM
+		vc_schedule vs
+		<where>
+			<include refid="Where_Common" />
+		</where>
+		limit 1
+	</select>
+
+    <!--获取本地区号 -->
+	<select id="qureyLocalZoneno" resultType="java.util.Map">
+		SELECT cd.`value`
+		from vc_const_data cd
+		where cd.const_id='local_zoneno'
+		limit 1
+	</select>
+
+
+</mapper>

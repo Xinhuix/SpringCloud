@@ -1,0 +1,211 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.visionvera.dao.ywcore.RemoteReportDao">
+	<!-- 通过条件查询抓包机信息 Start -->
+	<select id="selectRemoteReportByCondition" resultType="com.visionvera.bean.ywcore.RemoteReportVO" parameterType="com.visionvera.bean.ywcore.RemoteReportVO">
+		SELECT
+			row AS row,
+			FunName AS funName,
+			ID AS id,
+			date AS date,
+			time AS time,
+			DATE_FORMAT(datetime,'%Y-%m-%d %H:%i:%s') AS dateTime,
+			capture AS capture,
+			ip AS ip,
+			MAC AS mac,
+			pid AS pid,
+			NO AS no,
+			omcid AS omcId,
+			tm AS tm,
+			machine AS machine,
+			provid AS provId,
+			provname AS provName,
+			region AS region,
+			real_provid AS realProvId,
+			real_provname AS realProvName,
+			real_regionid AS realRegionId,
+			mac0 AS mac0,
+			mac1 AS mac1,
+			islead AS isLead,
+			packet AS packet,
+			byte AS bytes,
+			online AS online,
+			DATE_FORMAT(online_first,'%Y-%m-%d %H:%i:%s') AS onlineFirst,
+			DATE_FORMAT(online_tick,'%Y-%m-%d %H:%i:%s') AS onlineTick,
+			platform_abbr AS platformAbbr,
+			platform_name AS platformName,
+			cpu AS cpu,
+			memory AS memory,
+			disk AS disk,
+			net AS net,
+			report AS report
+		FROM 
+			t_setremotereport,
+			(SELECT MAX(`datetime`) AS maxDateTime FROM t_setremotereport) AS maxDateTimeTable
+		<where>
+			<if test="machine != null and machine.length() > 0">
+				AND machine LIKE CONCAT('%',#{machine},'%')
+			</if>
+			<if test="platformName != null and platformName.length() > 0">
+				AND platform_name LIKE CONCAT('%',#{platformName},'%')
+			</if>
+			<if test="ip != null and ip.length() > 0">
+				AND ip LIKE CONCAT('%',#{ip},'%')
+			</if>
+			<if test="realRegionId != null and realRegionId.length() > 0">
+				AND real_regionid LIKE CONCAT(#{realRegionId},'%')
+			</if>
+			<if test="online != null and online.length() > 0">
+				AND online = #{online}
+			</if>
+			<if test="capture != null and capture.length() > 0">
+				AND capture = #{capture}
+			</if>
+			AND `datetime` = maxDateTimeTable.maxDateTime
+		</where>
+		ORDER BY ${orderBy}+0 ${orderType}
+	</select>
+	<!-- 通过条件查询抓包机信息 End -->
+	
+	<!-- 查询抓包机的数量 Start -->
+	<select id="selectGrapMachineCountByCondition" parameterType="com.visionvera.bean.ywcore.RemoteReportVO" resultType="java.util.Map">
+		SELECT
+			COUNT(*) count,
+			SUM(IF(`online` = 1, 1, 0)) AS online
+		FROM 
+			t_setremotereport,
+			(SELECT MAX(`datetime`) AS maxDateTime FROM t_setremotereport) AS maxDateTimeTable
+        <where>
+            <if test="machine != null and machine.length() > 0">
+                AND machine LIKE CONCAT('%',#{machine},'%')
+            </if>
+            <if test="platformName != null and platformName.length() > 0">
+                AND platform_name LIKE CONCAT('%',#{platformName},'%')
+            </if>
+            <if test="ip != null and ip.length() > 0">
+                AND ip LIKE CONCAT('%',#{ip},'%')
+            </if>
+            <if test="realRegionId != null and realRegionId.length() > 0">
+                AND real_regionid LIKE CONCAT(#{realRegionId},'%')
+            </if>
+            <if test="capture != null and capture.length() > 0">
+                AND capture = #{capture}
+            </if>
+            AND `datetime` = maxDateTimeTable.maxDateTime
+        </where>
+	</select>
+	<!-- 查询抓包机的数量 End -->
+	
+	<!-- 查询已经存在的抓包机信息，不包含大字段 Start -->
+	<select id="selectExistGrapMachineRegionList" resultType="com.visionvera.bean.ywcore.RemoteReportVO">
+		SELECT 
+			real_regionid AS realRegionId 
+		FROM 
+			t_setremotereport,
+			(SELECT MAX(`datetime`) AS maxDateTime FROM t_setremotereport) AS maxDateTimeTable
+		<where>
+			<if test="machine != null and machine.length() > 0">
+				AND machine LIKE CONCAT('%',#{machine},'%')
+			</if>
+			<if test="platformName != null and platformName.length() > 0">
+				AND platform_name LIKE CONCAT('%',#{platformName},'%')
+			</if>
+			<if test="ip != null and ip.length() > 0">
+				AND ip LIKE CONCAT('%',#{ip},'%')
+			</if>
+			<if test="realRegionId != null and realRegionId.length() > 0">
+				AND real_regionid LIKE CONCAT(#{realRegionId},'%')
+			</if>
+			<if test="online != null and online.length() > 0">
+				AND online = #{online}
+			</if>
+			<if test="capture != null and capture.length() > 0">
+				AND capture = #{capture}
+			</if>
+			AND `datetime` = maxDateTimeTable.maxDateTime
+		</where>
+	</select>
+	<!-- 查询已经存在的抓包机信息，不包含大字段 End -->
+	
+	<!-- 通过ID批量查询行政区域信息 Start -->
+	<select id="selectRegionBatch" resultType="com.visionvera.bean.cms.RegionVO" parameterType="java.util.List">
+		SELECT
+			`id`, 
+			pid, 
+			`name`, 
+			gradeid AS gradeId, 
+			isleaf AS isLeaf, 
+			DATE_FORMAT(updatetime,'%Y-%m-%d %H:%i:%s') AS updateTime
+		FROM
+			t_regioncodeb
+		WHERE `id` IN
+		<foreach collection="list" item="regionId" open="(" separator="," close=")">
+			#{regionId}
+		</foreach>
+	</select>
+	<!-- 通过ID批量查询行政区域信息 End -->
+	
+	<!--通过行政区域ID查询抓包机已经存在的行政区域，不包含省级行政区域 Start  -->
+	<select id="selectExistRegionByRegionIdWithoutOneLevel" parameterType="java.lang.String" resultType="com.visionvera.bean.cms.RegionVO">
+		SELECT 
+			DISTINCT(region.`id`),
+			region.`pid`,
+		    region.`name`,
+		    region.`gradeid` AS gradeId,
+		    region.`isleaf` AS isLeaf,
+		    DATE_FORMAT(region.updatetime, '%Y-%m-%d %H:%i:%s') AS updateTime
+		FROM
+			(SELECT
+				remoteReport.real_regionid AS realRegionId
+			FROM
+				t_setremotereport AS remoteReport,
+				(SELECT MAX(`datetime`) AS maxDateTime FROM t_setremotereport) AS maxDateTimeTable
+			WHERE 
+				remoteReport.`datetime` = maxDateTimeTable.maxDateTime) AS remoteReportRealRegionIdTable
+		LEFT JOIN 
+			t_regioncodeb AS region
+		ON 
+			region.`id` = remoteReportRealRegionIdTable.`realRegionId`
+		WHERE 
+			region.`id` LIKE CONCAT(#{regionId}, '%')
+		AND region.`gradeid` != '1'
+	</select>
+	<!--通过行政区域ID查询抓包机已经存在的行政区域，不包含省级行政区域 End  -->
+	
+	<!-- 通过行政区域ID查询抓包机信息:左侧树信息 Start -->
+	<select id="selectRemoteReportNodeByRegionIdWithoutBlob" parameterType="java.lang.String" resultType="com.visionvera.bean.ywcore.RemoteReportVO">
+		SELECT 
+			remoteReport.row AS row,
+			remoteReport.machine AS machine,
+			remoteReport.ip AS ip,
+			remoteReport.online AS online,
+			remoteReport.capture AS capture,
+			remoteReport.mac as mac
+		FROM 
+			t_setremotereport AS remoteReport,
+			(SELECT MAX(`datetime`) AS maxDateTime FROM t_setremotereport) AS maxDateTimeTable 
+		WHERE 
+			remoteReport.real_regionid LIKE CONCAT(#{regionId},'%') 
+		AND 
+			`datetime` = maxDateTimeTable.maxDateTime;
+	</select>
+	<!-- 通过行政区域ID查询抓包机信息:左侧树信息 End -->
+	
+	<!-- 根据行政区域ID做Like查询 Start -->
+	<select id="selectRegionLikeRegionId" parameterType="com.visionvera.bean.cms.RegionVO" resultType="com.visionvera.bean.cms.RegionVO">
+		SELECT
+			DISTINCT(region.`id`),
+			region.`pid`,
+			region.`name`,
+			region.`gradeid` AS gradeId,
+			region.`isleaf` AS isLeaf,
+			DATE_FORMAT(region.updatetime,'%Y-%m-%d %H:%i:%s') AS updateTime
+		FROM
+			t_regioncodeb AS region
+		WHERE
+			region.`id` LIKE CONCAT(#{id},'%')
+		AND
+			region.`gradeid` = #{gradeId}
+	</select>
+	<!-- 根据行政区域ID做Like查询 End -->
+</mapper>

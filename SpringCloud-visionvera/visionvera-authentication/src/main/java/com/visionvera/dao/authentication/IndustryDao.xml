@@ -1,0 +1,51 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.visionvera.dao.authentication.IndustryDao">
+	<resultMap id="BaseResultMap" type="com.visionvera.bean.datacore.TIndustrybVO">
+		<id column="id" jdbcType="INTEGER" property="id" />
+		<result column="name" jdbcType="VARCHAR" property="name" />
+		<result column="bz" jdbcType="VARCHAR" property="bz" />
+		<result column="createid" jdbcType="VARCHAR" property="createid" />
+		<result column="createtime" jdbcType="TIMESTAMP" property="createtime" />
+		<result column="updateid" jdbcType="VARCHAR" property="updateid" />
+		<result column="updatetime" jdbcType="TIMESTAMP" property="updatetime" />
+	</resultMap>
+
+	<sql id="Base_Column_List">
+		id, name, bz, createid, createtime, updateid, updatetime
+	</sql>
+	
+	<!-- 批量添加用户行业归属信息 Start -->
+	<insert id="insertUserIndustry" parameterType="map">
+		INSERT INTO
+			t_user_industry_rel (user_uuid, industry_uuid)
+		VALUES
+		<foreach collection="industryIds" item="industryId" index="index" separator=",">
+			(#{userId}, #{industryId})
+		</foreach>
+	</insert>
+	<!-- 批量添加用户行业归属信息 End -->
+	
+	<!-- 通过条件获取行业归属信息 Start -->
+	<select id="selectIndustryByCondition" parameterType="com.visionvera.bean.datacore.TIndustrybVO" resultMap="BaseResultMap">
+		SELECT
+			<include refid="Base_Column_List"></include>
+		FROM
+			t_industryb_total
+		<where>
+			<if test="id != null and id.length() > 0">
+				AND id = #{id}
+			</if>
+			<if test="name != null and name.length() > 0">
+				AND name LIKE CONCAT('%',#{name},'%')
+			</if>
+			<if test="startCreateTime != null and startCreateTime.length() > 0">
+				<![CDATA[ AND createtime >= #{startCreateTime} ]]>
+			</if>
+			<if test="endCreateTime != null and endCreateTime.length() > 0">
+				<![CDATA[ AND createtime <= #{endCreateTime} ]]>
+			</if>
+		</where>
+	</select>
+	<!-- 通过条件获取行业归属信息 End -->
+</mapper>

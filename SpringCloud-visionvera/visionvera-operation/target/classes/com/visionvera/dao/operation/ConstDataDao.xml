@@ -1,0 +1,31 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+        "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.visionvera.dao.operation.ConstDataDao">
+	<!-- 根据type获取下一级的审批人 -->
+	<select id="getConstData"  resultType="ConstDataVO" parameterType="ConstDataVO">
+		SELECT
+		const_id AS constId
+		,display
+		,value
+		,value_type AS valueType
+		FROM
+		vc_const_data
+		<where>
+			<if test="constId != null and constId != '' ">
+				const_id = #{constId}
+			</if>
+			<if test="display != null and display != '' ">
+				display = #{display}
+			</if>
+			<if test="value != null and value != '' ">
+				value = #{value}
+			</if>
+			<if test="valueType != null">
+				value_type = #{valueType}
+			</if>
+		</where>
+	</select>
+
+
+</mapper>

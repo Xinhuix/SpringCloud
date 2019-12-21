@@ -1,0 +1,87 @@
+<project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+	xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
+	<modelVersion>4.0.0</modelVersion>
+	<parent>
+		<groupId>com.visionvera</groupId>
+		<artifactId>visionvera-parent</artifactId>
+		<version>0.0.1-SNAPSHOT</version>
+	</parent>
+	<version>2.6.0-SNAPSHOT</version>
+	<artifactId>visionvera-gateway</artifactId>
+	<description>所有服务的网关接口; 提供路由功能</description>
+	
+	<dependencies>
+		<!-- Spring Boot Web Start -->
+		<dependency>
+			<groupId>org.springframework.boot</groupId>
+			<artifactId>spring-boot-starter-web</artifactId>
+		</dependency>
+		<!-- Spring Boot Web End -->
+		
+		<!-- 项目Common工程 Start -->
+		<dependency>
+			<groupId>com.visionvera</groupId>
+			<artifactId>visionvera-common</artifactId>
+			<version>0.0.1-SNAPSHOT</version>
+		</dependency>
+		<!-- 项目Common工程 End -->
+		
+		<!-- Spring Boot Redis Start -->
+		<dependency>
+			<groupId>org.springframework.boot</groupId>
+			<artifactId>spring-boot-starter-data-redis</artifactId>
+		</dependency>
+		<!-- Spring Boot Redis End -->
+		
+		<!-- Spring Cloud Start -->
+		<!-- Spring Cloud Zuul Start -->
+		<dependency>
+			<groupId>org.springframework.cloud</groupId>
+			<artifactId>spring-cloud-starter-zuul</artifactId>
+		</dependency>
+		<!-- Spring Cloud Zuul End -->
+
+		<!-- Spring Cloud Eureka Client Start -->
+		<dependency>
+			<groupId>org.springframework.cloud</groupId>
+			<artifactId>spring-cloud-starter-eureka</artifactId>
+		</dependency>
+		<!-- Spring Cloud Eureka Client End -->
+
+		<!-- Spring Cloud Hystrix Start -->
+		<dependency>
+			<groupId>org.springframework.cloud</groupId>
+			<artifactId>spring-cloud-starter-hystrix</artifactId>
+		</dependency>
+		<!-- Spring Cloud Hystrix End -->
+
+		<!-- Spring Cloud Ribbon Start -->
+		<dependency>
+			<groupId>org.springframework.cloud</groupId>
+			<artifactId>spring-cloud-starter-ribbon</artifactId>
+		</dependency>
+		<!-- Spring Cloud Ribbon End -->
+		<!-- Spring Cloud End -->
+	</dependencies>
+	
+	<build>
+		<plugins>
+			<!-- Spring Boot启动插件 Start -->
+			<plugin>
+				<groupId>org.springframework.boot</groupId>
+				<artifactId>spring-boot-maven-plugin</artifactId>
+			</plugin>
+			<!-- Spring Boot启动插件 End -->
+			<plugin>
+				<groupId>org.apache.maven.plugins</groupId>
+				<artifactId>maven-resources-plugin</artifactId>
+				<configuration>
+					<nonFilteredFileExtensions>
+						<!--这里是文件后缀-->
+						<nonFilteredFileExtension>jks</nonFilteredFileExtension>
+					</nonFilteredFileExtensions>
+				</configuration>
+			</plugin>
+		</plugins>
+	</build>
+</project>

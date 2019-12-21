@@ -1,0 +1,14 @@
+<component name="ArtifactManager">
+  <artifact type="war" name="serverwatch:war">
+    <output-path>$PROJECT_DIR$/serverwatchV2/target</output-path>
+    <properties id="maven-jee-properties">
+      <options>
+        <module>serverwatch</module>
+        <packaging>war</packaging>
+      </options>
+    </properties>
+    <root id="archive" name="serverwatch.war">
+      <element id="artifact" artifact-name="serverwatch:war exploded" />
+    </root>
+  </artifact>
+</component>

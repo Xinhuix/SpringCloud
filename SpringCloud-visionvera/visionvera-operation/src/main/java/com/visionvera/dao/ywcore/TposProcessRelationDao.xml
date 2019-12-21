@@ -1,0 +1,30 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+        "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.visionvera.dao.ywcore.TposProcessRelationDao">
+	<!-- 插入平台和进程的关系 -->
+	<insert id="insertTposProcessRelation" parameterType="TposProcessRelation">
+		INSERT 
+			tpos_process_relation 
+		(tpos_process_id,tpos_registerid)  
+		VALUES
+		(#{tposProcessId},#{tposRegisterid})
+	</insert>
+	<!-- 批量插入平台关系 -->
+	<insert id="insertTposProcessRelationBatch" parameterType="TposProcessRelation">
+		INSERT 
+			tpos_process_relation 
+		(tpos_process_id,tpos_registerid)  
+		VALUES
+		<foreach collection="list" item="item" separator=",">
+		(#{item.tposProcessId},#{item.tposRegisterid} )
+		</foreach>
+	</insert>
+	
+	<!-- 根据进程id删除与平台的关系 -->
+	<delete id="deleteTposProcessRelationByProcessId" parameterType="int">
+		DELETE FROM 
+			tpos_process_relation 
+		WHERE tpos_process_id = #{tposProcessId} AND yw_uuid = ''
+	</delete>
+</mapper>

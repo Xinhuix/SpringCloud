@@ -1,0 +1,189 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+        "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.visionvera.dao.ywcore.PlatformProcessDao">
+	<resultMap id="BaseResultMap" type="com.visionvera.bean.slweoms.PlatformProcess" >
+	    <id column="id" property="id" />
+	    <result column="show_name" property="showName"/>
+	    <result column="process_name" property="processName"/>
+	    <result column="process_port" property="processPort" />
+	    <result column="process_status" property="processStatus"/>
+	    <result column="operation_system" property="operationSystem"/>	    
+	    <result column="platform_name" property="platformName"/>
+	    <result column="start_script" property="startScript"/>
+	    <result column="start_script_path" property="startScriptPath"/>
+	    <result column="shutdown_script" property="shutdownScript"/>
+	    <result column="shutdown_script_path" property="shutdownScriptPath"/>
+	    <result column="environment_variables" property="environmentVariables"/>
+	    <result column="check_script" property="checkScript"/>
+	    <result column="state" property="state"/>
+	    <result column="remark" property="remark"/>	    
+	    <result column="create_time" property="createTime"/>
+	    <result column="update_time" property="updateTime"/>
+	    <result column="registerIds" property="registerIds"/>
+	    <result column="platformNames" property="platformNames"/>
+  	</resultMap>
+  	
+  	<sql id="Base_Column_List" >
+	    ${proc}.id
+	    , ${proc}.show_name
+	    , ${proc}.process_name
+	    , ${proc}.process_port
+	    , ${proc}.process_status
+	    , ${proc}.operation_system	    
+	    , ${proc}.start_script
+	    , ${proc}.start_script_path
+	    , ${proc}.shutdown_script
+	    , ${proc}.shutdown_script_path
+	    , ${proc}.environment_variables
+	    , ${proc}.check_script
+	    , ${proc}.state
+	    , ${proc}.remark
+	    , ${proc}.create_time
+	    , ${proc}.update_time
+  	</sql>
+	
+	<!-- 根据服务器唯一标识查询所有的进程 -->
+	<select id="getAllProcesses"  parameterType="string" resultMap="BaseResultMap">
+		SELECT
+	    <include refid="Base_Column_List" >
+	      <property name="proc" value="proc"></property>
+	    </include>
+	    , GROUP_CONCAT(plat.tpos_registerid) AS registerIds
+	    , GROUP_CONCAT(plat.tpos_name) AS platformNames
+	    FROM t_platform_process proc
+	    LEFT JOIN tpos_process_relation tpre ON proc.id = tpre.tpos_process_id
+	    LEFT JOIN t_platform_tpos plat ON tpre.tpos_registerid = plat.tpos_registerid
+	    LEFT JOIN t_server_basics basic ON basic.serverUnique = plat.server_unique
+	    WHERE 
+	    	proc.state=0 AND plat.tpos_state = 0
+	    AND
+	    	basic.serverUnique = #{serverUnique}
+	    GROUP BY proc.id
+	</select>
+	
+	<!-- 插入进程 -->
+	<insert id="insertPlatformProcess" parameterType="PlatformProcess" keyProperty="id" useGeneratedKeys="true">
+		INSERT INTO t_platform_process 
+			(show_name, process_name, process_port,
+			process_status,operation_system, 
+			start_script, start_script_path, shutdown_script, 
+			shutdown_script_path, environment_variables, check_script,
+			state, remark,create_time)
+    	VALUES 
+	    	(#{showName}, #{processName}, #{processPort},
+	   		'OK', #{operationSystem},
+	   		#{startScript}, #{startScriptPath}, #{shutdownScript}, 
+	   		#{shutdownScriptPath}, #{environmentVariables}, #{checkScript},
+	   		0,#{remark},#{createTime})
+	</insert>
+	<!-- 更新进程 -->
+	<update id="updatePlatformProcess" parameterType="PlatformProcess">
+		UPDATE t_platform_process
+	    <set >
+	      <if test="showName != null" >
+	        show_name = #{showName},
+	      </if>
+	      <if test="processName != null" >
+	        process_name = #{processName},
+	      </if>
+	      <if test="processPort != null" >
+	        process_port = #{processPort},
+	      </if>
+	      <if test="processStatus != null" >
+	        process_status = #{processStatus},
+	      </if>
+	      <if test="operationSystem != null" >
+	        operation_system = #{operationSystem},
+	      </if>	      
+	      <if test="startScript != null" >
+	        start_script = #{startScript},
+	      </if>
+	      <if test="startScriptPath != null" >
+	        start_script_path = #{startScriptPath},
+	      </if>
+	      <if test="shutdownScript != null" >
+	        shutdown_script = #{shutdownScript},
+	      </if>
+	      <if test="shutdownScriptPath != null" >
+	        shutdown_script_path = #{shutdownScriptPath},
+	      </if>
+	      <if test="environmentVariables != null" >
+	        environment_variables = #{environmentVariables},
+	      </if>
+	      <if test="checkScript != null" >
+	        check_script = #{checkScript},
+	      </if>
+	      <if test="state != null" >
+	        state = #{state},
+	      </if>
+	      <if test="remark != null" >
+	        remark = #{remark},
+	      </if>
+	      <if test="updateTime != null" >
+	        update_time = #{updateTime},
+	      </if>
+	    </set>
+	    WHERE id = #{id}
+	</update>
+	<!-- 删除进程 -->
+	<delete id="deleteProcessById" parameterType="int">
+		UPDATE 
+			t_platform_process 
+		SET 
+			state = -1 
+		WHERE id = #{id}
+	</delete>
+	<!-- 根据进程id查询平台列表 -->
+	<select id="getPlatformListByProcessId" parameterType="int" resultType="PlatformVO">
+		SELECT
+			tpos.tpos_id tposId,tpos.tpos_registerid tposRegisterid,tpos.tpos_name tposName,
+			tpos.tpos_platform_type tposPlatformType,tpos.tpos_ip tposIp,
+			tpos.tpos_platform_version tposPlatformVersion,tpos.tpos_linkman tposLinkman,
+			tpos.tpos_phone tposPhone,tpos.tpos_email tposEmail,tpos.server_unique serverUnique
+		FROM
+			tpos_process_relation tpr JOIN t_platform_process proc
+			ON tpr.tpos_process_id = proc.id
+			JOIN t_platform_tpos tpos ON tpr.tpos_registerid = tpos.tpos_registerid
+		WHERE
+			proc.id = #{id}
+	</select>
+	
+	<!-- 根据平台唯一标识查询进程 -->
+	<select id="getProcessByTposRegisterid" parameterType="string" resultMap="BaseResultMap">
+		SELECT
+	    <include refid="Base_Column_List" >
+	      <property name="proc" value="proc"></property>
+	    </include>	    
+	    FROM t_platform_process proc
+	    LEFT JOIN tpos_process_relation tpre ON proc.id = tpre.tpos_process_id
+	    LEFT JOIN t_platform_tpos plat ON tpre.tpos_registerid = plat.tpos_registerid
+	    WHERE 
+	    	proc.state=0 AND plat.tpos_state = 0
+	    AND
+	    	plat.tpos_registerid = #{tposRegisterid}
+	</select>
+	
+	<!-- 根据ID查询进程信息 -->
+	<select id="getProcessById" parameterType="int" resultMap="BaseResultMap">
+		SELECT
+	    <include refid="Base_Column_List" >
+	      <property name="proc" value="proc"></property>
+	    </include>	    
+	    FROM t_platform_process proc
+	    WHERE proc.id = #{id}
+	</select>
+	
+	<!-- 批量更新进程状态 -->
+	<update id="recoverProcessStatusBatch" parameterType="list">
+		UPDATE 
+			t_platform_process 
+		SET 
+			process_status = 'OK'
+		WHERE	
+			id in 
+		<foreach collection="list" index="index" item="process" open="(" separator="," close=")">
+			#{process.id}
+		</foreach>
+	</update>
+</mapper>

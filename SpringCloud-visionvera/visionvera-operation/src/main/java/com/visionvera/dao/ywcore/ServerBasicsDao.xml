@@ -1,0 +1,421 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+		"http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.visionvera.dao.ywcore.ServerBasicsDao">
+	<!-- 根据服务器唯一标识查询服务器基本信息 -->
+	<select id="getServerBasicsByServerUnique" parameterType="string" resultType="ServerBasics">
+		SELECT 
+			id,serverName,serverHostname,serverSite,serverHostGroup,
+			serverManageIp,port,serverElseIp,serverTheirRoom,serverManufacturer,
+			serverProvince,serverDistrict,serverOs,serverPrincipal,serverPhone,
+			serverEmail,serverUnique,cpuThreshold,hddThreshold,ddrThreshold,
+			netUpThreshold,netDownThreshold,createTime,modifyTime,serverOnLine,
+			onLineStartTime,offLineTime,version,user,password,state,openState,
+			operationIp,transferType,terminalCode,v2vNetMac,netMac,reuseXzNo
+		FROM
+			t_server_basics
+		WHERE
+			serverUnique = #{serverUnique} and state !=3
+	</select>
+
+	<!-- 根据服务器id服务器基本信息 -->
+	<select id="getServerBasicsById" parameterType="int" resultType="ServerBasics">
+		SELECT
+			id,serverName,serverHostname,serverSite,serverHostGroup,
+			serverManageIp,port,serverElseIp,serverTheirRoom,serverManufacturer,
+			serverProvince,serverDistrict,gradeid,serverOs,serverPrincipal,serverPhone,
+			serverEmail,serverUnique,createTime,modifyTime,serverOnLine,
+			onLineStartTime,offLineTime,version,user,password,state,openState,
+			operationIp,transferType,reuseXzNo,terminalCode,v2vNetMac,netMac
+		FROM
+			t_server_basics
+		WHERE
+			id = #{id} AND yw_uuid = ''
+	</select>
+
+	<!-- 更新服务器信息 -->
+	<update id="updateServerBasic" parameterType="ServerBasics">
+		UPDATE
+		t_server_basics
+		<set>
+			<if test="serverName != null and serverName !=''">serverName = #{serverName},</if>
+			<if test="serverHostname != null and serverHostname !=''">serverHostname = #{serverHostname},</if>
+			<if test="serverSite != null and serverSite !=''">serverSite = #{serverSite},</if>
+			<if test="serverHostGroup != null and serverHostGroup !=''">serverHostGroup = #{serverHostGroup},</if>
+			<if test="serverManageIp != null and serverManageIp != ''">serverManageIp = #{serverManageIp},</if>
+			<if test="port != null">port = #{port},</if>
+			<if test="serverElseIp != null and serverElseIp != ''">serverElseIp = #{serverElseIp},</if>
+			<if test="serverTheirRoom != null and serverTheirRoom != ''">serverTheirRoom = #{serverTheirRoom},</if>
+			<if test="serverManufacturer != null and serverManufacturer != ''">serverManufacturer = #{serverManufacturer},</if>
+			<if test="serverProvince != null and serverProvince != ''">serverProvince = #{serverProvince},</if>
+			<if test="serverDistrict != null and serverDistrict != ''">serverDistrict = #{serverDistrict},</if>
+			<if test="gradeid != null">gradeid = #{gradeid},</if>
+			<if test="serverOs != null and serverOs != ''">serverOs = #{serverOs},</if>
+			<if test="serverPrincipal != null and serverPrincipal != ''">serverPrincipal = #{serverPrincipal},</if>
+			<if test="serverPhone != null and serverPhone != ''">serverPhone = #{serverPhone},</if>
+			<if test="serverEmail != null and serverEmail != ''">serverEmail = #{serverEmail},</if>
+			<if test="user != null and user !=''">user=#{user},</if>
+			<if test="password !=null and password != ''">password = #{password},</if>
+			<if test="createTime != null">createTime = #{createTime},</if>
+			<if test="modifyTime != null">modifyTime = now(),</if>
+			<if test="serverOnLine != null">serverOnLine = #{serverOnLine},</if>
+			<if test="onLineStartTime != null">onLineStartTime = #{onLineStartTime},</if>
+			<if test="offLineTime != null">offLineTime = #{offLineTime},</if>
+			<if test="state != null">state = #{state},</if>
+			<if test="version != null and version !=''">version = #{version},</if>
+			<if test="openState != null">openState = #{openState},</if>
+			<if test="operationIp !=null and operationIp !=''">operationIp = #{operationIp},</if>
+			<if test="transferType != null and transferType != ''">transferType = #{transferType},</if>
+			<if test="terminalCode != null and terminalCode != ''">terminalCode = #{terminalCode},</if>
+			<if test="v2vNetMac != null and v2vNetMac != ''">v2vNetMac = #{v2vNetMac},</if>
+			<if test="netMac != null and netMac != ''">netMac = #{netMac},</if>
+			<if test="reuseXzNo != null">reuseXzNo = #{reuseXzNo},</if>
+		</set>
+		WHERE
+		id = #{id} AND yw_uuid = ''
+	</update>
+
+	<!-- 查询所有的服务器信息(包括已删除的) -->
+	<select id="getAllServerBasics" resultType="ServerBasics">
+		SELECT
+			id,serverName,serverHostname,serverSite,serverHostGroup,
+			serverManageIp,port,serverElseIp,serverTheirRoom,serverManufacturer,
+			serverProvince,serverDistrict,serverOs,serverPrincipal,serverPhone,
+			serverEmail,serverUnique,createTime,modifyTime,serverOnLine,
+			onLineStartTime,offLineTime
+		FROM
+			t_server_basics WHERE yw_uuid = ''
+	</select>
+	<!-- 根据条件查询服务器信息列表 -->
+	<select id="getServerBasicsList" parameterType="map" resultType="ServerBasics">
+		SELECT
+		sb.id,sb.serverName,sb.serverHostname,sb.serverSite,sb.serverHostGroup,
+		sb.serverManageIp,sb.port,sb.serverElseIp,sb.serverTheirRoom,sb.serverManufacturer,
+		sb.serverProvince,sb.serverDistrict,sb.gradeid,sb.serverOs,sb.serverPrincipal,sb.serverPhone,
+		sb.serverEmail,sb.serverUnique,sb.createTime,sb.modifyTime,sb.serverOnLine,
+		sb.onLineStartTime,sb.offLineTime,sb.version,sb.state,sb.openState,sb.transferType,sb.user,sb.password,
+		sb.operationIp,sb.terminalCode,sb.v2vNetMac,sb.netMac,sb.reuseXzNo,IFNULL(t.platformNum, 0) AS platformNum,
+		IFNULL(m.processNum, 0) AS processNum FROM t_server_basics sb
+		LEFT JOIN (SELECT pt.server_unique,
+		COUNT( DISTINCT (pt.tpos_platform_type)) AS platformNum
+	    FROM t_platform_tpos pt WHERE pt.tpos_state !='-1' GROUP BY pt.server_unique) t ON sb.serverUnique = t.server_unique
+        LEFT JOIN (
+		SELECT count(DISTINCT(proc.id)) AS processNum,basic.serverUnique
+		FROM t_platform_process proc
+		LEFT JOIN tpos_process_relation tpre ON proc.id = tpre.tpos_process_id
+		LEFT JOIN t_platform_tpos plat ON tpre.tpos_registerid = plat.tpos_registerid
+		LEFT JOIN t_server_basics basic ON basic.serverUnique = plat.server_unique
+		WHERE 1=1 AND proc.state!=-1 AND plat.tpos_state = 0 AND proc.yw_uuid = '' AND tpre.yw_uuid = ''
+		GROUP BY basic.serverUnique 
+	    ) m ON sb.serverUnique = m.serverUnique
+		<where>
+			and sb.state != 3 AND sb.yw_uuid = ''
+			<if test="serverName !=null and serverName !=''">
+				AND sb.serverName LIKE concat(concat('%',#{serverName}),'%')
+			</if>
+			<if test="ip !=null and ip != ''">
+				AND sb.serverManageIp LIKE concat(concat('%',#{ip}),'%')
+				<!-- OR serverElseIp LIKE concat(concat('%',#{ip}),'%') ) -->
+			</if>
+			<if test="serverHostname != null and serverHostname !=''">
+				AND sb.serverHostname LIKE concat(concat('%',#{serverHostname}),'%')
+			</if>
+			<if test="state != null">
+				AND sb.state = #{state}
+			</if>
+			<if test="serverDistrict != null and serverDistrict !=''">
+				AND sb.serverDistrict LIKE concat(concat('%',#{serverDistrict}),'%')
+			</if>
+			<if test="serverSite != null and serverSite !=''">
+				AND sb.serverSite LIKE concat(concat('%',#{serverSite}),'%')
+			</if>
+			<if test="openState != null">
+				AND sb.openState = #{openState}
+			</if>
+			<if test="version != null and version != ''">
+				AND sb.version = #{version}
+			</if>
+			<if test="serverOs != null and serverOs != ''">
+				AND sb.serverOs = #{serverOs}
+			</if>
+			<if test="transferType != null and transferType != ''">
+				AND sb.transferType = #{transferType}
+			</if>
+		</where>
+		ORDER BY sb.id DESC
+	</select>
+
+	<!-- 添加服务器信息 -->
+	<insert id="insertServerBasics" parameterType="ServerBasics">
+		INSERT INTO t_server_basics
+			(serverName ,serverHostname ,serverSite ,serverUnique,
+			serverHostGroup ,serverManageIp ,port,serverElseIp ,serverTheirRoom ,
+			serverManufacturer ,serverProvince ,serverDistrict ,serverOs ,
+			serverPrincipal ,serverPhone ,serverEmail ,
+			gradeid ,state ,user,password,createTime,openState,
+			operationIp,transferType,terminalCode,v2vNetMac,netMac,reuseXzNo)
+		VALUES
+			(#{serverName},#{serverHostname},#{serverSite},#{serverUnique},
+			#{serverHostGroup},#{serverManageIp},#{port},#{serverElseIp},#{serverTheirRoom},
+			#{serverManufacturer},#{serverProvince},#{serverDistrict},#{serverOs},
+			#{serverPrincipal},#{serverPhone},#{serverEmail},
+			#{gradeid},#{state},#{user},#{password},now(),#{openState},
+			#{operationIp},#{transferType},#{terminalCode},#{v2vNetMac},#{netMac},#{reuseXzNo})
+	</insert>
+
+	<!-- 查询服务器报警阈值 -->
+	<select id="getServerThreshold" parameterType="string" resultType="ServerBasics">
+		SELECT
+			serverUnique,cpuThreshold,hddThreshold,ddrThreshold,
+			netUpThreshold,netDownThreshold
+		FROM
+			t_server_basics
+		WHERE
+			serverUnique = #{serverUnique}
+	</select>
+
+	<!-- 修改服务器报警阈值 -->
+	<update id="updateServerThreshold" parameterType="ServerBasics">
+		UPDATE
+		t_server_basics
+		SET
+		<if test="cpuThreshold !=null and cpuThreshold !=''">
+			cpuThreshold = #{cpuThreshold},
+		</if>
+		<if test="hddThreshold !=null and hddThreshold !=''">
+			hddThreshold = #{hddThreshold},
+		</if>
+		<if test="ddrThreshold !=null and ddrThreshold !=''">
+			ddrThreshold = #{ddrThreshold},
+		</if>
+		<if test="netUpThreshold !=null and netUpThreshold !=''">
+			netUpThreshold = #{netUpThreshold},
+		</if>
+		<if test="netDownThreshold !=null and netDownThreshold !=''">
+			netDownThreshold = #{netDownThreshold},
+		</if>
+		<if test="state !=null">
+			state = #{state}
+		</if>
+		WHERE
+		serverUnique = #{serverUnique}
+	</update>
+
+	<!-- 根据平台唯一标识查询服务器信息 -->
+	<select id="getServerBasicsByRegisterid" parameterType="string" resultType="ServerBasics">
+		SELECT
+			a.id,a.serverName,a.serverUnique,a.serverHostname,a.serverSite,a.serverHostGroup,a.serverManageIp,a.port,a.serverElseIp,
+			a.serverTheirRoom,a.serverManufacturer,a.serverProvince,a.serverDistrict,a.serverOs,
+			a.serverPrincipal,a.serverPhone,a.transferType,a.terminalCode,a.v2vNetMac,a.netMac
+		FROM
+			t_server_basics a LEFT JOIN t_platform_tpos b ON a.serverUnique = b.server_unique
+		WHERE
+			b.tpos_registerid = #{tposRegisterid}
+	</select>
+
+	<!-- 根据进程id查询服务器信息 -->
+	<select id="getServerBasicsByProcessId" parameterType="int" resultType="ServerBasics">
+		SELECT
+			a.id,a.serverName,a.serverUnique,a.serverHostname,a.serverSite,a.serverHostGroup,a.serverManageIp,a.port,a.serverElseIp,
+			a.serverTheirRoom,a.serverManufacturer,a.serverProvince,a.serverDistrict,a.serverOs,
+			a.serverPrincipal,a.serverPhone,a.transferType,a.terminalCode,a.v2vNetMac,a.netMac
+		FROM
+			t_platform_process proc JOIN tpos_process_relation tpr ON proc.id = tpr.tpos_process_id
+				JOIN t_platform_tpos tpos ON tpr.tpos_registerid = tpos.tpos_registerid
+				JOIN t_server_basics a ON tpos.server_unique = a.serverUnique
+		WHERE proc.id = #{processId} AND proc.yw_uuid = '' AND tpr.yw_uuid = ''
+	</select>
+
+	<!-- 根据服务器id列表查询服务器信息 -->
+	<select id="getServerBasicsByIds" parameterType="list" resultType="ServerBasics">
+		SELECT
+		id,serverName,serverHostname,serverSite,serverHostGroup,
+		serverManageIp,port,serverElseIp,serverTheirRoom,serverManufacturer,
+		serverProvince,serverDistrict,gradeid,serverOs,serverPrincipal,serverPhone,
+		serverEmail,serverUnique,createTime,modifyTime,serverOnLine,
+		onLineStartTime,offLineTime,user,password,version,state,openState,
+		operationIp,transferType,reuseXzNo,terminalCode,v2vNetMac,netMac
+		FROM
+		t_server_basics
+		WHERE id in
+		<foreach collection="serverIds" index="index" item="serverId" open="(" separator="," close=")">
+			#{serverId}
+		</foreach>
+		AND yw_uuid = ''
+	</select>
+
+	<!-- 批量插入服务器信息 -->
+	<insert id="insertServerBasicsBatch" parameterType="list">
+		INSERT INTO t_server_basics
+		(serverName ,serverHostname ,serverSite ,serverUnique,
+		serverHostGroup ,serverManageIp ,port,serverElseIp ,serverTheirRoom ,
+		serverManufacturer ,serverProvince ,serverDistrict ,serverOs ,
+		serverPrincipal ,serverPhone ,serverEmail ,
+		gradeid ,state ,serverOnLine ,onLineStartTime,user,password,createTime,
+		openState,
+		operationIp,transferType,terminalCode,v2vNetMac,netMac,reuseXzNo)
+		VALUES
+		<foreach collection="serverBasicsList" item="val" separator=",">
+			(#{val.serverName},#{val.serverHostname},#{val.serverSite},#{val.serverUnique},
+			#{val.serverHostGroup},#{val.serverManageIp},#{val.port},#{val.serverElseIp},#{val.serverTheirRoom},
+			#{val.serverManufacturer},#{val.serverProvince},#{val.serverDistrict},#{val.serverOs},
+			#{val.serverPrincipal},#{val.serverPhone},#{val.serverEmail},
+			#{val.gradeid},#{val.state},#{val.serverOnLine},#{val.onLineStartTime},#{val.user},#{val.password},now(),
+			#{val.openState},
+			#{val.operationIp},#{val.transferType},#{val.terminalCode},#{val.v2vNetMac}, #{val.netMac},#{val.reuseXzNo})
+		</foreach>
+	</insert>
+
+	<!-- 根据服务器名称查询服务器列表 -->
+	<select id="checkServerBasicsByName" parameterType="string" resultType="ServerBasics">
+		SELECT
+			id ,serverName ,serverHostname ,serverOs ,serverSite ,serverHostGroup ,
+			serverManageIp ,port,serverElseIp ,serverSource ,serverTheirRoom ,serverManufacturer ,
+			serverPrincipal ,serverPhone ,serverEmail ,serverProvince ,serverDistrict ,
+			gradeid ,serverUnique ,cpuThreshold,hddThreshold,ddrThreshold,netUpThreshold,
+			netDownThreshold,state ,version,createTime ,modifyTime,serverOnLine,
+			onLineStartTime,offLineTime
+		FROM
+			t_server_basics
+		WHERE
+			state != 3 AND serverName = #{serverName} AND yw_uuid = ''
+	</select>
+
+	<!-- 根据服务器名称查询除自身外的服务器 -->
+	<select id="checkServerBasicsByNameExcludeSelf" resultType="ServerBasics">
+		SELECT
+			id ,serverName ,serverHostname ,serverOs ,serverSite ,serverHostGroup ,
+			serverManageIp ,port,serverElseIp ,serverSource ,serverTheirRoom ,serverManufacturer ,
+			serverPrincipal ,serverPhone ,serverEmail ,serverProvince ,serverDistrict ,
+			gradeid ,serverUnique ,cpuThreshold,hddThreshold,ddrThreshold,netUpThreshold,
+			netDownThreshold,state ,version,createTime ,modifyTime,serverOnLine,
+			onLineStartTime,offLineTime
+		FROM
+			t_server_basics
+		WHERE
+			state != 3 AND serverName = #{serverName} AND id != #{serverId} AND yw_uuid = ''
+	</select>
+
+	<!-- 根据服务器管理ip查询服务器列表 -->
+	<select id="checkServerBasicsByManageIp" parameterType="string" resultType="ServerBasics">
+		SELECT
+			id ,serverName ,serverHostname ,serverOs ,serverSite ,serverHostGroup ,
+			serverManageIp ,port,serverElseIp ,serverSource ,serverTheirRoom ,serverManufacturer ,
+			serverPrincipal ,serverPhone ,serverEmail ,serverProvince ,serverDistrict ,
+			gradeid ,serverUnique ,cpuThreshold,hddThreshold,ddrThreshold,netUpThreshold,
+			netDownThreshold,state ,version,createTime ,modifyTime,serverOnLine,
+			onLineStartTime,offLineTime
+		FROM
+			t_server_basics
+		WHERE
+			state != 3 AND serverManageIp = #{serverManageIp} AND yw_uuid = ''
+	</select>
+
+	<!-- 根据服务器管理IP查询除自身外的服务器 -->
+	<select id="checkServerBasicsByManageIpExcludeSelf" resultType="ServerBasics">
+		SELECT
+			id ,serverName ,serverHostname ,serverOs ,serverSite ,serverHostGroup ,
+			serverManageIp ,port,serverElseIp ,serverSource ,serverTheirRoom ,serverManufacturer ,
+			serverPrincipal ,serverPhone ,serverEmail ,serverProvince ,serverDistrict ,
+			gradeid ,serverUnique ,cpuThreshold,hddThreshold,ddrThreshold,netUpThreshold,
+			netDownThreshold,state ,version,createTime ,modifyTime,serverOnLine,
+			onLineStartTime,offLineTime
+		FROM
+			t_server_basics
+		WHERE
+			state != 3 AND serverManageIp = #{serverManageIp} AND id != #{serverId} AND yw_uuid = ''
+	</select>
+
+	<!-- 根据终端号查询服务器信息 -->
+	<select id="getServerCountByTerminalCode" parameterType="string" resultType="int">
+		SELECT count(1)
+		FROM t_server_basics
+		WHERE state !=3 AND terminalCode = #{terminalCode} AND yw_uuid = ''
+	</select>
+
+	<!-- 根据终端号查询服务器信息(除自身外) -->
+	<select id="getServerCountByTerminalCodeExcludeSelf" resultType="int">
+		SELECT count(1)
+		FROM t_server_basics
+		WHERE state !=3 AND terminalCode = #{terminalCode} AND id != #{serverId} AND yw_uuid = ''
+	</select>
+
+
+
+	<!-- 修改服务器的在线/离线状态 -->
+	<update id="updateServerOnLineState" parameterType="ServerBasics">
+		UPDATE
+		t_server_basics
+		<set>
+			<if test="serverOnLine !=null">
+				serverOnLine = #{serverOnLine},
+			</if>
+			<if test="onLineStartTime !=null">
+				onLineStartTime = #{onLineStartTime},
+			</if>
+			<if test="offLineTime !=null">
+				offLineTime = #{offLineTime},
+			</if>
+		</set>
+		WHERE
+		serverUnique = #{serverUnique}
+	</update>
+
+	<!-- 获取服务器部署监测探针的最大版本 -->
+	<select id="getMaxVersionByServerIds" parameterType="list" resultType="string">
+		SELECT
+		max(version)
+		FROM
+		t_server_basics
+		WHERE id in
+		<foreach collection="serverIdList" index="index" item="serverId" open="(" separator="," close=")">
+			#{serverId}
+		</foreach>
+	</select>
+
+	<!-- 删除服务器信息 -->
+	<update id="deleteServerBasics" parameterType="int">
+		UPDATE
+			t_server_basics
+		SET
+			state = 3,openState = NULL
+		WHERE id = #{id}
+	</update>
+
+	<!-- 获取已部署服务器监测探针的版本号 -->
+	<select id="getDeployedVersion" parameterType="map" resultType="string">
+		SELECT
+		DISTINCT version
+		FROM
+		t_server_basics
+		<where>
+			version is not NULL AND version != ''
+			AND state !=3
+			<if test="serverOs != null and serverOs != ''">
+				AND serverOs = #{serverOs}
+			</if>
+			<if test="transferType != null and transferType != ''">
+				AND transferType = #{transferType}
+			</if>
+		</where>
+	</select>
+
+	<!-- 更新服务器探针版本号 -->
+	<update id="updateServerProbeVersion" parameterType="serverBasics">
+		UPDATE
+		t_server_basics SET version = #{version}
+		WHERE
+		serverUnique = #{serverUnique}
+	</update>
+	
+	
+	<!-- 获取检测唐古拉、GIS配置列表 -->
+	<select id="getConfigCheckList" parameterType="String" resultType="map">
+	   SELECT t.server_unique AS serverUnique, t.tpos_registerid AS tposRegisterid ,t.tpos_address AS tposAddress,t.conf_check_time AS confCheckTime,ty.platformType,ty.abbreviation 
+	   ,t.tpos_ip AS tposIp from t_server_basics b 
+	   LEFT JOIN  t_platform_tpos t   on  t.server_unique = b.serverUnique
+       LEFT JOIN t_platform_type ty on t.tpos_platform_type= ty.platformType  
+       WHERE  t.conf_check =1 and t.tpos_state!='-1' and (ty.abbreviation='TGL' or ty.abbreviation='GIS') and t.tpos_ip !='' and  t.conf_check_time like CONCAT('%',#{time},'%');
+	</select>
+
+</mapper>

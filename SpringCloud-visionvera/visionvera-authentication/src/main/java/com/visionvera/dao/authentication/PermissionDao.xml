@@ -1,0 +1,172 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd" >
+<mapper namespace="com.visionvera.dao.authentication.PermissionDao">
+	<resultMap id="BaseResultMap" type="com.visionvera.bean.datacore.TPermissionVO">
+		<id column="uuid" jdbcType="VARCHAR" property="uuid" />
+		<result column="name" jdbcType="VARCHAR" property="name" />
+		<result column="description" jdbcType="VARCHAR" property="description" />
+		<result column="platform_type" jdbcType="TINYINT" property="platformType" />
+		<result column="status" jdbcType="INTEGER" property="status" />
+		<result column="default_permission" jdbcType="INTEGER" property="defaultPermission" />
+		<result column="version" jdbcType="INTEGER" property="version" />
+		<result column="url" jdbcType="VARCHAR" property="url" />
+		<result column="update_time" jdbcType="TIMESTAMP" property="updateTime" />
+		<result column="create_time" jdbcType="TIMESTAMP" property="createTime" />
+		<result column="pid" jdbcType="CHAR" property="pid" />
+	</resultMap>
+
+	<sql id="Base_Column_List">
+		uuid, name, description, platform_type, status,
+		default_permission, version, url, update_time, create_time, pid
+	</sql>
+
+	<!-- 通过主键ID查询权限信息 Start-->
+	<select id="selectPermissionById" parameterType="java.lang.String" resultMap="BaseResultMap">
+		SELECT
+			<include refid="Base_Column_List"></include>
+		FROM
+			t_permission
+		WHERE
+			uuid = #{permissionId}
+	</select>
+	<!-- 通过主键ID查询权限信息 End-->
+
+	<!-- 通过角色ID查询权限信息 Start -->
+	<select id="selectPermissionByRoleId" parameterType="java.lang.String" resultMap="BaseResultMap">
+		SELECT
+			permission.`uuid`, permission.`name`,permission.`description`,permission.`version`,permission.`url`,permission.`pid`,
+			DATE_FORMAT(permission.create_time, '%Y-%m-%d %H:%i:%s'),
+			DATE_FORMAT(permission.update_time, '%Y-%m-%d %H:%i:%s')
+		FROM
+			t_permission AS permission
+			LEFT JOIN t_role_permission_rel AS rolePermission
+		ON 
+			permission.`uuid` = rolePermission.`permission_uuid`
+		WHERE 
+			rolePermission.`role_uuid` = #{roleId}
+		ORDER BY permission.`create_time` desc
+	</select>
+	<!-- 通过角色ID查询权限信息 End -->
+	
+	<!-- 通过角色ID查询权限信息 Start -->
+	<select id="selectPermissionForLogin" parameterType="com.visionvera.bean.datacore.TRoleVO" resultMap="BaseResultMap">
+		SELECT
+			permission.`uuid`, 
+			permission.`name`,
+			permission.`description`,
+			permission.`version`,
+			permission.`url`,
+			permission.`pid`,
+			DATE_FORMAT(permission.create_time, '%Y-%m-%d %H:%i:%s'),
+			DATE_FORMAT(permission.update_time, '%Y-%m-%d %H:%i:%s')
+		FROM
+			t_permission AS permission
+			LEFT JOIN t_role_permission_rel AS rolePermission
+		ON 
+			permission.`uuid` = rolePermission.`permission_uuid`
+		WHERE 
+			rolePermission.`role_uuid` = #{uuid}
+		AND
+			rolePermission.`platform_uuid` = #{platformId}
+		ORDER BY permission.`url` ASC
+	</select>
+	<!-- 通过角色ID查询权限信息 End -->
+	
+	<!-- 根据平台类别查询权限根节点 Start -->
+	<select id="selectPermissionByCondition" parameterType="com.visionvera.bean.datacore.TPermissionVO" resultMap="BaseResultMap">
+		SELECT
+			<include refid="Base_Column_List"></include>
+		FROM
+			t_permission
+		<where>
+			<if test="uuid != null and uuid.length() > 0">
+				AND uuid = #{uuid}
+			</if>
+			<if test="name != null and name.length() > 0">
+				AND name = #{name}
+			</if>
+			<if test="description != null and description.length() > 0">
+				AND description LIKE CONCAT(#{description}, '%')
+			</if>
+			<if test="platformType != null and platformType.length() > 0">
+				AND platform_type = #{platformType}
+			</if>
+			<if test="pid != null and pid.length() > 0">
+				AND pid = #{pid}
+			</if>
+		</where>
+		ORDER BY url ASC
+	</select>
+	<!-- 根据平台类别查询权限根节点 End -->
+	
+	<!-- 通过主键UUID修改权限信息 Start -->
+	<update id="updatePermissionById" parameterType="com.visionvera.bean.datacore.TPermissionVO">
+		UPDATE
+			t_permission
+		<set>
+			<if test="description != null and description.length() > 0">
+				description = #{description}
+			</if>
+		</set>
+		WHERE
+			uuid = #{uuid}
+	</update>
+	<!-- 通过主键UUID修改权限信息 End -->
+	<!-- 通过角色ID和平台类别查询该角色对应的平台下的所有权限信息 Start -->
+	<select id="selectRolePermissionExist" parameterType="java.util.Map" resultMap="BaseResultMap">
+		SELECT 
+			DISTINCT(permission.uuid) AS `uuid`,
+			permission.name,
+			permission.description,
+			permission.platform_type,
+			permission.status,
+			permission.default_permission,
+			permission.version,
+			permission.url,
+			permission.update_time,
+			permission.create_time,
+			permission.pid
+		FROM
+			t_permission AS permission 
+		LEFT JOIN 
+			t_role_permission_rel AS rolePermission 
+		ON 
+			rolePermission.permission_uuid = permission.uuid 
+		LEFT JOIN 
+			t_role AS role 
+		ON 
+			rolePermission.`role_uuid` = role.`uuid` 
+		LEFT JOIN 
+			t_role_platform_rel AS rolePlat 
+		ON 
+			rolePlat.`role_uuid` = role.`uuid` 
+		WHERE 
+			role.`uuid` = #{roleId} 
+		AND 
+			rolePermission.`platform_uuid` = #{systemId}
+	</select>
+	<!-- 通过角色ID和平台类别查询该角色对应的平台下的所有权限信息 End -->
+	
+	<!-- 根据平台ID查询该平台有没有权限信息 Start -->
+	<select id="selectCountByPlatformId" parameterType="java.lang.String" resultType="int">
+		SELECT COUNT(*) FROM t_role_permission_rel WHERE platform_uuid = #{platformId}
+	</select>
+	<!-- 根据平台ID查询该平台有没有权限信息 End -->
+	
+	<!-- 根据角色ID（批量）查询权限信息 Start -->
+	<select id="selectPermissionByRole" parameterType="map" resultType="string">
+		SELECT GROUP_CONCAT(DISTINCT(tp.url)) AS permission FROM t_permission tp
+		LEFT JOIN t_role_permission_rel rpr
+		ON tp.`uuid` = rpr.`permission_uuid`
+		<where>
+			<if test="roleIds != null and roleIds.length > 0">
+				rpr.`role_uuid` IN 
+				<foreach item="uuid" index="index" collection="roleIds" open="("
+					separator="," close=")">
+					#{uuid}
+				</foreach>
+			</if>
+		</where>
+	</select>
+	<!-- 根据角色ID（批量）查询权限信息 End -->
+</mapper>

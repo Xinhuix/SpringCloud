@@ -1,0 +1,30 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+        "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+
+<mapper namespace="com.visionvera.dao.authentication.SmsDao">
+	<!-- 获取短信配置 -->
+	<select id="getSms" resultType="SmsVO" parameterType="map">
+		select (vc_sms.uuid) AS uuid,
+		vc_sms.name as name,
+		vc_sms.loginName as loginName,
+		vc_sms.loginPwd as loginPwd,
+		vc_sms.owner as owner,
+		vc_sms.cid as cid,
+		vc_sms.url as url,
+		vc_sms.encode as encode,
+		vc_sms.status as status
+		from vc_sms
+	</select>
+
+	<!-- 更新短信配置 -->
+	<update id="updateSms" parameterType="SmsVO">
+		update vc_sms set name=#{name},loginName=#{loginName},
+		url=#{url}, status=#{status}
+		<if test="loginPwd != null and loginPwd != '' ">
+			,loginPwd=#{loginPwd}
+		</if>
+		where
+		vc_sms.uuid=#{uuid}
+	</update>
+</mapper>

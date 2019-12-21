@@ -1,0 +1,573 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+        "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+
+<mapper namespace="com.visionvera.dao.operation.SyncDataDao">
+
+	<!-- 分级系统-获取子系统的行政区域ID -->
+	<update id="setFKChk" parameterType="map">
+		SET FOREIGN_KEY_CHECKS=#{chkFlag};
+	</update>
+
+	<!-- 分级系统-获取子系统的行政区域ID -->
+	<select id="getSvrRegionId" resultType="String" parameterType="map">
+		select
+		area_id
+		from vc_server_sync
+		<where>
+			<if test="ip != null and ip !='' ">
+				ip = #{ip}
+			</if>
+			<if test="registerId != null and registerId !='' ">
+				and uuid = #{registerId}
+			</if>
+		</where>
+		limit 1
+	</select>
+
+	<!-- 分级系统-获取设备所属服务器列表 -->
+	<select id="getServerInfos" parameterType="list" resultType="com.visionvera.bean.cms.ServerInfo">
+		select
+		id,
+		pid,
+		name,
+		devtype,
+		regionid,
+		date_format(updatetime,'%Y-%m-%d %H:%i:%s') AS updatetime
+		from vc_server_info
+		<if test="list != null and list.size() > 0">
+			<where>
+				id in
+				<foreach item="id" index="index" collection="list" open="("
+					separator="," close=")">
+					#{id}
+				</foreach>
+			</where>
+		</if>
+	</select>
+
+	<select id="getServerIds" parameterType="com.visionvera.bean.cms.ServerInfo" resultType="String">
+		select
+		id
+		from vc_server_info
+		<if test="svr_region_id != null and svr_region_id != '' ">
+			where svr_region_id = #{svr_region_id}
+		</if>
+	</select>
+	<!-- 从子系统同步数据（删除本系统有但子系统中没有的服务器信息） -->
+	<delete id="delServerInfos" parameterType="list">
+		delete from vc_server_info
+		<where>
+			id in
+			<foreach item="id" index="index" collection="list" open="("
+				separator="," close=")">
+				#{id}
+			</foreach>
+		</where>
+	</delete>
+	
+	<!-- 分级系统-保存设备所属服务器列表 -->
+	<insert id="addServerInfos" parameterType="list">
+		insert ignore into vc_server_info(id, pid, name, devtype, regionid, updatetime, svr_region_id)
+		values
+		<foreach collection="list" item="item" index="index" separator=",">
+			(#{item.id},#{item.pid},#{item.name},#{item.devtype}, #{item.regionid},
+			#{item.updatetime},#{item.svr_region_id})
+		</foreach>
+	</insert>
+
+	<!-- 分级系统-获取设备列表 -->
+	<select id="getDevices" parameterType="list" resultType="com.visionvera.bean.cms.Device">
+		SELECT
+		id, name, mac, ip, type, description, alias, role, p_x, p_y, p_z, p_layer, svrid,
+		date_format(updatetime,'%Y-%m-%d %H:%i:%s') AS updatetime, region_id,devno,zoneno,ssjgid,zonedevno
+		FROM vc_dev
+		<if test="list != null and list.size() > 0">
+			<where>
+				id in
+				<foreach item="id" index="index" collection="list" open="("
+					separator="," close=")">
+					#{id}
+				</foreach>
+			</where>
+		</if>
+	</select>
+
+	<select id="getDevIds" parameterType="com.visionvera.bean.cms.Device" resultType="String">
+		SELECT
+		id
+		FROM vc_dev
+		<if test="svr_region_id != null and svr_region_id != '' ">
+			where svr_region_id = #{svr_region_id}
+		</if>
+	</select>
+	<!-- 从子系统同步数据（删除本系统有但子系统中没有的设备信息） -->
+	<delete id="delDevices" parameterType="list">
+		delete from vc_dev
+		<where>
+			id in
+			<foreach item="id" index="index" collection="list" open="("
+				separator="," close=")">
+				#{id}
+			</foreach>
+		</where>
+	</delete>
+	
+	<!-- 分级系统-保存设备列表 -->
+	<insert id="addDevices" parameterType="list">
+		insert into vc_dev(id, name, mac, ip, type, description, alias, role, p_x, p_y, p_z, p_layer, svrid, updatetime, region_id, svr_region_id,devno,zoneno,ssjgid,zonedevno)
+		values
+		<foreach collection="list" item="item" index="index" separator=",">
+			(#{item.id},#{item.name},#{item.mac},#{item.ip},#{item.type},
+			#{item.description},#{item.alias},#{item.role},#{item.p_x},#{item.p_y},#{item.p_z},
+			#{item.p_layer},#{item.svrid},#{item.updatetime},#{item.region_id},#{item.svr_region_id},#{item.devno},#{item.zoneno},#{item.ssjgid},#{item.zonedevno})
+		</foreach>
+		ON DUPLICATE KEY UPDATE id=values(id), name=values(name), mac=values(mac), ip=values(ip), type=values(type), description=values(description),
+		alias=values(alias), role=values(role), p_x=values(p_x), p_y=values(p_y), p_z=values(p_z), p_layer=values(p_layer), svrid=values(svrid), 
+		updatetime=values(updatetime), region_id=values(region_id), svr_region_id=values(svr_region_id),devno=values(devno),zoneno=values(zoneno),ssjgid=values(ssjgid),zonedevno=values(zonedevno)
+	</insert>
+
+	<!-- 分级系统-获取预约列表 -->
+	<select id="getSchedules" parameterType="list" resultType="com.visionvera.bean.cms.Schedule">
+		SELECT uuid,title,form_no,name,
+		date_format(schedule_time,'%Y-%m-%d %H:%i:%s') AS schedule_time,
+		date_format(create_time,'%Y-%m-%d %H:%i:%s') AS create_time,
+		creator_id,creator_name,rank,dept,devices,
+		master_no,host,functions,plan_dev_num,member_level,level,
+		date_format(start_time,'%Y-%m-%d %H:%i:%s') AS start_time,
+		date_format(end_time,'%Y-%m-%d %H:%i:%s') AS end_time,
+		schedule_id,
+		comment,customer_comment,commander_hq,commander_out,switch_hq,switch_out,problem_hq,problem_out,
+		feedback_hq,feedback_out,response_hq,response_out,assist_hq,assist_out,prepare_hq,prepare_out,process_id,
+		state,region,accessor_id,accessor_time,usergroup_id,plan_person_num,call_mode,xmcu,dvr_server_number,
+		monitor,person_num,dev_num,status,create_type,client_type,main_bw,auxiliary_bw,master_addr,auth_member,
+		stop_status,login_mode
+		FROM vc_schedule
+		<if test="list != null and list.size() > 0">
+			<where>
+				uuid in
+				<foreach item="id" index="index" collection="list" open="("
+					separator="," close=")">
+					#{id}
+				</foreach>
+			</where>
+		</if>
+	</select>
+	
+	
+	<select id="getScheduleIds" parameterType="com.visionvera.bean.cms.Schedule" resultType="String">
+		SELECT uuid
+		FROM vc_schedule
+		<if test="svr_region_id != null and svr_region_id != '' ">
+			where svr_region_id = #{svr_region_id}
+		</if>
+	</select>
+	<!-- 从子系统同步数据（删除本系统有但子系统中没有的预约信息） -->
+	<delete id="delSchedules" parameterType="list">
+		delete from vc_schedule
+		<where>
+			uuid in
+			<foreach item="id" index="index" collection="list" open="("
+				separator="," close=")">
+				#{id}
+			</foreach>
+		</where>
+	</delete>
+	
+	<!-- 分级系统-保存预约列表 -->
+	<insert id="addSchedules" parameterType="list">
+		insert into vc_schedule(uuid,title,form_no,name,schedule_time,create_time,creator_id,creator_name,rank,dept,devices,
+		master_no,host,functions,plan_dev_num,member_level,level,start_time,end_time,schedule_id,
+		comment,customer_comment,commander_hq,commander_out,switch_hq,switch_out,problem_hq,problem_out,
+		feedback_hq,feedback_out,response_hq,response_out,assist_hq,assist_out,prepare_hq,prepare_out,process_id,
+		state,region,accessor_id,accessor_time,usergroup_id,plan_person_num,call_mode,xmcu,dvr_server_number,
+		monitor,svr_region_id,person_num,dev_num,status,create_type,client_type,main_bw,auxiliary_bw,master_addr,
+		auth_member,stop_status,login_mode)
+		values
+		<foreach collection="list" item="item" index="index" separator=",">
+			(#{item.uuid},#{item.title},#{item.form_no},#{item.name},#{item.schedule_time},#{item.create_time},
+			#{item.creator_id},#{item.creator_name},#{item.rank},#{item.dept},#{item.devices},#{item.master_no},#{item.host},
+			#{item.functions},#{item.plan_dev_num},#{item.member_level},#{item.level},#{item.start_time},
+			#{item.end_time},#{item.schedule_id},#{item.comment},#{item.customer_comment},#{item.commander_hq},
+			#{item.commander_out},#{item.switch_hq},#{item.switch_out},#{item.problem_hq},#{item.problem_out},
+			#{item.feedback_hq},#{item.feedback_out},#{item.response_hq},#{item.response_out},#{item.assist_hq},
+			#{item.assist_out},#{item.prepare_hq},#{item.prepare_out},#{item.process_id},#{item.state},#{item.region},
+			#{item.accessor_id},#{item.accessor_time},#{item.usergroup_id},#{item.plan_person_num},#{item.call_mode},
+			#{item.xmcu},#{item.dvr_server_number},#{item.monitor},#{item.svr_region_id},#{item.person_num},
+			#{item.dev_num},#{item.status},#{item.create_type},#{item.client_type},#{item.main_bw},#{item.auxiliary_bw},
+			#{item.master_addr},#{item.auth_member},#{item.stop_status},#{item.login_mode})
+		</foreach>
+		ON DUPLICATE KEY UPDATE title=values(title),form_no=values(form_no),
+		name=values(name),schedule_time=values(schedule_time),create_time=values(create_time),
+		creator_id=values(creator_id),creator_name=values(creator_name),rank=values(rank),dept=values(dept),devices=values(devices),
+		master_no=values(master_no),host=values(host),functions=values(functions),
+		plan_dev_num=values(plan_dev_num),member_level=values(member_level),
+		level=values(level),start_time=values(start_time),end_time=values(end_time),schedule_id=values(schedule_id),
+		comment=values(comment),customer_comment=values(customer_comment),commander_hq=values(commander_hq),
+		commander_out=values(commander_out),switch_hq=values(switch_hq),switch_out=values(switch_out),
+		problem_hq=values(problem_hq),problem_out=values(problem_out),feedback_hq=values(feedback_hq),
+		feedback_out=values(feedback_out),response_hq=values(response_hq),response_out=values(response_out),
+		assist_hq=values(assist_hq),assist_out=values(assist_out),prepare_hq=values(prepare_hq),
+		prepare_out=values(prepare_out),process_id=values(process_id),state=values(state),region=values(region),accessor_id=values(accessor_id),
+		accessor_time=values(accessor_time),usergroup_id=values(usergroup_id),plan_person_num=values(plan_person_num),
+		call_mode=values(call_mode),xmcu=values(xmcu),dvr_server_number=values(dvr_server_number),monitor=values(monitor),
+		person_num=values(person_num),dev_num=values(dev_num),status=values(status),create_type=values(create_type),
+		client_type=values(client_type),main_bw=values(main_bw),auxiliary_bw=values(auxiliary_bw),
+		master_addr=values(master_addr),auth_member=values(auth_member),stop_status=values(stop_status),login_mode=values(login_mode)
+	</insert>
+
+	<!-- 分级系统-获取预约设备列表 -->
+	<select id="getScheduleDevs" parameterType="list" resultType="com.visionvera.bean.cms.ScheduleDev">
+		SELECT uuid,schedule_id,dev_id,dev_role,dev_name,status FROM vc_schedule_dev
+		<if test="list != null and list.size() > 0">
+			<where>
+				schedule_id in
+				<foreach item="id" index="index" collection="list" open="("
+					separator="," close=")">
+					#{id}
+				</foreach>
+			</where>
+		</if>
+	</select>
+	<select id="getScheduleDevIds" parameterType="com.visionvera.bean.cms.ScheduleDev" resultType="String">
+		SELECT uuid FROM vc_schedule_dev
+		<if test="svr_region_id != null and svr_region_id != '' ">
+			where svr_region_id = #{svr_region_id}
+		</if>
+	</select>
+	<!-- 从子系统同步数据（删除本系统有但子系统中没有的预约_设备关联信息） -->
+	<delete id="delScheduleDevs" parameterType="list">
+		delete from vc_schedule_dev
+		<where>
+			uuid in
+			<foreach item="id" index="index" collection="list" open="("
+				separator="," close=")">
+				#{id}
+			</foreach>
+		</where>
+	</delete>
+	
+	<!-- 从子系统同步数据（删除本系统有但子系统中没有的预约_设备关联信息） -->
+	<delete id="delScheduleDevsReport" parameterType="list">
+		delete from vc_schedule_dev
+		<where>
+			schedule_id in
+			<foreach item="id" index="index" collection="list" open="("
+				separator="," close=")">
+				#{id}
+			</foreach>
+		</where>
+	</delete>
+
+	<!-- 分级系统-保存预约设备列表 -->
+	<insert id="addScheduleDevs" parameterType="list">
+		insert ignore into vc_schedule_dev(uuid,schedule_id,dev_id,dev_role,dev_name,status,svr_region_id)
+		values
+		<foreach collection="list" item="item" index="index" separator=",">
+			(#{item.uuid},#{item.schedule_id},#{item.dev_id},#{item.dev_role},#{item.dev_name},#{item.status},#{item.svr_region_id})
+		</foreach>
+	</insert>
+
+	<!-- 分级系统-获取总结表列表 -->
+	<select id="getSummarys" parameterType="list" resultType="com.visionvera.bean.cms.SummaryForm">
+		SELECT schedule_id,title,form_no,name,schedule_no,incharge,schedule_level,
+		date_format(create_time,'%Y-%m-%d %H:%i:%s') AS create_time,
+		creator,rank,
+		dept,start_unit,main_dept,main_leader,functions,device_expect,device_actual,device_problem,
+		date_format(start_time,'%Y-%m-%d %H:%i:%s') AS start_time,
+		date_format(end_time,'%Y-%m-%d %H:%i:%s') AS end_time,
+		customer_comment,customer_advice,opt_name,opt_phone,func_name,func_phone,resp_name,resp_phone,
+		mon_name,mon_phone,prob_name,prob_phone,sum_name,sum_phone,summary,related,process_id
+		FROM vc_summary_form
+		<if test="list != null and list.size() > 0">
+			<where>
+				process_id in
+				<foreach item="id" index="index" collection="list" open="("
+					separator="," close=")">
+					#{id}
+				</foreach>
+			</where>
+		</if>
+	</select>
+	<select id="getSummaryIds" parameterType="com.visionvera.bean.cms.SummaryForm" resultType="String">
+		SELECT process_id
+		FROM vc_summary_form
+		<if test="svr_region_id != null and svr_region_id != '' ">
+			where svr_region_id = #{svr_region_id}
+		</if>
+	</select>
+	<!-- 从子系统同步数据（删除本系统有但子系统中没有的预约信息） -->
+	<delete id="delSummarys" parameterType="list">
+		delete from vc_summary_form
+		<where>
+			schedule_id in
+			<foreach item="id" index="index" collection="list" open="("
+				separator="," close=")">
+				#{id}
+			</foreach>
+		</where>
+	</delete>
+	
+	<!-- 分级系统-保存总结表列表 -->
+	<insert id="addSummarys" parameterType="list">
+		insert ignore into vc_summary_form(schedule_id,title,form_no,name,schedule_no,incharge,schedule_level,create_time,creator,rank,
+		dept,start_unit,main_dept,main_leader,functions,device_expect,device_actual,device_problem,start_time,
+		end_time,customer_comment,customer_advice,opt_name,opt_phone,func_name,func_phone,resp_name,resp_phone,
+		mon_name,mon_phone,prob_name,prob_phone,sum_name,sum_phone,summary,related,process_id,svr_region_id)
+		values
+		<foreach collection="list" item="item" index="index" separator=",">
+			(#{item.schedule_id},#{item.title},#{item.form_no},#{item.name},#{item.schedule_no},#{item.incharge},#{item.schedule_level},
+			#{item.create_time},#{item.creator},#{item.rank},#{item.dept},#{item.start_unit},#{item.main_dept},
+			#{item.main_leader},#{item.functions},#{item.device_expect},#{item.device_actual},#{item.device_problem},
+			#{item.start_time},#{item.end_time},#{item.customer_comment},#{item.customer_advice},#{item.opt_name},
+			#{item.opt_phone},#{item.func_name},#{item.func_phone},#{item.resp_name},#{item.resp_phone},#{item.mon_name},
+			#{item.mon_phone},#{item.prob_name},#{item.prob_phone},#{item.sum_name},#{item.sum_phone},#{item.summary},
+			#{item.related},#{item.process_id},#{item.svr_region_id})
+		</foreach>
+		ON DUPLICATE KEY UPDATE 
+		schedule_id=values(schedule_id),title=values(title),form_no=values(form_no),name=values(name),schedule_no=values(schedule_no),incharge=values(incharge),schedule_level=values(schedule_level),
+		create_time=values(create_time),creator=values(creator),rank=values(rank),dept=values(dept),start_unit=values(start_unit),main_dept=values(main_dept),
+		main_leader=values(main_leader),functions=values(functions),device_expect=values(device_expect),device_actual=values(device_actual),device_problem=values(device_problem),
+		start_time=values(start_time),end_time=values(end_time),customer_comment=values(customer_comment),customer_advice=values(customer_advice),opt_name=values(opt_name),
+		opt_phone=values(opt_phone),func_name=values(func_name),func_phone=values(func_phone),resp_name=values(resp_name),resp_phone=values(resp_phone),mon_name=values(mon_name),
+		mon_phone=values(mon_phone),prob_name=values(prob_name),prob_phone=values(prob_phone),sum_name=values(sum_name),sum_phone=values(sum_phone),summary=values(summary),
+		related=values(related),process_id=values(process_id)
+	</insert>
+	
+	<!-- 分级系统-获取预会议列表 -->
+	<select id="getMeetings" parameterType="list" resultType="com.visionvera.bean.cms.Meeting">
+		SELECT uuid,operator_id,
+		date_format(start_time,'%Y-%m-%d %H:%i:%s') AS start_time,
+		date_format(stop_time,'%Y-%m-%d %H:%i:%s') AS stop_time,
+		status,description from vc_meeting
+		<if test="list != null and list.size() > 0">
+			<where>
+				uuid in
+				<foreach item="id" index="index" collection="list" open="("
+					separator="," close=")">
+					#{id}
+				</foreach>
+			</where>
+		</if>
+	</select>
+	<select id="getMeetingIds" parameterType="com.visionvera.bean.cms.Meeting" resultType="String">
+		SELECT uuid from vc_meeting
+		<if test="svr_region_id != null and svr_region_id != '' ">
+			where svr_region_id = #{svr_region_id}
+		</if>
+	</select>
+	<!-- 从子系统同步数据（删除本系统有但子系统中没有的会议信息） -->
+	<delete id="delMeetings" parameterType="list">
+		delete from vc_meeting
+		<where>
+			uuid in
+			<foreach item="id" index="index" collection="list" open="("
+				separator="," close=")">
+				#{id}
+			</foreach>
+		</where>
+	</delete>
+	
+	<!-- 分级系统-保存会议列表 -->
+	<insert id="addMeetings" parameterType="list">
+		insert into vc_meeting(uuid,operator_id,start_time,stop_time,status,description,svr_region_id)
+		values
+		<foreach collection="list" item="item" index="index" separator=",">
+			(#{item.uuid},#{item.operator_id},#{item.start_time},#{item.stop_time},#{item.status},#{item.description},#{item.svr_region_id})
+		</foreach>
+		ON DUPLICATE KEY UPDATE operator_id=values(operator_id),stop_time=values(stop_time),status=values(status),description=values(description)
+	</insert>
+	
+	<!-- 分级系统-获取预会议列表 -->
+	<select id="getUsers" parameterType="list" resultType="com.visionvera.bean.cms.User"> 
+		select 
+		uuid,name,login_pwd,login_name,phone,telPhone,mail,grade,depart,status,
+		description,isvalid,org_id,area,isWsLogin,img_url,dev_id,org_name,depart_name,post_name,rank_name,
+		id_card,web_login,info_ok,date_format(create_time,'%Y-%m-%d %H:%i:%s') AS create_time,area_name,svr_region_id
+		from vc_user
+		<if test="list != null and list.size() > 0">
+			<where>
+				uuid in
+				<foreach item="id" index="index" collection="list" open="("
+					separator="," close=")">
+					#{id}
+				</foreach>
+			</where>
+		</if>
+	</select>
+	<select id="getUserMeeting" resultType="com.visionvera.bean.cms.User">
+		SELECT 
+		vu.uuid AS UUID,
+		vu.name AS NAME,
+		login_pwd,login_name,phone,telPhone,mail,grade,depart,
+		vu.status AS STATUS,
+		vu.description,isvalid,org_id,AREA,isWsLogin,img_url,dev_id,org_name,depart_name,post_name,rank_name,
+		id_card,web_login,info_ok,
+		DATE_FORMAT(vu.create_time,'%Y-%m-%d %H:%i:%s') AS create_time,
+		area_name,vu.svr_region_id
+		FROM vc_user vu
+		LEFT JOIN vc_schedule vs
+		ON vs.creator_id = vu.uuid
+		WHERE vs.status = 4
+		AND (vs.svr_region_id IS NULL OR vs.svr_region_id = "")
+	</select>
+	
+	<select id="getUserIds" parameterType="com.visionvera.bean.cms.User" resultType="String"> 
+		select uuid
+		from vc_user
+		<if test="svr_region_id != null and svr_region_id != '' ">
+			where svr_region_id = #{svr_region_id}
+		</if>
+	</select>
+	<!-- 从子系统同步数据（删除本系统有但子系统中没有的用户信息） -->
+	<delete id="delUsers" parameterType="list">
+		delete from vc_user
+		<where>
+			uuid in
+			<foreach item="id" index="index" collection="list" open="("
+				separator="," close=")">
+				#{id}
+			</foreach>
+		</where>
+	</delete>
+	
+	<!-- 分级系统-保存用户列表 -->
+	<insert id="addUsers" parameterType="list">
+		insert into vc_user(uuid,name,login_pwd,login_name,phone,telPhone,mail,grade,depart,status,
+		description,isvalid,org_id,area,isWsLogin,img_url,dev_id,org_name,depart_name,post_name,rank_name,
+		id_card,web_login,info_ok,create_time,area_name,svr_region_id)
+		values
+		<foreach collection="list" item="item" index="index" separator=",">
+			(#{item.uuid},#{item.name},#{item.login_pwd},#{item.login_name},#{item.phone},#{item.telPhone},
+			#{item.mail},#{item.grade},#{item.depart},#{item.status},#{item.description},#{item.isvalid},
+			#{item.org_id},#{item.area},#{item.isWsLogin},#{item.img_url},#{item.dev_id},#{item.org_name},
+			#{item.depart_name},#{item.post_name},#{item.rank_name},#{item.id_card},#{item.web_login},
+			#{item.info_ok},#{item.create_time},#{item.area_name},#{item.svr_region_id})
+		</foreach>
+		ON DUPLICATE KEY UPDATE status=values(status)
+	</insert>
+	
+	
+	<!-- 分级系统-获取预预约主席，发一发二列表 -->
+	<select id="getScheduleState" parameterType="list" resultType="com.visionvera.bean.cms.ScheduleStateVO"> 
+		SELECT schedule_id,master_no,speaker_1,speaker_2,svr_url,svr_account,svr_password,user_id
+		FROM vc_schedule_state
+		<if test="list != null and list.size() > 0">
+			<where>
+				schedule_id in
+				<foreach item="id" index="index" collection="list" open="("
+					separator="," close=")">
+					#{id}
+				</foreach>
+			</where>
+		</if>
+	</select>
+	
+	<!-- 分级系统-获取预预约主席，发一发二列表 -->
+	<select id="getScheduleStateIds" parameterType="com.visionvera.bean.cms.Schedule" resultType="String"> 
+		SELECT schedule_id
+		FROM vc_schedule_state
+		<if test="svr_region_id != null and svr_region_id != '' ">
+			where svr_region_id = #{svr_region_id}
+		</if>
+	</select>
+	
+	
+	<!-- 从子系统同步数据（删除本系统有但子系统中没有的预约主席，发一，发二信息） -->
+	<delete id="delScheduleState" parameterType="list">
+		delete from vc_schedule_state
+		<where>
+			schedule_id in
+			<foreach item="id" index="index" collection="list" open="("
+				separator="," close=")">
+				#{id}
+			</foreach>
+		</where>
+	</delete>
+	
+	
+	<!-- 分级系统-保存预约主席发一发二列表 -->
+	<insert id="addScheduleState" parameterType="list">
+		insert into vc_schedule_state(schedule_id,master_no,speaker_1,speaker_2,svr_url,svr_account,svr_password,user_id)
+		values
+		<foreach collection="list" item="item" index="index" separator=",">
+			(#{item.schedule_id},#{item.master_no},#{item.speaker_1},#{item.speaker_2},#{item.svr_url},#{item.svr_account},
+			#{item.svr_password},#{item.user_id})
+		</foreach>
+		ON DUPLICATE KEY UPDATE master_no=values(master_no),speaker_1=values(speaker_1),
+		speaker_2=values(speaker_2),svr_url=values(svr_url),svr_account=values(svr_account),
+		svr_password=values(svr_password),user_id=values(user_id)
+	</insert>
+	
+	<!-- 分级系统-获取设备列表 -->
+	<select id="getDevDetail" parameterType="list" resultType="com.visionvera.bean.cms.DevDetail">
+		SELECT 
+		vdd.devno,
+		vdd.regionid,
+		vdd.xmname,
+		vdd.name,
+		vdd.lxr,
+		vdd.lxrzw,
+		vdd.lxrdh,
+		vdd.lxr2,
+		vdd.lxrzw2,
+		vdd.lxrdh2,
+		vdd.lxr3,
+		vdd.lxrzw3,
+		vdd.lxrdh3,
+		vdd.yysm,
+		vdd.yyslxr,
+		vdd.yyslxrdh,
+		vdd.xxdz,
+		vdd.zonedevno
+		FROM vc_dev_detail vdd
+		<if test="list != null and list.size() > 0">
+			<where>
+				devno in
+				<foreach item="id" index="index" collection="list" open="("
+					separator="," close=")">
+					#{id}
+				</foreach>
+			</where>
+		</if>
+	</select>
+	
+	
+	<select id="getDevDetailIds" parameterType="com.visionvera.bean.cms.DevDetail" resultType="String">
+		select
+		devno
+		from vc_dev_detail
+		<if test="svr_region_id != null and svr_region_id != '' ">
+			where svr_region_id = #{svr_region_id}
+		</if>
+	</select>
+	
+	
+	<!-- 从子系统同步数据（删除本系统有但子系统中没有的设备详情信息） -->
+	<delete id="delDevDetail" parameterType="list">
+		delete from vc_dev_detail
+		<where>
+			devno in
+			<foreach item="devno" index="index" collection="list" open="("
+				separator="," close=")">
+				#{devno}
+			</foreach>
+		</where>
+	</delete>
+	
+	<!-- 从网管数据库同步设备详细信息 -->
+	<insert id="addDevDetail" parameterType="list">
+		insert into vc_dev_detail(devno, regionid, xmname, name, lxr, lxrzw, lxrdh, lxr2, lxrzw2, lxrdh2, 
+		lxr3, lxrzw3, lxrdh3, yysm, yyslxr, yyslxrdh, xxdz,zonedevno,svr_region_id)
+		values
+		<foreach collection="list" item="item" index="index" separator=",">
+			(#{item.zonedevno},#{item.regionId},#{item.xmname},#{item.name},#{item.lxr}, #{item.lxrzw}, 
+			#{item.lxrdh},#{item.lxr2},#{item.lxrzw2},#{item.lxrdh2},#{item.lxr3},#{item.lxrzw3}
+			,#{item.lxrdh3},#{item.yysm},#{item.yyslxr},#{item.yyslxrdh},#{item.xxdz},#{item.zonedevno},#{item.svr_region_id})
+		</foreach>
+		ON DUPLICATE KEY UPDATE regionid=values(regionid),xmname=values(xmname),lxr=values(lxr),
+		lxrzw=values(lxrzw),lxrdh=values(lxrdh),lxr2=values(lxr2),lxrzw2=values(lxrzw2),lxrdh2=values(lxrdh2)
+		,lxr3=values(lxr3),lxrzw3=values(lxrzw3),lxrdh3=values(lxrdh3),yysm=values(yysm),yyslxr=values(yyslxr)
+		,yyslxrdh=values(yyslxrdh),xxdz=values(xxdz),zonedevno=values(zonedevno)
+	</insert>
+</mapper>

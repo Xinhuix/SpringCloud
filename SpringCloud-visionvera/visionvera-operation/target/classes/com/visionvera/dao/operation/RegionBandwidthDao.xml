@@ -1,0 +1,52 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+        "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+
+<mapper namespace="com.visionvera.dao.operation.RegionBandwidthDao">
+	<!-- 通过条件查询国干带宽的信息 Start -->
+	<select id="selectBandWidthByCondition" resultType="com.visionvera.bean.cms.BandWidthVO" parameterType="com.visionvera.bean.cms.BandWidthVO">
+		SELECT
+			regionBandwidth.id AS id,
+			regionBandwidth.`name` AS `name`,
+			regionBandwidth.region_id AS regionId,
+			regionBandwidth.bandwidth AS bandwidth,
+			regionBandwidth.threshold AS threshold
+			
+		FROM
+			vc_region_bandwidth AS regionBandwidth
+		<where>
+			<if test="id != null and id.length() > 0">
+				AND regionBandwidth.id = #{id}
+			</if>
+			<if test="name != null and name.length() > 0">
+				AND regionBandwidth.name = #{name}
+			</if>
+			<if test="regionId != null and regionId.length() > 0">
+				AND regionBandwidth.region_id = #{regionId}
+			</if>
+		</where>
+	</select>
+	<!-- 通过条件查询国干带宽的信息 End -->
+	
+	<!-- 批量更新国干带宽 Start -->
+	<update id="updateBandwidthBatch" parameterType="java.util.List">
+		<foreach collection="list" item="bandwidth" separator=";">
+			UPDATE
+				vc_region_bandwidth
+			<set>
+			   <trim>
+			    <if test="bandwidth.bandwidth !=null and bandwidth.bandwidth !='' ">
+			    	bandwidth = #{bandwidth.bandwidth},
+			    </if>
+				<if test="bandwidth.threshold !=null and bandwidth.threshold !='' ">
+				    threshold =#{bandwidth.threshold},
+				</if>
+				</trim>
+			</set>
+			
+			WHERE
+				id = #{bandwidth.id}
+		</foreach>
+	</update>
+	<!-- 批量更新国干带宽 End -->
+</mapper>

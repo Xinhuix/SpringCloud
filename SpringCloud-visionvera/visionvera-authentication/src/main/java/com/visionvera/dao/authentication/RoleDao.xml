@@ -1,0 +1,308 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd" >
+<mapper namespace="com.visionvera.dao.authentication.RoleDao">
+	<resultMap id="BaseResultMap" type="com.visionvera.bean.datacore.TRoleVO">
+		<id column="uuid" property="uuid" jdbcType="CHAR" />
+		<result column="role_name" property="roleName" jdbcType="VARCHAR" />
+		<result column="description" property="description" jdbcType="VARCHAR" />
+		<result column="create_time" property="createTime" jdbcType="TIMESTAMP" />
+		<result column="update_time" property="updateTime" jdbcType="TIMESTAMP" />
+		<result column="create_name" property="createName" jdbcType="VARCHAR" />
+		<result column="is_default" property="isDefault" jdbcType="TINYINT" />
+		<result column="is_delete" property="isDelete" jdbcType="TINYINT" />
+	</resultMap>
+	
+	<resultMap type="com.visionvera.bean.datacore.TRoleVO" id="RoleAndPlatform" extends="BaseResultMap">
+		<collection property="platformList" ofType="com.visionvera.bean.datacore.TApplicationdevicebVO" column="uuid" 
+			select="com.visionvera.dao.authentication.ApplicationdevicebDao.selectPlatformByRoleId">
+			<id column="id" property="id" jdbcType="VARCHAR" />
+			<result column="devname" property="devname" jdbcType="VARCHAR" />
+			<result column="devtype" property="devtype" jdbcType="INTEGER" />
+		</collection>
+	</resultMap>
+
+	<sql id="Base_Column_List">
+		uuid, role_name, description, create_time, update_time, craete_name
+	</sql>
+
+	<!-- 查询角色信息，提供登陆使用  Start -->
+	<select id="selectRoleForLogin" parameterType="map" resultMap="BaseResultMap">
+		SELECT
+			DISTINCT(role.uuid),
+			role.role_name,
+			role.description,
+			role.create_time,
+			role.`create_name`
+		FROM
+			t_role AS role
+		LEFT JOIN 
+			t_user_role_rel AS userRole
+		ON 
+			userRole.role_uuid = role.uuid
+		LEFT JOIN 
+			t_role_platform_rel AS rolePlat
+		ON 
+			role.`uuid` = rolePlat.`role_uuid`
+		LEFT JOIN 
+			t_applicationdeviceb AS plat
+		ON 
+			rolePlat.`platform_uuid` = plat.`id`
+		WHERE 
+			userRole.`user_uuid` = #{userId}
+		AND
+			plat.`id` = #{platformId}
+		ORDER BY role.`create_time` desc
+	</select>
+	<!-- 查询角色信息，提供登陆使用  End -->
+	
+	<!-- 通过条件查询角色携带平台信息 Start -->
+	<select id="selectRoleAndPlatformByConfition" parameterType="com.visionvera.bean.datacore.TRoleVO" resultMap="RoleAndPlatform">
+		SELECT 
+			DISTINCT(role.uuid),
+			role.role_name,
+			DATE_FORMAT(role.`create_time`,'%Y-%m-%d %H:%i:%s') AS create_time,
+			role.`description`,
+			DATE_FORMAT(role.`update_time`,'%Y-%m-%d %H:%i:%s') AS update_time,
+			role.`create_name`,
+			role.`is_default`,
+			role.`is_delete`
+		FROM 
+			t_role AS role 
+		LEFT JOIN
+			t_role_platform_rel AS rolePlat 
+		ON 
+			role.uuid = rolePlat.role_uuid 
+		LEFT JOIN 
+ 			t_applicationdeviceb AS plat  ON rolePlat.platform_uuid = plat.id 
+ 		<where>
+ 			<if test="uuid != null and uuid.length() > 0">
+ 				AND role.uuid = #{uuid}
+ 			</if>
+ 			<if test="roleName != null and roleName.length() > 0">
+ 				AND role.role_name LIKE CONCAT('%',#{roleName},'%') 
+ 			</if>
+ 			<if test="platformId != null and platformId.length() > 0">
+ 				AND plat.`id` = #{platformId}
+ 			</if>
+ 			<if test="isDefault != null and isDefault.length() > 0">
+ 				AND role.is_default = #{isDefault}
+ 			</if>
+ 			<if test="isDelete != null and isDelete.length() > 0">
+ 				AND role.is_delete = #{isDelete}
+ 			</if>
+ 			<if test="startCreateTime != null and startCreateTime.length() > 0">
+				<![CDATA[ AND role.create_time >= #{startCreateTime} ]]>
+			</if>
+			<if test="endCreateTime != null and endCreateTime.length() > 0">
+				<![CDATA[ AND role.create_time <= #{endCreateTime} ]]>
+			</if>
+ 		</where>
+ 		ORDER BY role.`create_time` desc
+	</select>
+	<!-- 通过条件查询角色携带平台信息 End -->
+	
+	<!-- 通过条件查询角色信息 Start -->
+	<select id="selectRoleByConfition" parameterType="com.visionvera.bean.datacore.TRoleVO" resultMap="BaseResultMap">
+		SELECT 
+			DISTINCT(role.uuid),
+			role.role_name,
+			DATE_FORMAT(role.`create_time`,'%Y-%m-%d %H:%i:%s') AS create_time,
+			role.`description`,
+			DATE_FORMAT(role.`update_time`,'%Y-%m-%d %H:%i:%s') AS update_time,
+			role.`create_name`,
+			role.`is_default`,
+			role.`is_delete`
+		FROM 
+			t_role AS role
+ 		<where>
+ 			<if test="uuid != null and uuid.length() > 0">
+ 				AND role.uuid = #{uuid}
+ 			</if>
+ 			<if test="roleName != null and roleName.length() > 0">
+ 				AND role.role_name LIKE CONCAT('%',#{roleName},'%') 
+ 			</if>
+ 			<if test="isDefault != null and isDefault.length() > 0">
+ 				AND role.is_default = #{isDefault}
+ 			</if>
+ 			<if test="isDelete != null and isDelete.length() > 0">
+ 				AND role.is_delete = #{isDelete}
+ 			</if>
+ 			<if test="startCreateTime != null and startCreateTime.length() > 0">
+				<![CDATA[ AND role.create_time >= #{startCreateTime} ]]>
+			</if>
+			<if test="endCreateTime != null and endCreateTime.length() > 0">
+				<![CDATA[ AND role.create_time <= #{endCreateTime} ]]>
+			</if>
+ 		</where>
+ 		ORDER BY role.`create_time` desc
+	</select>
+	<!-- 通过条件查询角色信息 End -->
+	<!-- 通过条件查询角色信息 Start -->
+	<select id="selectRepeatRoleByName" parameterType="com.visionvera.bean.datacore.TRoleVO" resultType="int">
+		SELECT count(1)
+		FROM t_role AS role
+ 		<where>
+ 			<if test="uuid != null and uuid.length() > 0">
+ 				AND role.uuid != #{uuid}
+ 			</if>
+ 			<if test="roleName != null and roleName.length() > 0">
+ 				AND role.role_name = #{roleName}
+ 			</if>
+ 		</where>
+	</select>
+	<!-- 通过条件查询角色信息 End -->
+	
+	<!-- 添加角色 Start -->
+	<insert id="addRole" parameterType="com.visionvera.bean.datacore.TRoleVO">
+		<selectKey resultType="java.lang.String" order="BEFORE"
+			keyProperty="uuid">
+			select replace(uuid(), '-', '') from dual
+		</selectKey>
+		insert into t_role(uuid, role_name, description, create_name
+		<if test="isDefault != null and isDefault.length() > 0">
+			,is_default
+		</if>
+		<if test="isDelete != null and isDelete.length() > 0">
+			,is_delete
+		</if>
+		)
+		values(#{uuid}, #{roleName}, #{description}, #{createName}
+		<if test="isDefault != null and isDefault.length() > 0">
+			,#{isDefault}
+		</if>
+		<if test="isDelete != null and isDelete.length() > 0">
+			,#{isDelete}
+		</if>)
+	</insert>
+	<!-- 添加角色 End -->
+	<!-- 修改角色 Start -->
+	<insert id="updateRole" parameterType="com.visionvera.bean.datacore.TRoleVO">
+		update t_role
+		<set>
+			role_name=#{roleName},
+			description=#{description}
+	    </set>
+		where uuid = #{uuid}
+	</insert>
+	<!-- 修改角色 End -->
+	<!-- 删除角色 Start -->
+	<delete id="deleteRole" parameterType="java.util.Map">
+		delete from t_role
+		where uuid in
+		<foreach item="roleId" index="index" collection="roleIds" open="("
+					separator="," close=")">
+			(#{roleId})
+		</foreach>
+	</delete>
+	<!-- 删除角色 End -->
+	<!-- 添加角色权限关联 Start -->
+	<insert id="addRolePermissionRel" parameterType="java.util.Map">
+		insert ignore into t_role_permission_rel(role_uuid, platform_uuid, permission_uuid)
+		values
+		<foreach collection="permissionIds" item="item" index="index" separator=",">
+			(#{roleId}, #{item.platId}, #{item.perId})
+		</foreach>
+	</insert>
+	<!-- 添加角色权限关联 End -->
+	<!-- 删除角色权限关联 Start -->
+	<delete id="deleteRolePermissionRel" parameterType="java.util.Map">
+		delete from t_role_permission_rel
+		where role_uuid in
+		<foreach item="roleId" index="index" collection="roleIds" open="("
+					separator="," close=")">
+			(#{roleId})
+		</foreach>
+	</delete>
+	<!-- 删除角色权限关联 End -->
+	<!-- 添加角色平台关联 Start -->
+	<insert id="addRoleRolePlatformRel" parameterType="java.util.Map">
+		insert ignore into t_role_platform_rel(role_uuid, platform_uuid)
+		values
+		<foreach collection="platformIds" item="item" index="index" separator=",">
+			(#{roleId}, #{item})
+		</foreach>
+	</insert>
+	<!-- 添加角色平台关联 End -->
+	<!-- 删除角色平台关联 Start -->
+	<delete id="deleteRolePlatformRel" parameterType="java.util.Map">
+		delete from t_role_platform_rel
+		where role_uuid in
+		<foreach item="roleId" index="index" collection="roleIds" open="("
+					separator="," close=")">
+			(#{roleId})
+		</foreach>
+	</delete>
+	<!-- 删除角色平台关联 End -->
+	
+	<!-- 通过角色ID查询该角色对应的权限信息 Start -->
+	<select id="selectPermissionByRoleId" parameterType="java.lang.String" resultType="com.visionvera.bean.datacore.TPermissionVO">
+		SELECT 
+			DISTINCT(permission.`uuid`) AS uuid,
+			permission.`name` AS name,
+			permission.`description` AS description,
+			permission.`platform_type` AS platformType,
+			permission.`status` AS status,
+			permission.`url` AS url,
+			permission.`update_time` AS updateTime,
+			permission.`pid` AS pid
+		FROM 
+			t_permission AS permission 
+		LEFT JOIN 
+			t_role_permission_rel AS rolePermission
+		ON 
+			permission.`uuid` = rolePermission.`permission_uuid` 
+		WHERE 
+			rolePermission.`role_uuid` = #{roleId}
+		ORDER BY permission.`create_time` desc
+	</select>
+	<!-- 通过角色ID查询该角色对应的权限信息 End -->
+	
+	<!-- 通过平台ID查询默认的角色信息，包含其对应的权限 Start -->
+	<select id="selectDefaultRoleWithPermissionIdsByPlatformId" parameterType="java.lang.String" resultType="com.visionvera.bean.datacore.TRoleVO">
+		SELECT 
+			DISTINCT(role.uuid) AS uuid,
+			role.role_name AS roleName,
+			DATE_FORMAT(role.`create_time`,'%Y-%m-%d %H:%i:%s') AS createTime,
+			role.`description`,
+			DATE_FORMAT(role.`update_time`,'%Y-%m-%d %H:%i:%s') AS updateTime,
+			role.`create_name` AS createName,
+			role.`is_default` AS isDefault,
+			role.`is_delete` AS isDelete,
+			GROUP_CONCAT(DISTINCT(rolePlatPer.`permission_uuid`)) AS permissionId
+		FROM 
+			t_role AS role 
+		LEFT JOIN
+			t_role_permission_rel AS rolePlatPer 
+		ON 
+			role.uuid = rolePlatPer.role_uuid 
+		LEFT JOIN 
+ 			t_applicationdeviceb AS plat  ON rolePlatPer.platform_uuid = plat.id
+ 		WHERE
+ 			plat.id = #{platformId} AND role.is_default = 1
+	</select>
+	<!-- 通过平台ID查询默认的角色信息，包含其对应的权限 End -->
+	
+	<!-- 通过角色ID查询该角色对应的权限信息 Start -->
+	<select id="selectRoleIdByplatformId" parameterType="java.util.Map" resultMap="BaseResultMap">
+		SELECT
+			rp.role_uuid AS uuid
+		from
+			t_role_platform_rel AS rp
+		LEFT JOIN
+			t_role r ON rp.role_uuid = r.uuid
+		WHERE
+			rp.platform_uuid=#{platformId} AND r.is_default='1'
+	</select>
+	
+	<!-- 通过平台ID修改对应的默认角色名称（工作站修改平台信息时使用） Start -->
+	<update id="updateDfRoleName" parameterType="com.visionvera.bean.datacore.TRoleVO" >
+		UPDATE t_role SET role_name = #{roleName}
+		WHERE is_default = 1 AND uuid IN (
+			SELECT role_uuid FROM
+			t_role_permission_rel 
+ 			WHERE
+ 			platform_uuid = #{platformId}
+		)
+	</update>
+	<!-- 通过平台ID修改对应的默认角色名称（工作站修改平台信息时使用） End -->
+</mapper>

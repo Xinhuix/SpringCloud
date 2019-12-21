@@ -1,0 +1,3555 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+        "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+
+<mapper namespace="com.visionvera.dao.operation.DeviceDao">
+	<!-- 获取设备列表 -->
+	<select id="getDeviceList" resultType="DeviceVO" parameterType="map">
+		SELECT DISTINCT(vd.id) AS zonedevno,
+		vd.devno AS `id`,
+		vd.`name`,
+		vd.`alias`,
+		vd.mac,
+		vd.ip,
+		vd.role as roleId,
+		vdt.id AS typeId,
+		vdt.name AS TYPE,
+		vdd.devgroup_id AS groupId
+		<if test="scheduleId != '' and scheduleId != null">
+			,vsd.status
+		</if>
+		FROM vc_dev vd
+		INNER JOIN 
+		vc_devgroup_dev vdd
+		ON vd.id=vdd.`dev_id`
+		INNER JOIN
+		vc_usergroup_devgroup vud
+		ON
+		vud.`devgroup_id`=vdd.`devgroup_id`
+		LEFT JOIN
+		vc_dev_type vdt
+		ON
+		vdt.`id` = vd.type
+		LEFT JOIN vc_devgroup vdg
+		ON vdd.`devgroup_id`=vdg.`uuid`
+		LEFT JOIN vc_usergroup vu
+		ON vud.`usergroup_id`=vu.uuid
+		<if test="scheduleId != '' and scheduleId != null">
+			LEFT JOIN vc_schedule_dev vsd 
+			ON vd.id = vsd.dev_id 
+			LEFT JOIN vc_schedule vs 
+			ON vs.`uuid`=vsd.`schedule_id`
+		</if>
+		<where>
+			<if test="devId != '' and devId != null">
+				vd.devno like CONCAT('%',#{devId},'%')
+			</if>
+			<if test="zoneno != '' and zoneno != null">
+				and vd.zoneno=#{zoneno}
+			</if>
+			<if test="devName != '' and devName != null">
+				and vd.name like CONCAT('%',#{devName},'%')
+			</if>
+			<if test="type != '' and type != null">
+				and vd.type = #{type}
+			</if>
+			<if test="description != '' and description != null">
+				and vd.description like CONCAT('%',#{description},'%')
+			</if>
+			<if test="mac !='' and mac != null">
+				and vd.mac = #{mac}
+			</if>
+			<if test="ip !='' and ip != null">
+				and vd.ip = #{ip}
+			</if>
+			<if test="groupId != '' and groupId != null">
+				and vud.usergroup_id = #{groupId}
+			</if>
+			<if test="groupName != '' and groupName != null">
+				and vu.name like CONCAT('%',#{groupName},'%')
+			</if>
+			<if test="devGroupId != '' and devGroupId != null">
+				and vdd.devgroup_id = #{devGroupId}
+			</if>
+			<if test="devGroupName != '' and devGroupName != null">
+				and vdg.name = #{devGroupName}
+			</if>
+			<if test="scheduleId != '' and scheduleId != null">
+				and vs.`usergroup_id`= vud.`usergroup_id`
+				and vsd.schedule_id = #{scheduleId}
+			</if>
+		</where>
+		order by vd.devno
+	</select>
+
+	<!-- 查找会场下的设备列表 -->
+	<select id="devicesInGroup" resultType="DeviceVO" parameterType="Map">
+		SELECT
+		dev_id AS id
+		vd.devno AS devNo
+		FROM vc_devgroup_dev vdd
+		join vc_dev vd on vdd.dev_id = vd.id
+		<where>
+			devgroup_id in
+			<if test="uuids != '' and uuids != null">
+				<foreach item="id" index="index" collection="uuids" open="("
+					separator="," close=")">
+					#{id}
+				</foreach>
+			</if>
+		</where>
+	</select>
+	
+	<!-- 统计条目数 -->
+	<select id="getDeviceListCount" resultType="int" parameterType="Map">
+		select count(DISTINCT(vd.id))
+		FROM vc_dev vd
+		INNER JOIN 
+		vc_devgroup_dev vdd
+		ON vd.id=vdd.`dev_id`
+		INNER JOIN
+		vc_usergroup_devgroup vud
+		ON
+		vud.`devgroup_id`=vdd.`devgroup_id`
+		LEFT JOIN
+		vc_dev_type vdt
+		ON
+		vdt.`id` = vd.type
+		LEFT JOIN vc_devgroup vdg
+		ON vdd.`devgroup_id`=vdg.`uuid`
+		LEFT JOIN vc_usergroup vu
+		ON vud.`usergroup_id`=vu.uuid
+		<if test="scheduleId != '' and scheduleId != null">
+			LEFT JOIN vc_schedule_dev vsd 
+			ON vd.id = vsd.dev_id 
+			LEFT JOIN vc_schedule vs 
+			ON vs.`uuid`=vsd.`schedule_id`
+		</if>
+		<where>
+			<if test="devId != '' and devId != null">
+				vd.devno like CONCAT('%',#{devId},'%')
+			</if>
+			<if test="zoneno != '' and zoneno != null">
+				and vd.zoneno=#{zoneno}
+			</if>
+			<if test="devName != '' and devName != null">
+				and vd.name like CONCAT('%',#{devName},'%')
+			</if>
+			<if test="type != '' and type != null">
+				and vd.type = #{type}
+			</if>
+			<if test="description != '' and description != null">
+				and vd.description like CONCAT('%',#{description},'%')
+			</if>
+			<if test="mac !='' and mac != null">
+				and vd.mac = #{mac}
+			</if>
+			<if test="ip !='' and ip != null">
+				and vd.ip = #{ip}
+			</if>
+			<if test="groupId != '' and groupId != null">
+				and vud.usergroup_id = #{groupId}
+			</if>
+			<if test="groupName != '' and groupName != null">
+				and vu.name like CONCAT('%',#{groupName},'%')
+			</if>
+			<if test="devGroupId != '' and devGroupId != null">
+				and vdd.devgroup_id = #{devGroupId}
+			</if>
+			<if test="devGroupName != '' and devGroupName != null">
+				and vdg.name = #{devGroupName}
+			</if>
+			<if test="scheduleId != '' and scheduleId != null">
+				and vs.`usergroup_id`= vud.`usergroup_id`
+				and vsd.schedule_id = #{scheduleId}
+			</if>
+		</where>
+	</select>
+	
+	<!-- 获取设备列表（无权限要求） -->
+	<select id="getDevList" resultType="DeviceVO" parameterType="map">
+		select * from
+		(SELECT DISTINCT(vd.id) as zonedevno,
+		vd.`devno` as id,
+		vd.`zoneno`,
+		vd.`name`,
+		vd.`alias`,
+		vd.`region_id` as regionId,
+		vd.mac,
+		vd.ip,
+		vd.devno as devNo,
+		<choose>
+            <when test="scheduleId != '' and scheduleId != null">
+                vsd.dev_role as roleId,
+            </when>
+            <otherwise>
+                vd.role AS roleId,
+            </otherwise>
+        </choose>
+		vdt.id AS typeId,
+		vdt.name AS TYPE,
+		null AS mainDevId,
+		null AS mainDevno,
+		null AS mainZoneno,
+		null AS monitorId,
+		0 AS streamType,
+		null as subVirId,
+		null as monitorUUID
+		<if test="scheduleId != '' and scheduleId != null">
+			,vsd.status
+		</if>
+		FROM vc_dev vd
+		JOIN
+		vc_dev_type vdt
+		ON
+		vdt.`id` = vd.type
+		<if test="scheduleId != '' and scheduleId != null">
+			JOIN vc_schedule_dev vsd 
+			ON vd.id = vsd.dev_id 
+			JOIN vc_schedule vs 
+			ON vs.`uuid`=vsd.`schedule_id`
+		</if>
+		<where>
+			vsd.dev_role !=4 <!-- 排除监控设备（64位调度会向vc_schedule表插入监控数据数据） -->
+			<if test="devId != '' and devId != null">
+				vd.devno like CONCAT('%',#{devId},'%')
+			</if>
+			<if test="zoneno != '' and zoneno != null">
+				and vd.zoneno=#{zoneno}
+			</if>
+			<if test="devName != '' and devName != null">
+				and vd.name like CONCAT('%',#{devName},'%')
+			</if>
+			<if test="type != '' and type != null">
+				and vd.type = #{type}
+			</if>
+			<if test="description != '' and description != null">
+				and vd.description like CONCAT('%',#{description},'%')
+			</if>
+			<if test="mac !='' and mac != null">
+				and vd.mac = #{mac}
+			</if>
+			<if test="ip !='' and ip != null">
+				and vd.ip = #{ip}
+			</if>
+			<if test="scheduleId != '' and scheduleId != null">
+				and vsd.schedule_id = #{scheduleId}
+			</if>
+		</where>
+		<if test="scheduleId != '' and scheduleId != null">
+		union
+		SELECT 
+		DISTINCT(vm.`virtual_dev_id`) AS zonedevno,
+		<if test="systemType != '' and systemType != null and systemType == '64'">
+			vm.`virtual_dev_id` AS id,
+		</if>
+		<if test="systemType != '' and systemType != null and systemType == '16'">
+			vm.`virtual_dev_no` AS id,
+		</if>
+		vm.`virtual_dev_zoneno` AS zoneno,
+		vm.`monitor_name` AS NAME,
+		NULL AS alias,
+		NULL AS regionId,
+		NULL AS mac,
+		NULL AS ip,
+		vm.`virtual_dev_no` AS devNo,
+		NULL AS roleId,
+		102 AS typeId,
+		'监控' AS TYPE,
+		vm.`main_dev_id` AS mainDevId,
+		vm.`main_dev_no` AS mainDevno,
+		vm.`main_dev_zoneno` AS mainZoneno,
+		vm.`monitor_id` AS monitorId,
+		vm.`stream_type` AS streamType,
+		vm.subVirId as subVirId,
+		vm.uuid as monitorUUID
+		<if test="scheduleId != '' and scheduleId != null">
+			,vm.status AS STATUS
+		</if>
+		FROM vc_schedule_monitor vm 
+		LEFT JOIN vc_schedule vs
+		ON vs.`uuid` = vm.`schedule_id`
+		<where>
+			<if test="devId != '' and devId != null">
+				vm.`virtual_dev_no` like CONCAT('%',#{devId},'%')
+			</if>
+			<if test="zoneno != '' and zoneno != null">
+				and vm.`virtual_dev_zoneno`= #{zoneno}
+			</if>
+			<if test="devName != '' and devName != null">
+				and vm.`monitor_name` like CONCAT('%',#{devName},'%')
+			</if>
+			<if test="type != '' and type != null">
+				and vd.type = #{type}
+			</if>
+			<if test="description != '' and description != null">
+				and vd.description like CONCAT('%',#{description},'%')
+			</if>
+			<if test="scheduleId != '' and scheduleId != null">
+				and vm.schedule_id = #{scheduleId}
+			</if>
+		</where>
+		</if>
+		) s order by s.id
+	</select>
+	
+	<!-- 统计条目数（无权限要求） -->
+	<select id="getDevListCount" resultType="int" parameterType="Map">
+		select count(DISTINCT(vd.id))
+		FROM vc_dev vd
+		JOIN
+		vc_dev_type vdt
+		ON
+		vdt.`id` = vd.type
+		<if test="scheduleId != '' and scheduleId != null">
+			JOIN vc_schedule_dev vsd 
+			ON vd.id = vsd.dev_id 
+			JOIN vc_schedule vs 
+			ON vs.`uuid`=vsd.`schedule_id`
+		</if>
+		<where>
+			<if test="devId != '' and devId != null">
+				vd.devno like CONCAT('%',#{devId},'%')
+			</if>
+			<if test="devName != '' and devName != null">
+				and vd.name like CONCAT('%',#{devName},'%')
+			</if>
+			<if test="type != '' and type != null">
+				and vd.type = #{type}
+			</if>
+			<if test="description != '' and description != null">
+				and vd.description like CONCAT('%',#{description},'%')
+			</if>
+			<if test="mac !='' and mac != null">
+				and vd.mac = #{mac}
+			</if>
+			<if test="ip !='' and ip != null">
+				and vd.ip = #{ip}
+			</if>
+			<if test="scheduleId != '' and scheduleId != null">
+				and vsd.schedule_id = #{scheduleId}
+			</if>
+		</where>
+	</select>
+	
+	<!-- 获取所有未分组设备列表 -->
+	<select id="avaliableDevices"  resultType="DeviceVO" parameterType="map">
+		select (vc_dev.id) AS id,
+		vc_dev.`name` as name,
+		vc_dev.`alias` as alias,
+		vc_devgroup.uuid as groupId,
+		vc_devgroup.name as groupName
+		from vc_dev
+		LEFT JOIN
+		vc_devgroup_dev on
+		vc_devgroup_dev.`dev_id` = vc_dev.id
+		LEFT JOIN
+		vc_devgroup on
+		vc_devgroup_dev.`devgroup_id` = vc_devgroup.uuid
+		<where>
+			<choose>
+				<when test="groupId != '' and groupId != null">
+					(vc_dev.id not in (select vc_devgroup_dev.`dev_id` FROM vc_devgroup_dev)
+					or vc_devgroup.uuid = #{groupId})
+				</when>
+				<otherwise>
+					vc_dev.id not in (select vc_devgroup_dev.`dev_id` FROM vc_devgroup_dev)
+				</otherwise>
+			</choose>
+			<if test="name != '' and name != null">
+				and vc_dev.name like CONCAT('%',#{name},'%')
+			</if>
+		</where>
+		order by vc_dev.id
+	</select>
+	
+	<!-- 获取所有未分组设备总数 -->
+	<select id="avaliableDevicesCount"  resultType="int" parameterType="map">
+		select COUNT(distinct(vc_dev.id)) AS count
+		from vc_dev
+		LEFT JOIN
+		vc_devgroup_dev on
+		vc_devgroup_dev.`dev_id` = vc_dev.id
+		LEFT JOIN
+		vc_devgroup on
+		vc_devgroup_dev.`devgroup_id` = vc_devgroup.uuid
+		<where>
+			<choose>
+				<when test="groupId != '' and groupId != null">
+					(vc_dev.id not in (select vc_devgroup_dev.`dev_id` FROM vc_devgroup_dev)
+					or vc_devgroup.uuid = #{groupId})
+				</when>
+				<otherwise>
+					vc_dev.id not in (select vc_devgroup_dev.`dev_id` FROM vc_devgroup_dev)
+				</otherwise>
+			</choose>
+			<if test="name != '' and name != null">
+				and vc_dev.name like CONCAT('%',#{name},'%')
+			</if>
+		</where>
+	</select>
+
+	<!-- 验证设备组名称是否重复 -->
+	<select id="checkRepeatGroup" resultType="int" parameterType="map">
+		<choose>
+			<when test="userId != null and userId != '' ">
+				SELECT COUNT(1)
+				FROM vc_devgroup vd
+				LEFT JOIN vc_user_devgroup ud ON vd.`uuid` = ud.`devgroup_id`
+				<where>
+					<if test="name != null and name != '' ">
+						vd.name = #{name}
+					</if>
+					<if test="userId != null and userId != '' ">
+						and ud.`user_id` = #{userId}
+					</if>
+				</where>
+			</when>
+			<otherwise>
+				select count(1) from vc_devgroup vd
+				left join vc_usergroup_devgroup vud
+				on vd.uuid = vud.devgroup_id
+				<where>
+					<if test="name != null and name != '' ">
+						vd.name = #{name}
+					</if>
+					<if test="groupId != null and groupId != '' ">
+						and vd.uuid != #{groupId}
+					</if>
+					<if test="userGroupId != null and userGroupId != '' ">
+						and vud.usergroup_id = #{userGroupId}
+					</if>
+				</where>
+			</otherwise>
+		</choose>
+	</select>
+	<!-- 验证设备号码是否重复 -->
+	<select id="checkRepeatId" resultType="int" parameterType="map">
+		select count(1) from vc_dev
+		<where>
+			<if test="id != null and id != '' ">
+				vc_dev.id = #{id}
+			</if>
+			<if test="devno != null and devno != '' ">
+				vc_dev.devno = #{devno}
+			</if>
+		</where>
+	</select>
+	<!-- 验证设备组名称是否重复 -->
+	<select id="checkRepeatName" resultType="int" parameterType="map">
+		select count(1) from vc_dev
+		<where>
+			<if test="name != null and name != '' ">
+				vc_dev.name = #{name}
+			</if>
+			<if test="id != null and id != '' ">
+				and vc_dev.id != #{id}
+			</if>
+		</where>
+	</select>
+	<!-- 插入设备基本信息 -->
+	<insert id="addDevice" parameterType="DeviceVO" keyProperty="id">
+		insert ignore into vc_dev(vc_dev.id, vc_dev.name, vc_dev.alias, vc_dev.mac,
+		vc_dev.ip, vc_dev.description, vc_dev.type)
+		values(#{id},#{name},#{alias},#{mac},#{ip}, #{description},
+		#{type})
+	</insert>
+
+	<!-- 批量插入设备信息（从excel导入） -->
+	<insert id="upLoadExcel" parameterType="list">
+		<!-- <selectKey resultType="java.lang.String" order="BEFORE"
+			keyProperty="uuid">
+			select replace(uuid(), '-', '') from dual
+		</selectKey> -->
+		insert into vc_dev(id, name, alias, mac, ip, description, type, role)
+		values
+		<foreach collection="list" item="item" index="index" separator=",">
+			(#{item.id},#{item.name},#{item.name},#{item.mac},#{item.ip}, #{item.description},
+			#{item.type},#{item.roleId})
+		</foreach>
+		ON DUPLICATE KEY UPDATE name=values(name),mac=values(mac),ip=values(ip),
+		description=values(description),type=values(type),role=values(role)
+	</insert>
+	<!-- 批量插入设备信息batchAdd -->
+	<insert id="batchAdd" parameterType="list">
+		<!-- <selectKey resultType="java.lang.String" order="BEFORE"
+			keyProperty="uuid">
+			select replace(uuid(), '-', '') from dual
+		</selectKey> -->
+		insert into vc_dev(id, name, alias, mac, ip, description, type, role,devno,zoneno)
+		values
+		<foreach collection="list" item="item" index="index" separator=",">
+			(#{item.id},#{item.name},#{item.alias},
+			#{item.mac},#{item.ip}, #{item.description},
+			#{item.typeId},#{item.roleId},#{item.devno},#{item.zoneno})
+		</foreach>
+		ON DUPLICATE KEY UPDATE name=values(name),mac=values(mac),ip=values(ip),
+		description=values(description),type=values(type),role=values(role),
+		alias=values(alias),devno=values(devno),zoneno=values(zoneno)
+	</insert>
+
+	<!-- 获取行政结构信息（获取所有字段） -->
+	<select id="getRegions" parameterType="map" resultType="RegionVO">
+		select distinct(vr.id),
+		vr.pid,
+		vr.name,
+		vr.gradeid as gradeId,
+		vr.isleaf as isLeaf,
+		date_format(vr.updatetime,'%Y-%m-%d %H:%i:%s') AS updateTime
+		FROM vc_region vr
+		LEFT JOIN vc_dev vd
+		ON vr.`id` = vd.`region_id`
+		<where>
+			<if test="id != '' and id != null">
+				vr.id = #{id}
+			</if>
+			<if test="name != '' and name != null">
+				and vr.name like CONCAT('%',#{name},'%')
+			</if>
+			<if test="devId != '' and devId != null">
+				and vd.devno like CONCAT('%',#{devId},'%')
+			</if>
+			<if test="devName != '' and devName != null">
+				and vd.name like CONCAT('%',#{devName},'%')
+			</if>
+		</where>
+	</select>
+
+	<!-- 获取行政结构信息（第一级节点） -->
+	<select id="getRoot" parameterType="map" resultType="RegionVO">
+		select vr.id,
+		vr.pid,
+		vr.name,
+		vr.gradeid as gradeId,
+		vr.isleaf as isLeaf,
+		date_format(vr.updatetime,'%Y-%m-%d %H:%i:%s') AS updateTime
+		FROM vc_region vr where vr.gradeid = 1
+		order by CONVERT(vr.name USING gbk)
+	</select>
+	<!-- 获取行政结构信息（子节点） -->
+	<select id="getChild" parameterType="map" resultType="RegionVO">
+		select vr.id,
+		vr.pid,
+		vr.name,
+		vr.gradeid as gradeId,
+		vr.isleaf as isLeaf,
+		date_format(vr.updatetime,'%Y-%m-%d %H:%i:%s') AS updateTime
+		FROM vc_region vr
+		<where>
+			<if test="pId != '' and pId != null">
+				vr.pid =#{pId}
+			</if>
+			<if test="regionName != '' and regionName != null">
+				and vr.`name` like CONCAT('%',#{regionName},'%')
+			</if>
+		</where>
+		order by CONVERT(vr.name USING gbk)
+	</select>
+	<!-- 获取行政结构信息（子节点） -->
+	<select id="getUnitChild" parameterType="map" resultType="RegionVO">
+		select vr.id,
+		vr.pid,
+		vr.name,
+		vr.regionid as regionId
+		FROM vc_customer_unit vr
+		<where>
+		<if test="unitId != '' and unitId != null">
+				vr.id = #{unitId}
+			</if>
+			<if test="unitPid != '' and unitPid != null">
+				and vr.pid = #{unitPid}
+			</if>
+			<if test="regionid != '' and regionid != null">
+				and vr.regionid = #{regionid}
+			</if>
+			<if test="regionName != '' and regionName != null">
+				and vr.`name` like CONCAT('%',#{regionName},'%')
+			</if>
+		</where>
+		order by CONVERT(vr.name USING gbk)
+	</select>
+	
+	<!-- 获取成员单位信息（查找设备使用） -->
+	<select id="getUnits" parameterType="map" resultType="RegionVO">
+		SELECT DISTINCT(vr.id),
+		<!-- (CASE WHEN vr.pid = -1 THEN  vr.regionid ELSE vr.pid END) AS pid, -->
+		vr.pid,
+		vr.name,
+		vr.regionid as regionId
+		FROM vc_customer_unit vr
+		LEFT JOIN vc_dev vd
+		ON vr.`id` = vd.`ssjgid`
+		<where>
+			<if test="id != '' and id != null">
+				vr.id = #{id}
+			</if>
+			<if test="name != '' and name != null">
+				and vr.name like CONCAT('%',#{name},'%')
+			</if>
+			<if test="devId != '' and devId != null">
+				and vd.id like CONCAT('%',#{devId},'%')
+			</if>
+			<if test="devName != '' and devName != null">
+				and vd.name like CONCAT('%',#{devName},'%')
+			</if>
+		</where>
+	</select>
+
+	<!-- 查询行政结构 -->
+	<select id="searchRegion" parameterType="map" resultType="RegionVO">
+		select vr.id,
+		vr.pid,
+		vr.name,
+		vr.gradeid as gradeId,
+		vr.isleaf as isLeaf,
+		date_format(vr.updatetime,'%Y-%m-%d %H:%i:%s') AS updateTime
+		FROM vc_region vr
+		<where>
+			vr.id in
+			<foreach item="id" index="index" collection="searchIds" open="("
+				separator="," close=")">
+				#{id}
+			</foreach>
+		</where>
+		order by CONVERT(vr.name USING gbk)
+	</select>
+
+	<!-- 获取行政结构信息（只获取id和updatetime，用于判断数据是否有更新） -->
+	<select id="getRegion" parameterType="map" resultType="RegionVO">
+		select id,
+		date_format(updatetime,'%Y-%m-%d %H:%i:%s') AS updateTime
+		from vc_region
+	</select>
+
+	<!-- 从网管数据库同步行政结构（删除会管数据库有但网管服务器中没有的行政结构信息） -->
+	<delete id="delRegion" parameterType="list">
+		delete from vc_region
+		<where>
+			vc_region.id in
+			<foreach item="id" index="index" collection="list" open="("
+				separator="," close=")">
+				#{id}
+			</foreach>
+		</where>
+	</delete>
+	<!-- 从网管数据库同步行政结构（批量插入网管中有但会管中没有的行政结构信息到会管数据库） -->
+	<insert id="addRegion" parameterType="list">
+		insert into vc_region(id, pid, name, gradeid, isleaf, updatetime)
+		values
+		<foreach collection="list" item="item" index="index" separator=",">
+			(#{item.id},#{item.pid},#{item.name},#{item.gradeid}, #{item.isleaf},
+			#{item.updatetime})
+		</foreach>
+		ON DUPLICATE KEY UPDATE pid=values(pid),name=values(name),gradeid=values(gradeid),
+		isleaf=values(isleaf),updatetime=values(updatetime)
+	</insert>
+	<!-- 更新行政结构信息（更新网管、会管中都有但网管中有更新过的行政结构数据） -->
+	<update id="updateRegion" parameterType="list">
+		<foreach collection="list" item="item" separator=";">  
+			update vc_region
+                <set>
+					pid=#{item.pid},
+					name=#{item.name},
+					gradeid=#{item.gradeid},
+					isleaf=#{item.isleaf},
+					updatetime=#{item.updatetime}
+                </set>
+			where id = ${item.id}
+         </foreach>  
+	</update>
+
+	<!-- 获取服务器信息（只获取id和updatetime，用于判断数据是否有更新） -->
+	<select id="getServerInfo" parameterType="map" resultType="ServerInfoVO">
+		select id,
+		date_format(updatetime,'%Y-%m-%d %H:%i:%s') AS updateTime
+		from vc_server_info
+	</select>
+
+	<!-- 从网管数据库同步服务器（删除会管数据库有但网管服务器中没有的服务器信息） -->
+	<delete id="delServerInfo" parameterType="list">
+		delete from vc_server_info
+		<where>
+			vc_server_info.id in
+			<foreach item="id" index="index" collection="list" open="("
+				separator="," close=")">
+				#{id}
+			</foreach>
+		</where>
+	</delete>
+	<!-- 从网管数据库同步服务器（批量插入网管中有但会管中没有的服务器信息到会管数据库） -->
+	<insert id="addServerInfo" parameterType="list">
+		insert into vc_server_info(id, pid, name, devtype, regionid, updatetime)
+		values
+		<foreach collection="list" item="item" index="index" separator=",">
+			(#{item.id},#{item.pid},#{item.name},#{item.devtype}, #{item.regionid},
+			#{item.updatetime})
+		</foreach>
+		ON DUPLICATE KEY UPDATE pid=values(pid),name=values(name),devtype=values(devtype),
+		regionid=values(regionid),updatetime=values(updatetime)
+	</insert>
+	<!-- 更新服务器信息（更新网管、会管中都有但网管中有更新过的服务器数据） -->
+	<update id="updateServerInfo" parameterType="list">
+		<foreach collection="list" item="item" separator=";">  
+			update vc_server_info
+                <set>
+					pid=#{item.pid},
+					name=#{item.name},
+					devtype=#{item.devtype},
+					regionid=#{item.regionid},
+					updatetime=#{item.updatetime}
+                </set>
+			where id = ${item.id}
+         </foreach>  
+	</update>                                                                                                                                                                                                                                                                               
+
+	<!-- 获取云信息（只获取id和updatetime，用于判断数据是否有更新） -->
+	<select id="getCloud" parameterType="map" resultType="CloudVO">
+		select id,
+		date_format(updatetime,'%Y-%m-%d %H:%i:%s') AS updateTime
+		from vc_cloud
+	</select>
+	<!-- 从网管数据库同步云（删除会管数据库有但网管服务器中没有的云信息） -->
+	<delete id="delCloud" parameterType="list">
+		delete from vc_cloud
+		<where>
+			id in
+			<foreach item="id" index="index" collection="list" open="("
+				separator="," close=")">
+				#{id}
+			</foreach>
+		</where>
+	</delete>
+	<!-- 从网管数据库同步云（批量插入网管中有但会管中没有的云信息到会管数据库） -->
+	<insert id="addCloud" parameterType="list">
+		insert into vc_cloud(id,pid,name,regionid,logicprefix,devnoprefix,glip,glport,updatetime)
+		values
+		<foreach collection="list" item="item" index="index" separator=",">
+			(#{item.id},#{item.pid},#{item.name},#{item.regionid}, #{item.logicprefix},#{item.devnoprefix},
+			#{item.glip},#{item.glport},#{item.updatetime})
+		</foreach>
+		ON DUPLICATE KEY UPDATE pid=values(pid),name=values(name),regionid=values(regionid),
+		logicprefix=values(logicprefix),devnoprefix=values(devnoprefix),glip=values(glip),
+		glport=values(glport),updatetime=values(updatetime)
+	</insert>
+	<!-- 更新云信息（更新网管、会管中都有但网管中有更新过的云数据） -->
+	<update id="updateCloud" parameterType="list">
+		<foreach collection="list" item="item" separator=";">  
+			update vc_cloud
+                <set>
+					pid=#{item.pid},
+					name=#{item.name},
+					regionid=#{item.regionid},
+					logicprefix=#{item.logicprefix},
+					devnoprefix=#{item.devnoprefix},
+					glip=#{item.glip},
+					glport=#{item.glport},
+					updatetime=#{item.updatetime}
+                </set>
+			where id = ${item.id}
+         </foreach>  
+	</update>    
+
+	<!-- 获取设备信息（获取所有字段） -->
+	<select id="getDevices" parameterType="map" resultType="DeviceVO">
+		SELECT distinct(vd.id) as zonedevno,
+		vd.devno as id,
+		vd.zoneno,
+		vd.`name`,
+		vd.`alias`,
+		vdt.`name` AS type,
+		vr.`id` AS regionId
+		FROM vc_dev vd
+		LEFT JOIN vc_region vr
+		ON vd.`region_id`=vr.id
+		LEFT JOIN vc_dev_type vdt
+		ON vd.`type`=vdt.`id`
+		<where>
+			<if test="id != '' and id != null">
+				vd.id like CONCAT('%',#{id},'%')
+			</if>
+			<if test="devno != '' and devno != null">
+				and vd.devno like CONCAT('%',#{devno},'%')
+			</if>
+			<if test="zoneno != '' and zoneno != null">
+				and vd.zoneno = #{zoneno}
+			</if>
+			<if test="ip != '' and ip != null">
+				and vd.ip = #{ip}
+			</if>
+			<if test="name != '' and name != null">
+				and vd.name like CONCAT('%',#{name},'%')
+			</if>
+			<if test="regionId != '' and regionId != null">
+				and vr.id = #{regionId}
+			</if>
+		</where>
+		order by vd.id
+	</select>
+	<!-- 获取设备数量 -->
+	<select id="getDevicesCount" parameterType="map" resultType="int">
+		SELECT count(distinct(vd.id)) as count
+		FROM vc_dev vd
+		LEFT JOIN vc_region vr
+		ON vd.`region_id`=vr.id
+		LEFT JOIN vc_dev_type vdt
+		ON vd.`type`=vdt.`id`
+		<where>
+			<if test="id != '' and id != null">
+				vd.id like CONCAT('%',#{id},'%')
+			</if>
+			<if test="devno != '' and devno != null">
+				and vd.devno like CONCAT('%',#{devno},'%')
+			</if>
+			<if test="zoneno != '' and zoneno != null">
+				and vd.zoneno = #{zoneno}
+			</if>
+			<if test="name != '' and name != null">
+				and vd.name like CONCAT('%',#{name},'%')
+			</if>
+			<if test="regionId != '' and regionId != null">
+				and vr.id = #{regionId}
+			</if>
+		</where>
+	</select>
+	
+	<!-- 获取设备信息（获取区域节点下的所有设备，包含该区域所有子节点下的所有设备） -->
+	<select id="getDevicesOfRegion" parameterType="map" resultType="DeviceVO">
+		SELECT distinct(vd.id),
+		vd.`name`,
+		vd.`alias`,
+		vdt.`name` AS type,
+		vr.`id` AS regionId
+		FROM vc_dev vd
+		LEFT JOIN vc_region vr
+		ON vd.`region_id`=vr.id
+		LEFT JOIN vc_dev_type vdt
+		ON vd.`type`=vdt.`id`
+		<where>
+			<if test="regionId != '' and regionId != null">
+				and vr.id like CONCAT(#{regionId},'%')
+			</if>
+		</where>
+		order by vd.id
+	</select>
+
+	<!-- 获取设备信息（获取区域节点下的所有设备，包含该区域所有子节点下的所有设备）的总数 -->
+	<select id="getDevicesOfRegionCount" parameterType="map" resultType="int">
+		SELECT count(distinct(vd.id))
+		FROM vc_dev vd
+		LEFT JOIN vc_region vr
+		ON vd.`region_id`=vr.id
+		LEFT JOIN vc_dev_type vdt
+		ON vd.`type`=vdt.`id`
+		<where>
+			<if test="regionId != '' and regionId != null">
+				and vr.id like CONCAT(#{regionId},'%')
+			</if>
+		</where>
+		order by vd.id
+	</select>
+
+	<!-- 统计获取区域节点下的所有服务器数量 -->
+	<select id="getServersCountOfRegion" parameterType="map" resultType="int">
+		SELECT COUNT(vsi.`id`)
+		FROM vc_server_info vsi
+		LEFT JOIN vc_region vr
+		ON vsi.`regionid`=vr.id
+		<where>
+			<if test="regionId != '' and regionId != null">
+				vsi.regionid like CONCAT(#{regionId},'%')
+			</if>
+		</where>
+	</select>
+
+	<!-- 统计获取区域节点下的所有设备数量 -->
+	<select id="getDevicesCountOfRegion" parameterType="map" resultType="int">
+		SELECT COUNT(vd.`id`)
+		FROM vc_dev vd
+		LEFT JOIN vc_region vr
+		ON vd.`region_id`=vr.id
+		<where>
+			<if test="regionId != '' and regionId != null">
+				vr.id like CONCAT(#{regionId},'%')
+			</if>
+		</where>
+	</select>
+
+	<!-- 获取设备信息（只获取id和updatetime，用于判断数据是否有更新） -->
+	<select id="getDeviceInfo" parameterType="map" resultType="DeviceVO">
+		select id,
+		date_format(updatetime,'%Y-%m-%d %H:%i:%s') AS updateTime,
+		region_id as regionId
+		from vc_dev
+	</select>
+
+	<!-- 从网管数据库同步设备（删除会管数据库有但网管服务器中没有的设备信息） -->
+	<delete id="delDeviceInfo" parameterType="list">
+		delete from vc_dev
+		<where>
+			vc_dev.id in
+			<foreach item="id" index="index" collection="list" open="("
+				separator="," close=")">
+				#{id}
+			</foreach>
+		</where>
+	</delete>
+	<!-- 从网管数据库同步设备（批量插入网管中有但会管中没有的设备信息到会管数据库） -->
+	<insert id="addDeviceInfo" parameterType="list">
+		insert into vc_dev(id, name, alias, mac, ip, type, p_x, p_y, svrid, updatetime, address, region_id,devno,zoneno,ssjgid,zonedevno)
+		values
+		<foreach collection="list" item="item" index="index" separator=",">
+			(#{item.zonedevno},#{item.name},#{item.name},#{item.mac},#{item.ip}, #{item.devtype},
+			#{item.longitude},#{item.latitude},#{item.svrid},#{item.updatetime},#{item.xxdz},#{item.regionid},#{item.devno},#{item.zoneno},#{item.ssjgid},#{item.zonedevno})
+		</foreach>
+		ON DUPLICATE KEY UPDATE name=values(name),mac=values(mac),ip=values(ip),
+		type=values(type),svrid=values(svrid),updatetime=values(updatetime),address=values(address),region_id=values(region_id),devno=values(devno),zoneno=values(zoneno),ssjgid=values(ssjgid),zonedevno=values(zonedevno)
+	</insert>
+	
+		<!-- 从网管数据库同步设备（批量插入网管中有但会管中没有的设备信息到会管数据库），
+	为了兼容前端，此处把no和v2vno交换的位置，11位设备号存储16位设备号，16位设备号存储11位的设备号 -->
+	<insert id="addDeviceInfo64" parameterType="list">
+		insert into vc_dev(id, no ,devno, name, alias, mac, type, p_x, p_y, svrid, updatetime, address, lossrate, region_id,ssjgid, role)
+		values
+		<foreach collection="list" item="item" index="index" separator=",">
+			(#{item.id},#{item.shortno},#{item.v2vno},#{item.name},#{item.name},#{item.mac},#{item.unidevtype},
+			#{item.longitude},#{item.latitude},#{item.svrid},#{item.updatetime},#{item.xxdz},#{item.lossrate},#{item.regionid},#{item.ssjgid},5)
+		</foreach>
+		ON DUPLICATE KEY UPDATE name=values(name),mac=values(mac),no=values(no),devno=values(devno),
+		type=values(type),p_x=values(p_x),p_y=values(p_y),svrid=values(svrid),
+		updatetime=values(updatetime),address=values(address),lossrate=values(lossrate),region_id=values(region_id),ssjgid=values(ssjgid)
+	</insert>
+	<!-- 更新设备基本信息（更新网管、会管中都有但网管中有更新过的设备数据） -->
+	<update id="updateDeviceInfo" parameterType="list">
+		<foreach collection="list" item="item" separator=";">  
+			update vc_dev
+                <set>
+					name=#{item.name},
+					mac=#{item.mac},
+					ip=#{item.ip},
+					type=#{item.devtype},
+					svrid=#{item.svrid},
+					updatetime=#{item.updatetime},
+                </set>
+			where zonedevno = ${item.zonedevno}
+         </foreach>  
+	</update>
+	
+	<!-- 从网管数据库同步设备详细信息 -->
+	<insert id="addDeviceDetail" parameterType="list">
+		insert into vc_dev_detail(devno, regionid, xmname, name, lxr, lxrzw, lxrdh, lxr2, lxrzw2, lxrdh2, 
+		lxr3, lxrzw3, lxrdh3, yysm, yyslxr, yyslxrdh, xxdz,zonedevno)
+		values
+		<foreach collection="list" item="item" index="index" separator=",">
+			(#{item.zonedevno},#{item.regionid},#{item.xmname},#{item.name},#{item.lxr}, #{item.lxrzw}, 
+			#{item.lxrdh},#{item.lxr2},#{item.lxrzw2},#{item.lxrdh2},#{item.lxr3},#{item.lxrzw3}
+			,#{item.lxrdh3},#{item.yysm},#{item.yyslxr},#{item.yyslxrdh},#{item.xxdz},#{item.zonedevno})
+		</foreach>
+		ON DUPLICATE KEY UPDATE regionid=values(regionid),xmname=values(xmname),lxr=values(lxr),
+		lxrzw=values(lxrzw),lxrdh=values(lxrdh),lxr2=values(lxr2),lxrzw2=values(lxrzw2),lxrdh2=values(lxrdh2)
+		,lxr3=values(lxr3),lxrzw3=values(lxrzw3),lxrdh3=values(lxrdh3),yysm=values(yysm),yyslxr=values(yyslxr)
+		,yyslxrdh=values(yyslxrdh),xxdz=values(xxdz),zonedevno=values(zonedevno)
+	</insert>
+	
+		<!-- 从网管数据库同步设备详细信息 -->
+	<insert id="addDeviceDetail64" parameterType="list">
+		insert into vc_dev_detail(devno, regionid, xmname, name, lxr, lxrzw, lxrdh, lxr2, lxrzw2, lxrdh2, 
+		lxr3, lxrzw3, lxrdh3, yysm, yyslxr, yyslxrdh, xxdz,zonedevno)
+		values
+		<foreach collection="list" item="item" index="index" separator=",">
+			(#{item.devno},#{item.regionid},#{item.xmname},#{item.name},#{item.lxr}, #{item.lxrzw}, 
+			#{item.lxrdh},#{item.lxr2},#{item.lxrzw2},#{item.lxrdh2},#{item.lxr3},#{item.lxrzw3}
+			,#{item.lxrdh3},#{item.yysm},#{item.yyslxr},#{item.yyslxrdh},#{item.xxdz},#{item.zonedevno})
+		</foreach>
+		ON DUPLICATE KEY UPDATE regionid=values(regionid),xmname=values(xmname),lxr=values(lxr),
+		lxrzw=values(lxrzw),lxrdh=values(lxrdh),lxr2=values(lxr2),lxrzw2=values(lxrzw2),lxrdh2=values(lxrdh2)
+		,lxr3=values(lxr3),lxrzw3=values(lxrzw3),lxrdh3=values(lxrdh3),yysm=values(yysm),yyslxr=values(yyslxr)
+		,yyslxrdh=values(yyslxrdh),xxdz=values(xxdz),zonedevno=values(zonedevno)
+	</insert>
+	
+	<!-- 从网管数据库同步设备详细信息 -->
+	<insert id="addUnitInfo" parameterType="list">
+		insert into vc_customer_unit(id, pid, name, regionid, sshyid, xxdz, lxr, lxrdh, yysm, yyslxr, 
+		yyslxrdh, bandwith, bz, createid, createtime, updateid, updatetime)
+		values
+		<foreach collection="list" item="item" index="index" separator=",">
+			(#{item.id},#{item.pid},#{item.name},#{item.regionid},#{item.sshyid}, #{item.xxdz}, 
+			#{item.lxr},#{item.lxrdh},#{item.yysm},#{item.yyslxr},#{item.yyslxrdh},#{item.bandwith}
+			,#{item.bz},#{item.createid},#{item.createtime},#{item.updateid},#{item.updatetime})
+		</foreach>
+		ON DUPLICATE KEY UPDATE pid=values(pid),name=values(name),regionid=values(regionid),
+		sshyid=values(sshyid),xxdz=values(xxdz),lxr=values(lxr),lxrdh=values(lxrdh),yysm=values(yysm)
+		,yyslxr=values(yyslxr),yyslxrdh=values(yyslxrdh),bandwith=values(bandwith),bz=values(bz),
+		createid=values(createid),createtime=values(createtime),updateid=values(updateid),updatetime=values(updatetime)
+	</insert>
+
+	<!-- 获取户组内已授权设备 -->
+	<select id="getAuthed" parameterType="map" resultType="DeviceVO">
+		select dev_id as id from vc_usergroup_dev
+		<where>
+			usergroup_id = #{groupId}
+		</where>
+	</select>
+	<!-- 获取某一节点下户组内已授权设备 -->
+	<select id="getAuthedOfRegion" parameterType="map" resultType="DeviceVO">
+		SELECT distinct(vd.`id`) as zonedevno,vd.`devno` as id,vd.`name`,vd.`alias`,vdt.`name` AS TYPE,vd.zoneno as zoneno FROM vc_usergroup_dev vud
+		LEFT JOIN vc_dev vd
+		ON vud.`dev_id`=vd.`id`
+		LEFT JOIN vc_dev_type vdt
+		ON vd.`type`=vdt.`id`
+		LEFT JOIN vc_region vr
+		ON vd.`region_id`=vr.`id`
+		<where>
+			<if test="regionId != '' and regionId != null">
+				vr.`id` = #{regionId}
+			</if>
+			<if test="regionName != '' and regionName != null">
+				and vr.`name` like CONCAT('%',#{regionName},'%')
+			</if>
+			<if test="groupId != '' and groupId != null">
+				and vud.`usergroup_id`=#{groupId}
+			</if>
+			<if test="devId != '' and devId != null">
+				and vd.`devno` like CONCAT('%',#{devId},'%')
+			</if>
+			<if test="devName != '' and devName != null">
+				and vd.`name` like CONCAT('%',#{devName},'%')
+			</if>
+			<if test="unitId != '' and unitId != null">
+				and vd.`ssjgid` = #{unitId}
+			</if>
+		</where>
+	</select>
+	<!-- 获取某一节点下户组内已授权设备数量 -->
+	<select id="getAuthedOfRegionCount" parameterType="map" resultType="int">
+		SELECT count(distinct(vd.`id`)) as count
+		FROM vc_usergroup_dev vud
+		LEFT JOIN vc_dev vd
+		ON vud.`dev_id`=vd.`id`
+		LEFT JOIN vc_dev_type vdt
+		ON vd.`type`=vdt.`id`
+		LEFT JOIN vc_region vr
+		ON vd.`region_id`=vr.`id`
+		<where>
+			<if test="regionId != '' and regionId != null">
+				vr.`id`=#{regionId}
+			</if>
+			<if test="regionName != '' and regionName != null">
+				and vr.`name` like CONCAT('%',#{regionName},'%')
+			</if>
+			<if test="groupId != '' and groupId != null">
+				and vud.`usergroup_id`=#{groupId}
+			</if>
+			<if test="devId != '' and devId != null">
+				and vd.`devno` like CONCAT('%',#{devId},'%')
+			</if>
+			<if test="devName != '' and devName != null">
+				and vd.`name` like CONCAT('%',#{devName},'%')
+			</if>
+			<if test="unitId != '' and unitId != null">
+				and vd.`ssjgid` = #{unitId}
+			</if>
+		</where>
+	</select>
+	<!-- 获取某一节点下户组内已授权的所有设备 （含子节点）-->
+	<select id="getAuthedOfRegions" parameterType="map" resultType="DeviceVO">
+		SELECT distinct(vd.`id`) as zonedevno,vd.`devno` as id,vd.`name`,vd.`alias`,vdt.`name` AS TYPE,vd.zoneno as zoneno,vd.`role` as roleId FROM vc_usergroup_dev vud
+		LEFT JOIN vc_dev vd
+		ON vud.`dev_id`=vd.`id`
+		LEFT JOIN vc_dev_type vdt
+		ON vd.`type`=vdt.`id`
+		LEFT JOIN vc_region vr
+		ON vd.`region_id`=vr.`id`
+		<where>
+			<if test="regionId != '' and regionId != null">
+				vr.`id` like CONCAT(#{regionId},'%')
+			</if>
+			<if test="regionName != '' and regionName != null">
+				and vr.`name` like CONCAT('%',#{regionName},'%')
+			</if>
+			<if test="groupId != '' and groupId != null">
+				and vud.`usergroup_id`=#{groupId}
+			</if>
+			<if test="devId != '' and devId != null">
+				and vd.`devno` like CONCAT('%',#{devId},'%')
+			</if>
+			<if test="devName != '' and devName != null">
+				and vd.`name` like CONCAT('%',#{devName},'%')
+			</if>
+			<if test="unitId != '' and unitId != null">
+				and vd.`ssjgid` = #{unitId}
+			</if>
+		</where>
+	</select>
+	<!-- 获取某一节点下户组内已授权的所有设备 （含子节点）的数量-->
+	<select id="getAuthedOfRegionsCount" parameterType="map" resultType="int">
+		SELECT count(distinct(vd.`id`)) as count
+		FROM vc_usergroup_dev vud
+		LEFT JOIN vc_dev vd
+		ON vud.`dev_id`=vd.`id`
+		LEFT JOIN vc_dev_type vdt
+		ON vd.`type`=vdt.`id`
+		LEFT JOIN vc_region vr
+		ON vd.`region_id`=vr.`id`
+		<where>
+			<if test="regionId != '' and regionId != null">
+				vr.`id` like CONCAT(#{regionId},'%')
+			</if>
+			<if test="regionName != '' and regionName != null">
+				and vr.`name` like CONCAT('%',#{regionName},'%')
+			</if>
+			<if test="groupId != '' and groupId != null">
+				and vud.`usergroup_id`=#{groupId}
+			</if>
+			<if test="devId != '' and devId != null">
+				and vd.`devno` like CONCAT('%',#{devId},'%')
+			</if>
+			<if test="devName != '' and devName != null">
+				and vd.`name` like CONCAT('%',#{devName},'%')
+			</if>
+			<if test="unitId != '' and unitId != null">
+				and vd.`ssjgid` = #{unitId}
+			</if>
+		</where>
+	</select>
+
+	<!-- 获取某一节点下户组内未授权设备 -->
+	<select id="getNotAuthedOfRegion" parameterType="map" resultType="DeviceVO">
+		SELECT distinct(vd.`id`) as zonedevno,vd.`devno` as id,vd.`name`, vd.`alias`, vdt.`name` AS TYPE,vd.zoneno as zoneno,vd.`role` as roleId,vdt.`id` as typeId 
+		FROM vc_dev vd
+		LEFT JOIN vc_dev_type vdt ON vd.`type`=vdt.`id`
+		LEFT JOIN vc_region vr ON vd.`region_id`=vr.`id`
+		<where>
+			<if test="regionId != '' and regionId != null">
+				vr.`id`=#{regionId}
+			</if>
+			<if test="regionName != '' and regionName != null">
+				and vr.`name` like CONCAT('%',#{regionName},'%')
+			</if>
+			<if test="groupId != '' and groupId != null">
+				and vd.`id` NOT IN (SELECT dev_id FROM vc_usergroup_dev WHERE
+				usergroup_id=#{groupId})
+			</if>
+			<if test="devId != '' and devId != null">
+				and vd.`devno` like CONCAT('%',#{devId},'%')
+			</if>
+			<if test="devName != '' and devName != null">
+				and vd.`name` like CONCAT('%',#{devName},'%')
+			</if>
+			<if test="unitId != '' and unitId != null">
+				and vd.`ssjgid` = #{unitId}
+			</if>
+			<if test="devTypes != null and devTypes != '' ">
+				and vd.`type` in
+		    	<foreach item="devType" index="index" collection="devTypes" open="("
+					separator="," close=")">
+					#{devType}
+				</foreach>
+			</if>
+		</where>
+	</select>
+	<!-- 获取某一节点下户组内未授权设备总数 -->
+	<select id="getNotAuthedOfRegionCount" parameterType="map" resultType="int">
+		SELECT count(distinct(vd.`id`)) as count
+		FROM vc_dev vd
+		LEFT JOIN vc_dev_type vdt
+		ON vd.`type`=vdt.`id`
+		LEFT JOIN vc_region vr
+		ON vd.`region_id`=vr.`id`
+		<where>
+			<if test="regionId != '' and regionId != null">
+				vr.`id`=#{regionId}
+			</if>
+			<if test="regionName != '' and regionName != null">
+				and vr.`name` like CONCAT('%',#{regionName},'%')
+			</if>
+			<if test="groupId != '' and groupId != null">
+				and vd.`id` NOT IN (SELECT dev_id FROM vc_usergroup_dev WHERE
+				usergroup_id=#{groupId})
+			</if>
+			<if test="devId != '' and devId != null">
+				and vd.`devno` like CONCAT('%',#{devId},'%')
+			</if>
+			<if test="devName != '' and devName != null">
+				and vd.`name` like CONCAT('%',#{devName},'%')
+			</if>
+			<if test="unitId != '' and unitId != null">
+				and vd.`ssjgid` = #{unitId}
+			</if>
+			<if test="devTypes != null and devTypes != '' ">
+				and vd.`type` in
+		    	<foreach item="devType" index="index" collection="devTypes" open="("
+					separator="," close=")">
+					#{devType}
+				</foreach>
+			</if>
+		</where>
+	</select>
+	<!-- 获取某一节点下户组内未授权的所有设备 （含子节点）-->
+	<select id="getNotAuthedOfRegions" parameterType="map" resultType="DeviceVO">
+		SELECT distinct(vd.`id`) as zonedevno,vd.`devno` as id, vd.`name`,vd.`alias`, vdt.`name` AS TYPE,vd.zoneno as zoneno,vd.`role` as roleId,vdt.`id` as typeId  
+		FROM vc_dev vd
+		LEFT JOIN vc_dev_type vdt ON vd.`type`=vdt.`id`
+		LEFT JOIN vc_region vr ON vd.`region_id`=vr.`id`
+		<where>
+			<if test="regionId != '' and regionId != null">
+				vr.`id` like CONCAT(#{regionId},'%')
+			</if>
+			<if test="regionName != '' and regionName != null">
+				and vr.`name` like CONCAT('%',#{regionName},'%')
+			</if>
+			<if test="groupId != '' and groupId != null">
+				and vd.`id` NOT IN (SELECT dev_id FROM vc_usergroup_dev WHERE
+				usergroup_id=#{groupId})
+			</if>
+			<if test="devId != '' and devId != null">
+				and vd.`devno` like CONCAT('%',#{devId},'%')
+			</if>
+			<if test="devName != '' and devName != null">
+				and vd.`name` like CONCAT('%',#{devName},'%')
+			</if>
+			<if test="unitId != '' and unitId != null">
+				and vd.`ssjgid` = #{unitId}
+			</if>
+			<if test="devTypes != null and devTypes != '' ">
+				and vd.`type` in
+		    	<foreach item="devType" index="index" collection="devTypes" open="("
+					separator="," close=")">
+					#{devType}
+				</foreach>
+			</if>
+		</where>
+	</select>
+	<!-- 获取某一节点下户组内未授权的所有设备 （含子节点）的总量-->
+	<select id="getNotAuthedOfRegionsCount" parameterType="map" resultType="int">
+		SELECT count(distinct(vd.`id`)) as count
+		FROM vc_dev vd
+		LEFT JOIN vc_dev_type vdt
+		ON vd.`type`=vdt.`id`
+		LEFT JOIN vc_region vr
+		ON vd.`region_id`=vr.`id`
+		<where>
+			<if test="regionId != '' and regionId != null">
+				vr.`id` like CONCAT(#{regionId},'%')
+			</if>
+			<if test="regionName != '' and regionName != null">
+				and vr.`name` like CONCAT('%',#{regionName},'%')
+			</if>
+			<if test="groupId != '' and groupId != null">
+				and vd.`id` NOT IN (SELECT dev_id FROM vc_usergroup_dev WHERE
+				usergroup_id=#{groupId})
+			</if>
+			<if test="devId != '' and devId != null">
+				and vd.`devno` like CONCAT('%',#{devId},'%')
+			</if>
+			<if test="devName != '' and devName != null">
+				and vd.`name` like CONCAT('%',#{devName},'%')
+			</if>
+			<if test="unitId != '' and unitId != null">
+				and vd.`ssjgid` = #{unitId}
+			</if>
+			<if test="devTypes != null and devTypes != '' ">
+				and vd.`type` in
+		    	<foreach item="devType" index="index" collection="devTypes" open="("
+					separator="," close=")">
+					#{devType}
+				</foreach>
+			</if>
+		</where>
+	</select>
+	<!-- 删除（清空）用户组内已授权设备 -->
+	<delete id="delAuthed" parameterType="map">
+		delete from vc_usergroup_dev
+		<where>
+			usergroup_id = #{groupId}
+			<if test="devIds != null">
+				and dev_id in
+		    	<foreach item="id" index="index" collection="devIds" open="("
+					separator="," close=")">
+					#{id}
+				</foreach>
+			</if>
+		</where>
+	</delete>
+
+	<!-- 把设备授权给用户组 -->
+	<insert id="auth" parameterType="map">
+		insert ignore into vc_usergroup_dev(usergroup_id, dev_id)
+		values
+		<foreach collection="devIds" item="id" index="index" separator="," > 
+        	(#{groupId}, #{id})
+    	</foreach> 
+	</insert>
+	
+	<!-- 获取用组锁定状态 -->
+	<select id="getLock" parameterType="map" resultType="UserVO">
+		select vu.uuid,
+		vu.name,
+		vu.login_name as loginName
+		from vc_user vu
+		inner join vc_usergroup_lock vul
+		on vu.uuid = vul.user_id
+		<where>
+			vul.usergroup_id = #{groupId}
+		</where>
+	</select>
+	<!-- 锁定用户组 -->
+	<insert id="lock" parameterType="map">
+		insert into vc_usergroup_lock(usergroup_id, user_id, lock_time)
+		values(#{groupId},#{userId},NOW())
+		ON DUPLICATE KEY UPDATE lock_time=NOW()
+	</insert>
+	<!-- 解锁用户组 -->
+	<delete id="unlock" parameterType="map">
+		delete from vc_usergroup_lock
+		<where>
+			usergroup_id = #{groupId}
+		</where>
+	</delete>
+	<!-- 删除会场 -->
+	<delete id="delGroup" parameterType="map">
+		delete from vc_devgroup
+		<where>
+			uuid in
+	    	<foreach item="id" index="index" collection="groupIds" open="("
+				separator="," close=")">
+				#{id}
+			</foreach>
+		</where>
+	</delete>
+	
+	<!-- 获取用户分组列表（带模糊查询） -->
+	<select id="getUserGroupList" resultType="UserGroupVO"
+		parameterType="map">
+		SELECT DISTINCT(vug.uuid) AS uuid,
+		vug.`name` AS name,
+		vul.user_id as isLock
+		FROM vc_usergroup vug
+		LEFT JOIN vc_usergroup_dev vud
+		ON vug.`uuid`=vud.`usergroup_id`
+		LEFT JOIN vc_dev vd
+		ON vud.`dev_id`=vd.`id`
+		left join vc_usergroup_lock vul
+		on vug.uuid = vul.usergroup_id
+		<where>
+			<if test="id != '' and id != null">
+				and vug.uuid = id
+			</if>
+			<if test="groupName != '' and groupName != null">
+				vug.name like CONCAT('%',#{groupName},'%')
+			</if>
+			<if test="devId != '' and devId != null">
+				and vd.id like CONCAT('%',#{devId},'%')
+			</if>
+			<if test="devName != '' and devName != null">
+				and vd.name like CONCAT('%',#{devName},'%')
+			</if>
+		</where>
+		order by CONVERT(vug.name USING gbk)
+	</select>
+	<!-- 获取用户分组数量（带模糊查询） -->
+	<select id="getUserGroupCount" resultType="int"
+		parameterType="map">
+		SELECT count(DISTINCT(vug.uuid)) AS count
+		FROM vc_usergroup vug
+		LEFT JOIN vc_usergroup_dev vud
+		ON vug.`uuid`=vud.`usergroup_id`
+		LEFT JOIN vc_dev vd
+		ON vud.`dev_id`=vd.`id`
+		left join vc_usergroup_lock vul
+		on vug.uuid = vul.usergroup_id
+		<where>
+			<if test="id != '' and id != null">
+				and vug.uuid = id
+			</if>
+			<if test="name != '' and name != null">
+				vug.name like CONCAT('%',#{name},'%')
+			</if>
+			<if test="devId != '' and devId != null">
+				and vd.id like CONCAT('%',#{devId},'%')
+			</if>
+			<if test="devName != '' and devName != null">
+				and vd.name like CONCAT('%',#{devName},'%')
+			</if>
+		</where>
+	</select>
+	<!-- 快速生成会场列表（一个设备一个会场） -->
+	<insert id="generateGroups" parameterType="list">
+		insert ignore into vc_devgroup(uuid, name)
+		values
+		<foreach collection="list" item="item" index="index" separator="," > 
+        	(#{item.uuid}, #{item.name})
+    	</foreach>
+	</insert>
+	<!-- 获取用户组下的会场列表（模糊查找） -->
+	<select id="getGroupList" resultType="DeviceGroupVO" parameterType="map">
+		SELECT DISTINCT(vdg.uuid) AS UUID,
+		vdg.`name` AS NAME,
+		vud.usergroup_id AS userGroupId
+		FROM vc_devgroup vdg
+		LEFT JOIN vc_usergroup_devgroup vud
+		ON vdg.`uuid`=vud.`devgroup_id`
+		LEFT JOIN vc_devgroup_dev vdd
+		ON vud.`devgroup_id`=vdd.`devgroup_id`
+		LEFT JOIN vc_dev vd
+		ON vdd.`dev_id`=vd.`id`
+		LEFT JOIN vc_usergroup vu
+		ON vud.`usergroup_id`=vu.uuid
+		<where>
+			<if test="groupId != '' and groupId != null">
+				and vud.`usergroup_id` = #{groupId}
+			</if>
+			<if test="id != '' and id != null">
+				and vdg.uuid = id
+			</if>
+			<if test="groupName != '' and groupName != null">
+				and vu.name like CONCAT('%',#{groupName},'%')
+			</if>
+			<if test="name != '' and name != null">
+				and vdg.name like CONCAT('%',#{name},'%')
+			</if>
+			<if test="devId != '' and devId != null">
+				and vd.id like CONCAT('%',#{devId},'%')
+			</if>
+			<if test="devName != '' and devName != null">
+				and vd.name like CONCAT('%',#{devName},'%')
+			</if>
+		</where>
+		order by CONVERT(vdg.name USING gbk)
+	</select>
+	<!-- 获取用户组下的会场总数（模糊查找） -->
+	<select id="getGroupCount" resultType="int" parameterType="map">
+		SELECT count(DISTINCT(vdg.uuid)) AS count
+		FROM vc_devgroup vdg
+		LEFT JOIN vc_usergroup_devgroup vud
+		ON vdg.`uuid`=vud.`devgroup_id`
+		LEFT JOIN vc_devgroup_dev vdd
+		ON vud.`devgroup_id`=vdd.`devgroup_id`
+		LEFT JOIN vc_dev vd
+		ON vdd.`dev_id`=vd.`id`
+		<where>
+			vud.`usergroup_id` = #{groupId}
+			<if test="id != '' and id != null">
+				and vdg.uuid = id
+			</if>
+			<if test="name != '' and name != null">
+				and vdg.name like CONCAT('%',#{name},'%')
+			</if>
+			<if test="devId != '' and devId != null">
+				and vd.id like CONCAT('%',#{devId},'%')
+			</if>
+			<if test="devName != '' and devName != null">
+				and vd.name like CONCAT('%',#{devName},'%')
+			</if>
+		</where>
+	</select>
+	<!-- 精确查找用户组底下的会场 -->
+	<select id="searchGroup" resultType="DeviceGroupVO" parameterType="map">
+		SELECT DISTINCT(vdg.uuid) AS UUID,
+		vdg.`name` AS NAME
+		FROM vc_devgroup vdg
+		LEFT JOIN vc_usergroup_devgroup vud
+		ON vdg.`uuid`=vud.`devgroup_id`
+		<where>
+			vud.`usergroup_id` = #{groupId}
+			<if test="id != '' and id != null">
+				and vdg.uuid = #{id}
+			</if>
+			<if test="name != '' and name != null">
+				and vdg.name = #{name}
+			</if>
+		</where>
+		order by CONVERT(vdg.name USING gbk)
+	</select>
+	<!-- 根据会场名称查找用户组下的会场 -->
+	<select id="searchGroupByName" resultType="DeviceGroupVO" parameterType="map">
+		SELECT DISTINCT(vdg.uuid) AS UUID,
+		vdg.`name` AS NAME
+		FROM vc_devgroup vdg
+		LEFT JOIN vc_usergroup_devgroup vud
+		ON vdg.`uuid`=vud.`devgroup_id`
+		<where>
+			vud.`usergroup_id` = #{groupId}
+			and vdg.name in
+			<foreach item="name" index="index" collection="groupNames" open="("
+				separator="," close=")">
+				#{name}
+			</foreach>
+		</where>
+		order by CONVERT(vdg.name USING gbk)
+	</select>
+	<!-- 根据会场ID查找会场 -->
+	<select id="searchGroupByUuid" resultType="DeviceGroupVO" parameterType="map">
+		SELECT DISTINCT(vdg.uuid) AS UUID,
+		vdg.`name` AS NAME
+		FROM vc_devgroup vdg
+		<where>
+			vdg.uuid in
+			<foreach item="uuid" index="index" collection="uuids" open="("
+				separator="," close=")">
+				#{uuid}
+			</foreach>
+		</where>
+		order by CONVERT(vdg.name USING gbk)
+	</select>
+	<!-- 移除会场内的设备 -->
+	<delete id="rmFromGroup" parameterType="map">
+		delete from vc_devgroup_dev
+		<where>
+			<if test="devIds != null">
+				and dev_id in
+		    	<foreach item="id" index="index" collection="devIds" open="("
+					separator="," close=")">
+					#{id}
+				</foreach>
+			</if>
+			and devgroup_id in
+	    	<foreach item="groupId" index="index" collection="uuids" open="("
+				separator="," close=")">
+				#{groupId}
+			</foreach>
+		</where>
+	</delete>
+
+	<!-- 添加设备到会场 -->
+	<insert id="add2Group" parameterType="map">
+		insert ignore into vc_devgroup_dev(devgroup_id, dev_id)
+		values
+		<foreach collection="devIds" item="id" index="index" separator="," > 
+        	(#{groupId}, #{id})
+    	</foreach> 
+	</insert>
+	<!-- 添加设备到会场（快速生成会场使用） -->
+	<insert id="add2Groups" parameterType="list">
+		insert ignore into vc_devgroup_dev(devgroup_id, dev_id)
+		values
+		<foreach collection="list" item="add" index="index" separator="," > 
+        	(#{add.uuid}, #{add.devId})
+    	</foreach> 
+	</insert>
+	
+
+	<!-- 更新设备基本信息 -->
+	<update id="updateDevice" parameterType="DeviceVO">
+		update vc_dev set 
+		alias=#{alias}
+		<if test="name != '' and name != null">
+			,name=#{name}
+		</if>
+		<if test="mac != '' and mac != null">
+			,mac=#{mac}
+		</if>
+		<if test="ip != '' and ip != null">
+			,ip=#{ip}
+		</if>
+		<if test="type != '' and type != null">
+			,type=#{type}
+		</if>
+		<if test="description != '' and description != null">
+			,description=#{description}
+		</if>
+		<if test="address != '' and address != null">
+			,address=#{address}
+		</if>
+		where
+		vc_dev.id=#{id}
+	</update>
+
+	<!-- 更新设备gis信息 -->
+	<update id="updateDeviceGis" parameterType="map">
+		update vc_dev set p_x=#{pX},p_y=#{pY},p_z=#{pZ},p_layer=#{pLayer} 
+		<where>
+			<if test="devno != '' and devno != null">
+				and vc_dev.devno=#{devno}
+			</if>
+			<if test="zoneno != '' and zoneno != null">
+				and vc_dev.zoneno=#{zoneno}
+			</if>
+		</where>
+	</update>
+	
+	<!-- 删除设备 -->
+	<delete id="deleteDevice" parameterType="map">
+		delete from vc_dev
+		<where>
+			vc_dev.id in
+			<foreach item="id" index="index" collection="ids" open="("
+				separator="," close=")">
+				#{id}
+			</foreach>
+		</where>
+	</delete>
+	<!-- 设备操作结束 -->
+
+	<!-- 设备分组操作开始 -->
+	<!-- 获取会场列表 查询条件为设备分组id、设备分组名（模糊查找） -->
+	<select id="getDeviceGroupList" resultType="DeviceGroupVO" parameterType="map">
+		select (vc_devgroup.uuid) AS uuid,
+		vc_devgroup.`name` as name,
+		vc_devgroup.temporarily as temporarily,
+		vc_devgroup.description as description
+		from vc_devgroup
+		<where>
+			<if test="name != '' and name != null">
+				vc_devgroup.name like CONCAT('%',#{name},'%')
+			</if>
+			
+			<if test="temporarily != '' and temporarily != null">
+				and vc_devgroup.temporarily = #{temporarily}
+			</if>
+			<if test="description != '' and description != null">
+				and vc_devgroup.description like CONCAT('%',#{description},'%')
+			</if>
+		</where>
+		order by CONVERT(vc_devgroup.name USING gbk)
+	</select>
+
+	<!-- 统计条目数 -->
+	<select id="getDeviceGroupListCount" resultType="int" parameterType="Map">
+		select count(1)
+		from vc_devgroup
+		<where>
+			<if test="name != '' and name != null">
+				vc_devgroup.name like CONCAT('%',#{name},'%')
+			</if>
+			<if test="temporarily != '' and temporarily != null">
+				and vc_devgroup.temporarily = #{temporarily}
+			</if>
+			<if test="description != '' and description != null">
+				and vc_devgroup.description like CONCAT('%',#{description},'%')
+			</if>
+		</where>
+	</select>
+
+	<!-- 根据工作单位ID获取会场列表 -->
+	<select id="getOrgDevGroups" resultType="DeviceGroupVO" parameterType="map">
+		SELECT DISTINCT(vc_devgroup.uuid) AS UUID,
+		vc_devgroup.`name` AS NAME,
+		vc_devgroup.description AS description
+		FROM vc_devgroup
+		LEFT JOIN vc_org_devgroup
+		ON vc_devgroup.`uuid` = vc_org_devgroup.`devgroup_id`
+		<where>
+			vc_org_devgroup.`org_id` = #{orgId}
+		</where>
+		order by CONVERT(vc_devgroup.name USING gbk)
+	</select>
+
+	<!-- 获取所有设备分组 -->
+	<select id="getAllGroups" resultType="DeviceGroupVO" parameterType="Map">
+		select * from vc_devgroup
+		<where>
+			<if test="name != '' and name != null">
+				vc_devgroup.name like CONCAT('%',#{name},'%')
+			</if>
+			<if test="uuid != '' and uuid != null">
+				vc_devgroup.uuid = #{uuid}
+			</if>
+		</where>
+		order by CONVERT(vc_devgroup.name USING gbk)
+	</select>
+
+	<!-- 插入会场基本信息 -->
+	<insert id="addDeviceGroup" parameterType="DeviceGroupVO" keyProperty="uuid">
+		<selectKey resultType="java.lang.String" order="BEFORE"
+			keyProperty="uuid">
+			select replace(uuid(), '-', '') from dual
+		</selectKey>
+		insert into vc_devgroup(uuid, name, temporarily, description, data_type)
+		values(#{uuid},#{name},#{temporarily},#{description},#{dataType})
+	</insert>
+
+	<!-- 创建会场和用户分组的关联关系-->
+	<insert id="addDevGroup2UserGroup" parameterType="map">
+		insert ignore into vc_usergroup_devgroup(usergroup_id, devgroup_id)
+		values
+		<foreach collection="list" item="add" index="index" separator="," > 
+        	(#{groupId}, #{add.uuid})
+    	</foreach> 
+	</insert>
+
+	<!-- 插入设备组和设备的关联 -->
+	<insert id="addDevice2Group" parameterType="map">
+		insert ignore into vc_devgroup_dev(devgroup_id, dev_id)
+		values
+		<foreach collection="devIds" item="devId" index="index" separator="," > 
+        	(#{groupuuid}, #{devId})
+    	</foreach> 
+	</insert>
+
+	<!-- 删除设备组和设备的关联（根据传入的设备ID删除，即部分删除，暂未使用） -->
+	<delete id="deleteDevice2GroupByDevice" parameterType="map">
+		delete from vc_devgroup_dev
+		<where>
+			vc_devgroup_dev.devgroup_id = #{groupuuid}
+			and vc_devgroup_dev.dev_id in
+			<foreach item="deviceuuid" index="index" collection="deviceuuids" open="("
+				separator="," close=")">
+				#{deviceuuid}
+			</foreach>
+		</where>
+	</delete>
+
+	<!-- 删除设备组和设备的关联（根据传入的设备组ID删除，即全部删除） -->
+	<delete id="deleteDevice2Group" parameterType="map">
+		delete from vc_devgroup_dev
+		<where>
+			vc_devgroup_dev.devgroup_id = #{groupuuid}
+		</where>
+	</delete>
+
+	<!-- 判断设备分组是否允许编辑-使用该设备分组的用户是否处于登录状态 -->
+	<select id="isGroupEditable" resultType="UserVO" parameterType="map">
+		SELECT DISTINCT(u.login_name) as loginName FROM vc_usergroup_user ug
+		LEFT JOIN  vc_user u
+		ON ug.user_id = u.uuid
+		LEFT JOIN  vc_usergroup_devgroup ud
+		ON ud.usergroup_id = ug.usergroup_id
+		WHERE ud.devgroup_id = #{groupuuid} AND u.status = 1
+	</select>
+	<!-- 判断会场是否允许编辑 -要删除的设备是否与有效预约相关联 -->
+	<select id="isDeviceDeletable" resultType="DeviceVO" parameterType="map">
+		SELECT DISTINCT(vc_schedule_dev.`dev_id`) as id FROM vc_devgroup_dev 
+		LEFT JOIN vc_schedule_dev
+		ON vc_schedule_dev.`dev_id` = vc_devgroup_dev.`dev_id`
+		LEFT JOIN vc_schedule
+		ON vc_schedule.`uuid` = vc_schedule_dev.`schedule_id`
+		<where>
+			vc_schedule.`status` IN (1,2,4,5,6)
+			AND vc_schedule.end_time > NOW()
+			<if test="uuids != '' and uuids != null">
+				AND vc_devgroup_dev.`devgroup_id` in
+				<foreach item="uuid" index="index" collection="uuids" open="("
+					separator="," close=")">
+					#{uuid}
+				</foreach>
+			</if>
+			<if test="devids != '' and devids != null">
+				AND vc_devgroup_dev.`dev_id` IN 
+				<foreach item="devid" index="index" collection="devids" open="("
+					separator="," close=")">
+					#{devid}
+				</foreach>
+			</if>
+		</where>
+	</select>
+
+	<!-- 更新设备分组基本信息 -->
+	<update id="updateDeviceGroup" parameterType="DeviceGroupVO">
+		update vc_devgroup set name=#{name}
+		<if test="temporarily != '' and temporarily != null">
+			,temporarily=#{temporarily}
+		</if>
+		<if test="description != '' and description != null">
+			,description=#{description}
+		</if>
+		<if test="speakerOne != '' and speakerOne != null">
+			,speaker_1=#{speakerOne}
+		</if>
+		<if test="speakerTwo != '' and speakerTwo != null">
+			,speaker_2=#{speakerTwo}
+		</if>
+		<if test="masterNo != '' and masterNo != null">
+			,master_no=#{masterNo}
+		</if>
+		<where>
+			vc_devgroup.uuid=#{uuid}
+		</where>
+	</update>
+
+	<!-- 删除设备 -->
+	<delete id="deleteDeviceGroup" parameterType="map">
+		delete from vc_devgroup
+		<where>
+			vc_devgroup.uuid in
+			<foreach item="uuid" index="index" collection="uuids" open="("
+				separator="," close=")">
+				#{uuid}
+			</foreach>
+		</where>
+	</delete>
+
+	<!-- 获取设备组内的设备ID列表 -->
+	<select id="getDeviceByGroupIds" resultType="DeviceVO" parameterType="map">
+		SELECT DISTINCT(dev_id) as id FROM vc_devgroup_dev
+		<where>
+			devgroup_id IN
+			<foreach item="uuid" index="index" collection="devGroups" open="("
+				separator="," close=")">
+				#{uuid}
+			</foreach>
+		</where>
+	</select>
+	
+	<!-- 获取设备类型列表 -->
+	<select id="getDeviceTypeList" resultType="DeviceTypeVO">
+		select (vc_dev_type.id) AS id,
+		vc_dev_type.`name` as name,
+		vc_dev_type.description as description
+		from vc_dev_type
+	</select>
+
+	<!-- 获取设备角色列表 -->
+	<select id="getDeviceRoleList" resultType="DeviceRoleVO">
+		select (vc_dev_role.id) AS id,
+		vc_dev_role.`name` as name,
+		vc_dev_role.description as description
+		from vc_dev_role
+	</select>
+	
+	<!-- 根据用户id获取设备总数 -->
+	<select id="getDeviceCountByUser" resultType="int" parameterType="map">
+		SELECT COUNT(DISTINCT(vud.dev_id))
+		FROM vc_usergroup_dev vud
+		INNER JOIN vc_usergroup_user vuu
+		ON vud.usergroup_id = vuu.usergroup_id
+		WHERE
+		<where>
+			<if test="userIds != '' and userIds != null">
+				vuu.user_id IN
+			    <foreach item="userId" index="index" collection="userIds" open="("
+					separator="," close=")">
+		        	  #{userId}
+		    	</foreach> 
+			</if>
+		</where>
+	</select>
+
+	<!-- 根据用户id获取设备列表 -->
+	<select id="getDeviceListByUser" resultType="DeviceVO" parameterType="map">
+		SELECT DISTINCT(vc_dev.id) as zonedevno,
+		vc_dev.devno as id,
+		vd_dev.zoneno,
+		vc_dev.`name` as name,
+		vc_dev.mac as mac,
+		vc_dev.ip as ip,
+		vc_dev_type.name as type,
+		vc_dev.description as description,
+		vc_dev.alias as alias,
+		vc_dev_role.name as role,
+		vc_dev.p_x as pX,
+		vc_dev.p_y as pY,
+		vc_dev.p_z as pZ,
+		vc_dev.p_layer as pLayer
+		FROM
+		vc_dev
+		LEFT JOIN vc_dev_type on vc_dev_type.`id` = vc_dev.type
+		LEFT JOIN vc_dev_role on vc_dev_role.`id` = vc_dev.role
+        INNER JOIN vc_usergroup_dev on vc_usergroup_dev.dev_id = vc_dev.id
+		INNER JOIN vc_usergroup_user ON vc_usergroup_user.usergroup_id = vc_usergroup_dev.usergroup_id
+		INNER JOIN vc_user ON vc_user.uuid = vc_usergroup_user.user_id
+		<where>
+			<if test="userIds != '' and userIds != null">
+				vc_user.uuid IN
+			    <foreach item="userId" index="index" collection="userIds" open="("
+					separator="," close=")">
+		        	  #{userId}
+		    	</foreach> 
+			</if>
+		</where>
+		order by vc_dev.id
+	</select>
+	
+	<!-- 根据设备id获取设备信息 -->
+	<select id="getDevice" resultType="DeviceVO" parameterType="map">
+		SELECT DISTINCT(vc_dev.id) as zonedevno,
+		vc_dev.devno as id,
+		vc_dev.zoneno,
+		vc_dev.`name` as name,
+		vc_dev.mac as mac,
+		vc_dev.ip as ip,
+		vc_dev_type.name as type,
+		vc_dev.description as description,
+		vc_dev.alias as alias,
+		vc_dev_role.name as role,
+		vc_devgroup.uuid as groupId,
+		vc_devgroup.name as groupName,
+		vc_dev.p_x as pX,
+		vc_dev.p_y as pY,
+		vc_dev.p_z as pZ,
+		vc_dev.p_layer as pLayer
+		FROM vc_dev
+		LEFT JOIN vc_dev_type on vc_dev_type.`id` = vc_dev.type
+		LEFT JOIN vc_dev_role on vc_dev_role.`id` = vc_dev.role
+		LEFT JOIN vc_devgroup_dev on vc_devgroup_dev.`dev_id` = vc_dev.id
+		LEFT JOIN vc_devgroup on vc_devgroup_dev.`devgroup_id` = vc_devgroup.uuid
+		<where>
+			<if test="id != '' and id != null">
+				vc_dev.id = #{id}
+			</if>
+			<if test="devno != '' and devno != null">
+				and vc_dev.devno = #{devno}
+			</if>
+			<if test="zoneno != '' and zoneno != null">
+				and vc_dev.zoneno = #{zoneno}
+			</if>
+		<!-- <if test="name != '' and name != null">
+				and vc_dev.name like CONCAT('%',#{name},'%')
+			</if>
+			<if test="type != '' and type != null">
+				and vc_dev.type = #{type}
+			</if>
+			<if test="description != '' and description != null">
+				and vc_dev.description like CONCAT('%',#{description},'%')
+			</if>
+			<if test="mac !='' and mac != null">
+				and vc_dev.mac = #{mac}
+			</if>
+			<if test="ip !='' and ip != null">
+				and vc_dev.ip = #{ip}
+			</if>
+			<if test="groupId != '' and groupId != null">
+				and vc_devgroup_dev.devgroup_id = #{groupId}
+			</if>
+			<if test="groupName != '' and groupName != null">
+				and vc_devgroup.name like CONCAT('%',#{groupName},'%')
+			</if>
+		-->
+		</where>
+		order by vc_dev.id
+	</select>
+	
+	<!-- 通过多个设备分组id获取设备列表 -->
+	<select id="getDevicesByDevGroups" resultType="DeviceVO" parameterType="map">
+		SELECT DISTINCT(vc_dev.id) as id,
+		vc_dev.`name` as name,
+		vc_dev_type.id as type,
+		vc_dev.alias as alias
+		FROM vc_dev
+		inner JOIN vc_dev_type on vc_dev_type.`id` = vc_dev.type
+		inner JOIN vc_devgroup_dev on vc_devgroup_dev.`dev_id` = vc_dev.id
+		<where>
+			<if test="devicegroupids != '' and devicegroupids != null">
+				vc_devgroup_dev.devgroup_id in
+			    <foreach item="devgroupid" index="index" collection="devgroups" open="("
+					separator="," close=")">
+		        	  #{devgroupid}
+		    	</foreach> 
+			</if>
+		</where>
+	</select>
+
+	<!-- 获取设备的树结构根据设备号码 -->
+	<select id="getDevTreeData" resultType="DeviceTreeVO"
+		parameterType="map">
+		select DISTINCT(vcr1.id) as id , vcr1.pId as pid ,vcr1.`name` as name,
+		'1' as 'folder', '' as 'type' , vcr1.`name` as 'alias', vcr1.gradeid as grade, vcr1.isleaf as leaf
+		from
+		vc_usergroup
+		INNER JOIN vc_usergroup_dev on
+		vc_usergroup_dev.usergroup_id =
+		vc_usergroup.uuid
+		INNER JOIN vc_dev on
+		vc_dev.id = vc_usergroup_dev.dev_id
+		INNER JOIN vc_server_info on
+		vc_server_info.id = vc_dev.svrid
+		INNER JOIN vc_region as vcr1 on
+		vcr1.id = vc_server_info.regionid
+		<where>
+			vc_usergroup_dev.usergroup_id = #{groupId}
+			<if test="devids != null">
+				and vc_dev.id in
+				<foreach item="devid" index="index" collection="devids"
+					open="(" separator="," close=")">
+					#{devid}
+				</foreach>
+			</if>
+			
+			and	vc_dev.type in(4,5,6,13,14,16)
+		</where>
+		UNION
+		select DISTINCT(vc_region.id) as id , vc_region.pid as pid
+		,vc_region.`name` as name, '1' as 'folder', '' as 'type' ,
+		vc_region.`name` as 'alias', vc_region.gradeid as grade, vc_region.isleaf as leaf
+		from vc_region ,(select DISTINCT(vcr1.id)
+		as id , vcr1.gradeid as
+		vcrgradeid
+		from vc_usergroup
+		INNER JOIN
+		vc_usergroup_dev on vc_usergroup_dev.usergroup_id =
+		vc_usergroup.uuid
+		INNER JOIN vc_dev on vc_dev.id = vc_usergroup_dev.dev_id
+		INNER JOIN
+		vc_server_info on vc_server_info.id = vc_dev.svrid
+		INNER JOIN vc_region
+		as vcr1 on vcr1.id = vc_server_info.regionid
+		<where>
+			vc_usergroup.uuid = #{groupId}
+			<if test="devids != null">
+				and vc_dev.id in
+				<foreach item="devid" index="index" collection="devids"
+					open="(" separator="," close=")">
+					#{devid}
+				</foreach>
+			</if>
+			and	vc_dev.type in(4,5,6,13,14,16)
+		</where>
+		) as vc_child
+		<where>
+			vc_region.gradeid &lt;= vc_child.vcrgradeid AND CASE vc_child.vcrgradeid
+			WHEN 1 THEN vc_region.id = vc_child.id
+			WHEN 2 THEN vc_region.id = CONCAT(SUBSTR(vc_child.id, 1, 2),'0000000000')
+			WHEN 3 THEN vc_region.id = CONCAT(SUBSTR(vc_child.id, 1,
+			4),'00000000')
+			OR vc_region.id = CONCAT(SUBSTR(vc_child.id, 1, 2),'0000000000')
+			WHEN 4 THEN vc_region.id = CONCAT(SUBSTR(vc_child.id, 1, 6),'000000')
+			OR vc_region.id = CONCAT(SUBSTR(vc_child.id, 1, 4),'00000000')
+			OR vc_region.id = CONCAT(SUBSTR(vc_child.id, 1, 2),'0000000000')
+			WHEN 5 THEN vc_region.id = CONCAT(SUBSTR(vc_child.id, 1, 8),'0000')
+			OR vc_region.id = CONCAT(SUBSTR(vc_child.id, 1, 6),'000000')
+			OR vc_region.id = CONCAT(SUBSTR(vc_child.id, 1, 4),'00000000')
+			OR vc_region.id = CONCAT(SUBSTR(vc_child.id, 1, 2),'0000000000')
+			WHEN 6 THEN vc_region.id = CONCAT(SUBSTR(vc_child.id, 1, 10),'00')
+			OR vc_region.id = CONCAT(SUBSTR(vc_child.id, 1, 8),'0000')
+			OR vc_region.id = CONCAT(SUBSTR(vc_child.id, 1, 6),'000000')
+			OR vc_region.id = CONCAT(SUBSTR(vc_child.id, 1, 4),'00000000')
+			OR vc_region.id = CONCAT(SUBSTR(vc_child.id, 1, 2),'0000000000')
+			END
+		</where>
+		UNION
+		SELECT DISTINCT(CAST(vc_dev.id as CHAR)) as id, vc_region.id as
+		pId,
+		vc_dev.`alias` as name, '0' as 'folder', vc_dev.type as
+		'type',vc_dev.alias as
+		'alias', -1 as grade, -1 as leaf
+		from vc_usergroup
+		INNER JOIN
+		vc_usergroup_dev on
+		vc_usergroup_dev.usergroup_id =
+		vc_usergroup.uuid
+		inner join vc_dev on
+		vc_dev.id = vc_usergroup_dev.dev_id
+		inner JOIN
+		vc_server_info on
+		vc_server_info.id = vc_dev.svrid
+		inner join vc_region
+		on vc_region.id =
+		vc_server_info.regionid
+		<where>
+			vc_usergroup.uuid = #{groupId}
+			<if test="devids != null">
+				and vc_dev.id in
+				<foreach item="devid" index="index" collection="devids"
+					open="(" separator="," close=")">
+					#{devid}
+				</foreach>
+			</if>
+			and	vc_dev.type in(4,5,6,13,14,16)
+		</where>
+	</select>
+	<!-- 获取被删除的设备从授权组织节点中 -->
+	<select id="getDelDevTreeData" resultType="DeviceTreeVO" parameterType="map">
+		SELECT DISTINCT(CAST(vc_dev.id as CHAR)) as id, vc_region.id as
+		pId,
+		vc_dev.`alias` as name, '0' as 'folder', vc_dev.type as
+		'type',vc_dev.alias as
+		'alias'
+		from vc_usergroup
+		INNER JOIN
+		vc_usergroup_dev on
+		vc_usergroup_dev.usergroup_id =
+		vc_usergroup.uuid
+		inner join vc_dev on
+		vc_dev.id = vc_usergroup_dev.dev_id
+		inner JOIN
+		vc_server_info on
+		vc_server_info.id = vc_dev.svrid
+		inner join vc_region
+		on vc_region.id =
+		vc_server_info.regionid
+		<where>
+			vc_usergroup.uuid = #{groupId}
+			<if test="devids != null">
+				and vc_dev.id in
+				<foreach item="devid" index="index" collection="devids"
+					open="(" separator="," close=")">
+					#{devid}
+				</foreach>
+			</if>
+			and	vc_dev.type in(4,5,6,13,14,16)
+		</where>
+	</select>
+	
+	
+	
+	<!-- 通讯录资源管理获取设备列表 -->
+	<select id="getDeviceListBooks" resultType="DeviceVO" parameterType="map">
+		SELECT DISTINCT(vd.id) as zonedevno,
+		vd.devno as id,
+		vd.`name`,
+		vd.`alias`,
+		vd.`address`,
+		vd.`zoneno`,
+		vdt.name AS TYPE
+		FROM vc_dev vd
+		LEFT JOIN
+		vc_dev_type vdt
+		ON
+		vdt.`id` = vd.type
+		<where>
+			<if test="key != '' and key != null">
+				vd.devno like CONCAT('%',#{key},'%')
+				or
+				vd.name like CONCAT('%',#{key},'%')
+			</if>
+			<if test="id != '' and id != null">
+				and vd.devno like CONCAT('%',#{id},'%')
+			</if>
+			<if test="name != '' and name != null">
+				and vd.name like CONCAT('%',#{name},'%')
+			</if>
+		</where>
+		order by vd.`id`
+	</select>
+	
+	
+	<!-- 统计条目数 -->
+	<select id="getDeviceListBooksCount" resultType="int" parameterType="Map">
+		select count(DISTINCT(vd.id))
+		FROM vc_dev vd
+		<where>
+			<if test="key != '' and key != null">
+				vd.devno like CONCAT('%',#{key},'%')
+				or
+				vd.name like CONCAT('%',#{key},'%')
+			</if>
+			<if test="id != '' and id != null">
+				and vd.devno like CONCAT('%',#{id},'%')
+			</if>
+			<if test="name != '' and name != null">
+				and vd.name like CONCAT('%',#{name},'%')
+			</if>
+		</where>
+	</select>
+	
+	
+	<!-- 通讯录资源管理获取设备列表 -->
+	<select id="getDeviceGroupBooks" resultType="DeviceGroupVO" parameterType="map">
+		select uuid,name from vc_devgroup
+		<where>
+			data_type = 1
+			<if test="name != '' and name != null">
+				and name like CONCAT('%',#{name},'%')
+			</if>
+		</where>
+		order by CONVERT(name USING gbk)
+	</select>
+	
+	<!-- 通讯录资源管理获取设备列表 -->
+	<select id="getDeviceGroupBooksCount" resultType="int" parameterType="map">
+		select count(name) from vc_devgroup
+		<where>
+			data_type = 1
+			<if test="name != '' and name != null">
+				and name like CONCAT('%',#{name},'%')
+			</if>
+		</where>
+	</select>
+	
+	<!-- 会控助手-20171018 start -->
+	<!-- 获取联系人（设备）列表 -->
+	<select id="getUserDevices" resultType="DeviceVO" parameterType="map">
+		SELECT id,devNo,name,alias,typeId,ip,type,roleId,role,dataType,updateTime,zonedevno,userDevAlias,zoneno
+		FROM
+		(SELECT DISTINCT(vd.`id`) AS zonedevno,
+		vd.`devno` as devNo,
+		vd.`name` AS NAME,
+		vud.`alias` AS alias,
+		vd.`type` AS typeId,
+		vd.`ip` AS ip,
+		vdt.`name` AS TYPE,
+		vd.`role` AS roleId,
+		vdr.`name` AS role,	
+		vud.`data_type` AS dataType,
+		vud.`alias` AS userDevAlias,
+		vud.`update_time` AS updateTime,
+		vd.`devno` AS id,
+		vd.`zoneno` AS zoneno
+		FROM vc_user_dev vud 
+		JOIN vc_dev vd ON vud.`dev_id`=vd.`id`
+		JOIN vc_dev_type vdt ON vd.`type`=vdt.`id`
+		JOIN vc_dev_role vdr ON vd.`role`=vdr.`id` 
+		<where>
+			<if test="userId != '' and userId != null">
+				and vud.user_id = #{userId}
+			</if>
+			<if test="dataType != '' and dataType != null">
+				and vud.data_type = #{dataType}
+			</if>
+			<if test="id != '' and id != null">
+				and vd.id like CONCAT('%',#{id},'%')
+			</if>
+			<if test="zoneno != '' and zoneno != null">
+				and vd.zoneno = #{zoneno}
+			</if>
+			<if test="devno != '' and devno != null">
+				and vd.devno like CONCAT('%',#{devno},'%')
+			</if>
+			<if test="name != '' and name != null">
+				and vd.name like CONCAT('%',#{name},'%')
+			</if>
+			<if test="typeId != '' and typeId != null">
+				and vd.type = #{typeId}
+			</if>
+			<if test="regionId != '' and regionId != null">
+				and vd.region_id = #{regionId}
+			</if>
+			<if test="unitId != '' and unitId != null">
+				and vd.`ssjgid` = #{unitId}
+			</if>
+		</where>
+		UNION
+		SELECT 
+		vv.`id` AS zonedevno,
+		vv.`devno` AS devNo,
+		vv.`name` AS NAME,
+		vv.`alias` AS alias,
+		vv.`type` AS typeId,
+		vv.`ip` AS ip,
+		vdt.`name` AS TYPE,
+		vv.`role` AS roleId,
+		vdr.`name` AS role,	
+		'1' AS dataType,
+		'' AS userDevAlias,
+		'' AS updateTime,
+		vv.`devno` AS id,
+		vv.`zoneno` AS zoneno
+		FROM vc_user_devgroup vdp
+		JOIN vc_devgroup_dev vde ON vde.devgroup_id = vdp.devgroup_id
+		JOIN vc_dev vv ON vv.`id`=vde.`dev_id`
+		JOIN vc_dev_role vdr ON vv.`role`=vdr.`id`
+		JOIN vc_dev_type vdt ON vv.`type`=vdt.`id`
+		<where>
+			vv.id NOT IN 
+			(SELECT vs.`dev_id` AS id 
+			FROM 
+			vc_user_dev vs WHERE vs.`user_id` =#{userId})
+			<if test="userId != '' and userId != null">
+				and vdp.user_id = #{userId}
+			</if>
+			<if test="id != '' and id != null">
+				and vv.id like CONCAT('%',#{id},'%')
+			</if>
+			<if test="zoneno != '' and zoneno != null">
+				and vv.zoneno = #{zoneno}
+			</if>
+			<if test="devno != '' and devno != null">
+				and vv.devno like CONCAT('%',#{devno},'%')
+			</if>
+			<if test="name != '' and name != null">
+				and vv.name like CONCAT('%',#{name},'%')
+			</if>
+			<if test="typeId != '' and typeId != null">
+				and vv.type = #{typeId}
+			</if>
+			<if test="regionId != '' and regionId != null">
+				and vv.region_id = #{regionId}
+			</if>
+			<if test="unitId != '' and unitId != null">
+				and vv.`ssjgid` = #{unitId}
+			</if>
+		</where>) dev
+		order by CONVERT(dev.name USING gbk)
+	</select>
+
+	<!-- 获取联系人（设备）列表总数 -->
+	<select id="getUserDevicesCount" resultType="int" parameterType="map">
+		SELECT count(vd.`id`)
+		FROM vc_user_dev vud 
+		JOIN vc_dev vd ON vud.`dev_id`=vd.`id`
+		JOIN vc_dev_type vdt ON vd.`type`=vdt.`id`
+		<where>
+			<if test="userId != '' and userId != null">
+				and vud.user_id = #{userId}
+			</if>
+			<if test="dataType != '' and dataType != null">
+				and vud.data_type = #{dataType}
+			</if>
+			<if test="id != '' and id != null">
+				and vd.id like CONCAT('%',#{id},'%')
+			</if>
+			<if test="zoneno != '' and zoneno != null">
+				and vd.zoneno = #{zoneno}
+			</if>
+			<if test="devno != '' and devno != null">
+				and vd.devno like CONCAT('%',#{devno},'%')
+			</if>
+			<if test="name != '' and name != null">
+				and vd.name like CONCAT('%',#{name},'%')
+			</if>
+			<if test="typeId != '' and typeId != null">
+				and vd.type = #{typeId}
+			</if>
+			<if test="regionId != '' and regionId != null">
+				and vd.region_id like CONCAT(#{regionId},'%')
+			</if>
+		</where>
+	</select>
+
+	<!-- 获取联系人（设备）群组列表 -->
+	<select id="getUserDevGroups" resultType="DeviceGroupVO" parameterType="map">
+		SELECT *FROM (SELECT vdg.`uuid`,
+		vdg.`name`,
+		vdg.`data_type` AS dataType,
+		DATE_FORMAT(vud.update_time,'%Y-%m-%d %H:%i:%s') AS updateTime,
+		DATE_FORMAT(vs.`start_time`,'%Y-%m-%d %H:%i:%s') AS startTime,
+		DATE_FORMAT(vs.`end_time`,'%Y-%m-%d %H:%i:%s') AS endTime,
+		DATE_FORMAT(vs.`create_time`,'%Y-%m-%d %H:%i:%s') AS createTime,
+		vs.`uuid` AS scheduleId,
+		dev.devno AS masterNo,
+		vs.meet_type AS meetType,
+		dev.devno AS masterNoLocal,
+		dev.zoneno AS zoneno,
+		vs.`status`
+		FROM vc_user_devgroup vud
+		JOIN vc_devgroup vdg ON vud.`devgroup_id`=vdg.`uuid`
+		LEFT JOIN vc_schedule vs ON vs.`devgroup_id`=vud.`devgroup_id` and vs.`end_time` &gt; NOW() and vs.create_type=4 and vs.`status`!=4
+		LEFT JOIN vc_dev dev ON dev.id=vs.master_no
+		<where>
+			<if test="uuid != null and uuid != ''">
+				and vdg.uuid = #{uuid}
+			</if>
+			<if test="userId != null and uuid != ''">
+				and vs.creator_id=#{userId}
+			</if>
+			<if test="userId != null and userId != ''">
+				and vud.user_id = #{userId}
+			</if>
+			<if test="dataType != null and dataType != ''">
+				and vdg.data_type = #{dataType}
+			</if>
+			<if test="name != null and name != ''">
+				and vdg.name like CONCAT('%',#{name},'%')
+			</if>
+				
+		</where>
+		union
+		SELECT vdg.`uuid`,
+		vdg.`name`,
+		vdg.`data_type` AS dataType,
+		DATE_FORMAT(vud.update_time,'%Y-%m-%d %H:%i:%s') AS updateTime,
+		DATE_FORMAT(vs.`start_time`,'%Y-%m-%d %H:%i:%s') AS startTime,
+		DATE_FORMAT(vs.`end_time`,'%Y-%m-%d %H:%i:%s') AS endTime,
+		DATE_FORMAT(vs.`create_time`,'%Y-%m-%d %H:%i:%s') AS createTime,
+		vs.`uuid` AS scheduleId,
+		vs.master_no AS masterNo,
+		dev.devno AS masterNoLocal,
+		vs.meet_type AS meetType,
+		dev.zoneno AS zoneno,
+		vs.`status`
+		FROM vc_user_devgroup vud
+		JOIN vc_devgroup vdg
+		ON vud.`devgroup_id`=vdg.`uuid`
+		LEFT JOIN vc_schedule vs
+		ON vs.`devgroup_id`=vud.`devgroup_id`
+		and vs.`status`=4 and vs.create_type=4
+		and vs.creator_id=#{userId}
+		LEFT JOIN vc_dev dev ON dev.id=vs.master_no
+		<where>
+			<if test="uuid != null and uuid != ''">
+				and vdg.uuid = #{uuid}
+			</if>
+			<!-- <if test="userId != null and userId != ''">
+				and vs.creator_id=#{userId}
+			</if> -->
+			<if test="userId != null and userId != ''">
+				and vud.user_id = #{userId}
+			</if>
+			
+			<if test="dataType != null and dataType != ''">
+				and vdg.data_type = #{dataType}
+			</if>
+			<if test="name != null and name != ''">
+				and vdg.name like CONCAT('%',#{name},'%')
+			</if>
+				
+		</where>
+		order by createTime desc
+		) AS tmp
+		group by tmp.uuid
+	</select>
+
+	<!-- 置顶（取消置顶）群组 -->
+	<update id="updateDevGroup" parameterType="map">
+		update vc_user_devgroup set update_time = #{updateTime}
+		<where>
+			<if test="userId != '' and userId != null">
+				and user_id = #{userId}
+			</if>
+			<if test="devGroupId != '' and devGroupId != null">
+				and devgroup_id = #{devGroupId}
+			</if>
+		</where>
+	</update>
+
+	<!-- 获取联系人（设备）群组列表总数 -->
+	<select id="getUserDevGroupsCount" resultType="int" parameterType="map">
+		SELECT count(vdg.`uuid`)
+		FROM vc_user_devgroup vud
+		JOIN vc_devgroup vdg
+		ON vud.`devgroup_id`=vdg.`uuid`
+		<where>
+			<if test="userId != '' and userId != null">
+				and vud.user_id = #{userId}
+			</if>
+			<if test="dataType != '' and dataType != null">
+				and vdg.data_type = #{dataType}
+			</if>
+			<if test="name != '' and name != null">
+				and vdg.name like CONCAT('%',#{name},'%')
+			</if>
+		</where>
+	</select>
+	
+	<!-- 根据群组id获取联系人（设备）列表 -->
+	<select id="getGroupDevs" resultType="DeviceVO" parameterType="map">
+		SELECT DISTINCT vd.`id` as zonedevno,
+		vd.`devno` as id,
+		vd.`devno` as devNo,
+		vd.`zoneno` as zoneno,
+		vd.`name`,
+		ud.`alias`,
+		vd.`type` AS typeId,
+		vd.`ip`,
+		vd.`region_id` as regionId,
+		vdt.`name` AS TYPE,
+		vd.`role` AS roleId,
+		vdr.`name` AS role,
+		vdd.`dev_func` AS devFunc,
+		(CASE WHEN (ISNULL(scdev.`devStatus`)) THEN 0 ELSE scdev.`devStatus` END) AS devStatus
+		FROM vc_devgroup_dev vdd
+		JOIN vc_dev vd ON vdd.`dev_id`=vd.`id`
+		JOIN vc_dev_type vdt ON vd.`type`=vdt.`id`
+		JOIN vc_dev_role vdr ON vd.`role`=vdr.`id`
+		JOIN vc_user_dev ud ON ud.dev_id=vd.id
+		LEFT JOIN (SELECT ve.`status` AS devStatus,ve.dev_id 
+			       FROM vc_schedule vs
+			       JOIN vc_schedule_dev ve  ON ve.`schedule_id` = vs.`uuid` WHERE vs.status = 4 AND ve.`status`=1) scdev 
+		ON scdev.dev_id=vd.id
+		<where>
+			<if test="groupId != '' and groupId != null">
+				and vdd.devgroup_id = #{groupId}
+			</if>
+			<if test="id != '' and id != null">
+				and vd.id like CONCAT('%',#{id},'%')
+			</if>
+			<if test="devno != '' and devno != null">
+				and vd.devno like CONCAT('%',#{devno},'%')
+			</if>
+			<if test="zoneno != '' and zoneno != null">
+				and vd.zoneno = #{zoneno}
+			</if>
+			<if test="name != '' and name != null">
+				and vd.name like CONCAT('%',#{name},'%')
+			</if>
+			<if test="typeId != '' and typeId != null">
+				and vd.type = #{typeId}
+			</if>
+			<if test="userId != '' and userId != null">
+				and ud.user_id = #{userId}
+			</if>
+		</where>
+		order by CONVERT(vd.name USING gbk)
+	</select>
+
+	<!-- 根据群组id获取联系人（设备）列表总数 -->
+	<select id="getGroupDevsCount" resultType="int" parameterType="map">
+		SELECT count(DISTINCT vd.`devno`)
+		FROM vc_devgroup_dev vdd
+		JOIN vc_dev vd ON vdd.`dev_id`=vd.`id`
+		JOIN vc_dev_type vdt ON vd.`type`=vdt.`id`
+		JOIN vc_dev_role vdr ON vd.`role`=vdr.`id`
+		JOIN vc_user_dev ud ON ud.dev_id=vd.id
+		<where>
+			<if test="groupId != '' and groupId != null">
+				and vdd.devgroup_id = #{groupId}
+			</if>
+			<if test="id != '' and id != null">
+				and vd.id like CONCAT('%',#{id},'%')
+			</if>
+			<if test="devno != '' and devno != null">
+				and vd.devno like CONCAT('%',#{devno},'%')
+			</if>
+			<if test="zoneno != '' and zoneno != null">
+				and vd.zoneno = #{zoneno}
+			</if>
+			<if test="name != '' and name != null">
+				and vd.name like CONCAT('%',#{name},'%')
+			</if>
+			<if test="typeId != '' and typeId != null">
+				and vd.type = #{typeId}
+			</if>
+			<if test="userId != '' and userId != null">
+				and ud.user_id = #{userId}
+			</if>
+		</where>
+	</select>
+
+	<!-- 添加联系人（设备）群组列表（用户和群组的关联关系） -->
+	<insert id="addUserDevGroups" parameterType="map">
+		insert ignore into vc_user_devgroup(user_id, devgroup_id)
+		values(#{userId}, #{groupuuid})
+	</insert>
+	
+	<!-- 删除用户与设备群组关联关系-->
+	<delete id="deleteUserDeviceGroup" parameterType="map">
+		delete from vc_user_devgroup
+		<where>
+			user_id =#{userId}
+			and devgroup_id in
+			<foreach item="uuid" index="index" collection="uuids" open="("
+				separator="," close=")">
+				#{uuid}
+			</foreach>
+		</where>
+	</delete>
+	
+	<!-- 插入群组和联系人的关联 -->
+	<insert id="addDevices2Group" parameterType="map">
+		insert ignore into vc_devgroup_dev(devgroup_id, dev_id, dev_func)
+		values
+		<foreach collection="list" item="item" index="index" separator="," > 
+        	(#{item.groupuuid}, #{item.devId}, #{item.devFunc})
+    	</foreach> 
+	</insert>
+	
+	<!-- 修改联系人（设备）群组列表 -->
+	<update id="editUserDevGroups" parameterType="map">
+		SELECT vdg.`uuid`,
+		vdg.`name`,
+		vdg.`data_type` AS dataType
+		FROM vc_user_devgroup vud
+		JOIN vc_devgroup vdg
+		ON vud.`devgroup_id`=vdg.`uuid`
+		<where>
+			<if test="userId != '' and userId != null">
+				and vud.user_id = #{userId}
+			</if>
+			<if test="dataType != '' and dataType != null">
+				and vdg.data_type = #{dataType}
+			</if>
+			<if test="name != '' and name != null">
+				and vdg.name like CONCAT('%',#{name},'%')
+			</if>
+		</where>
+	</update>
+	
+	<!-- 根据会议ID获取会议主席、发一、发二 -->
+	<select id="getScheduleState" resultType="ScheduleStateVO" parameterType="map">
+		SELECT
+		dev1.devno AS masterNo,
+		dev2.devno AS speaker1,
+		dev3.devno AS speaker2,
+		dev1.zoneno AS masterZoneno,
+		dev2.zoneno AS speakerZoneno1,
+		dev3.zoneno AS speakerZoneno2,
+		dev_secStream AS devSecStream
+		FROM vc_schedule_state ss
+		LEFT JOIN vc_dev dev1 ON ss.master_no=dev1.id
+		LEFT JOIN vc_dev dev2 ON ss.speaker_1=dev2.id
+		LEFT JOIN vc_dev dev3 ON ss.speaker_2=dev3.id
+		<where>
+			<if test="scheduleId != '' and scheduleId != null">
+				and ss.schedule_id = #{scheduleId}
+			</if>
+		</where>
+	</select>
+	
+	<!-- 根据会议ID设置会议主席、发一、发二 -->
+	<insert id="updateScheduleState" parameterType="map">
+		insert into vc_schedule_state(schedule_id, master_no, speaker_1, speaker_2, dev_secStream)
+		values(#{scheduleId},#{masterNo},#{speaker1},#{speaker2},#{devSecStream})
+		ON DUPLICATE KEY UPDATE
+		master_no=values(master_no),speaker_1=values(speaker_1),speaker_2=values(speaker_2),dev_secStream=values(dev_secStream)
+	</insert>
+
+	<!-- 会控助手-20171018 end -->
+	
+	<!-- 群组管理获取群组信息列表 -->
+	<select id="getDevgroup" resultType="DeviceGroupVO" parameterType="map">
+		SELECT DISTINCT(vd.uuid) AS UUID,vd.name AS NAME,
+		GROUP_CONCAT(DISTINCT(vde.`devno`) SEPARATOR ',') AS devices,
+		ve.devno masterNo,ve1.devno speakerOne,ve2.devno speakerTwo FROM 
+		vc_devgroup vd
+		LEFT JOIN vc_devgroup_dev vg ON vd.uuid = vg.devgroup_id
+		LEFT JOIN vc_schedule vs ON vs.`devgroup_id` = vd.`uuid`
+		LEFT JOIN vc_schedule_state vst ON vst.`schedule_id` = vs.`uuid`
+		LEFT JOIN vc_dev vde ON vg.`dev_id`=vde.`id`
+		LEFT JOIN vc_dev ve ON ve.id = vd.master_no
+		LEFT JOIN vc_dev ve1 ON ve1.id = vst.speaker_1
+		LEFT JOIN vc_dev ve2 ON ve2.id = vst.speaker_2
+		<where>
+			vd.data_type = 1
+			<if test="name != '' and name != null">
+				and vd.name like CONCAT('%',#{name},'%')
+			</if>
+		</where>
+		GROUP BY vd.uuid
+		order by CONVERT(vd.name USING gbk)
+	</select>
+	
+	
+	<!-- 群组管理获取群组信息列表 -->
+	<select id="getDevgroupCount" resultType="int" parameterType="map">
+		select COUNT(*)
+		from 
+		vc_devgroup vd
+		<where>
+			vd.data_type = 1
+			<if test="name != '' and name != null">
+				and vd.name like CONCAT('%',#{name},'%')
+			</if>
+		</where>
+	</select>
+	
+	<!-- 插入群组和联系人的关联 -->
+	<insert id="addDevGroupBooks" parameterType="map" keyProperty="uuid">
+			<selectKey resultType="java.lang.String" order="BEFORE"
+				keyProperty="uuid">
+				select replace(uuid(), '-', '') from dual
+			</selectKey>
+		insert ignore into vc_devgroup(uuid,name,data_type,master_no,speaker_1,speaker_2)
+		values
+		(#{uuid},#{name},#{type},#{masterNo},#{speakerOne},#{speakerTwo})
+	</insert>
+	
+	
+	<!-- 删除群与设备关联 -->
+	<delete id="deleteDevGroup" parameterType="DeviceGroupVO">
+		delete from vc_devgroup_dev
+		<where>
+			vc_devgroup_dev.devgroup_id=#{uuid}
+		</where>
+	</delete>
+	<!-- 获取设备列表 -->
+	<select id="getDevsInGroup" resultType="DeviceVO" parameterType="map">
+		SELECT DISTINCT(vd.id) as zonedevno,
+		vd.`devno` as id,
+		vd.`name`,
+		vd.`alias`,
+		vd.mac,
+		vd.ip,
+		vdd.dev_func as devFunc,
+		vd.role as roleId,
+		vdt.id AS typeId,
+		vdt.name AS TYPE,
+		vdd.devgroup_id AS groupId
+		FROM vc_dev vd
+		INNER JOIN 
+		vc_devgroup_dev vdd
+		ON vd.id=vdd.`dev_id`
+		LEFT JOIN
+		vc_dev_type vdt
+		ON
+		vdt.`id` = vd.type
+		LEFT JOIN vc_devgroup vdg
+		ON vdd.`devgroup_id`=vdg.`uuid`
+		<where>
+			<if test="devId != '' and devId != null">
+				vd.devno like CONCAT('%',#{devId},'%')
+			</if>
+			<if test="devName != '' and devName != null">
+				and vd.name like CONCAT('%',#{devName},'%')
+			</if>
+			<if test="type != '' and type != null">
+				and vd.type = #{type}
+			</if>
+			<if test="description != '' and description != null">
+				and vd.description like CONCAT('%',#{description},'%')
+			</if>
+			<if test="mac !='' and mac != null">
+				and vd.mac = #{mac}
+			</if>
+			<if test="ip !='' and ip != null">
+				and vd.ip = #{ip}
+			</if>
+			<if test="devGroupName != '' and devGroupName != null">
+				and vdg.name = #{devGroupName}
+			</if>
+			<if test="uuids != null">
+				and vdd.devgroup_id in
+				<foreach item="id" index="index" collection="uuids" open="("
+					separator="," close=")">
+					#{id}
+				</foreach>
+			</if>
+		</where>
+		order by vd.devno
+	</select>
+	
+	<!-- 统计条目数 -->
+	<select id="getDevsInGroupCount" resultType="int" parameterType="Map">
+		select count(DISTINCT(vd.id))
+		FROM vc_dev vd
+		INNER JOIN 
+		vc_devgroup_dev vdd
+		ON vd.id=vdd.`dev_id`
+		LEFT JOIN
+		vc_dev_type vdt
+		ON
+		vdt.`id` = vd.type
+		LEFT JOIN vc_devgroup vdg
+		ON vdd.`devgroup_id`=vdg.`uuid`
+		<where>
+			<if test="devId != '' and devId != null">
+				vd.id like CONCAT('%',#{devId},'%')
+			</if>
+			<if test="devName != '' and devName != null">
+				and vd.name like CONCAT('%',#{devName},'%')
+			</if>
+			<if test="type != '' and type != null">
+				and vd.type = #{type}
+			</if>
+			<if test="description != '' and description != null">
+				and vd.description like CONCAT('%',#{description},'%')
+			</if>
+			<if test="mac !='' and mac != null">
+				and vd.mac = #{mac}
+			</if>
+			<if test="ip !='' and ip != null">
+				and vd.ip = #{ip}
+			</if>
+			<if test="devGroupName != '' and devGroupName != null">
+				and vdg.name = #{devGroupName}
+			</if>
+			<if test="uuids != null">
+				and vdd.devgroup_id in
+				<foreach item="id" index="index" collection="uuids" open="("
+					separator="," close=")">
+					#{id}
+				</foreach>
+			</if>
+		</where>
+	</select>
+	
+	<!-- 获取联系人已选设备列表 -->
+	<select id="getUserDev" resultType="DeviceVO" parameterType="map">
+		SELECT DISTINCT(dev.zonedevno) as zonedevno ,vt.`name` as name,vt.devno as id,vt.zoneno as zoneno FROM 
+		(SELECT DISTINCT(vd.`dev_id`) as zonedevno FROM 
+		vc_user_devgroup vp
+		JOIN vc_devgroup_dev vd ON vp.`devgroup_id`=vd.`devgroup_id`
+		JOIN vc_devgroup vop ON vop.uuid = vd.`devgroup_id`
+		JOIN vc_dev ve on ve.id = vd.dev_id
+		<where>
+			vop.data_type = 1
+			<if test="userId != '' and userId != null">
+				and vp.user_id = #{userId}
+			</if>
+			<if test="id != '' and id != null">
+				and
+				ve.devno like CONCAT('%',#{id},'%')
+			</if>
+			<if test="zone != '' and zone != null">
+				and
+				ve.zoneno = #{zone}
+			</if>
+		</where>
+		UNION
+		SELECT DISTINCT(ve.id) as zonedevno  FROM 
+		vc_dev ve
+		JOIN 
+		vc_user_dev vv
+		ON vv.dev_id = ve.id
+		<where>
+			(vv.data_type = 1 OR vv.data_type IS NULL)
+			<if test="userId != '' and userId != null">
+				and vv.user_id = #{userId}
+			</if>
+			<if test="id != '' and id != null">
+				and
+				ve.devno like CONCAT('%',#{id},'%')
+			</if>
+			<if test="zone != '' and zone != null">
+				and
+				ve.zoneno = #{zone}
+			</if>
+		</where>) dev
+		JOIN vc_dev vt
+		ON dev.`zonedevno`=vt.`id`
+		order by vt.devno
+	</select>
+	
+	
+	<!-- 获取联系人已选设备总条数 -->
+	<select id="getUserDevCount" resultType="int" parameterType="map">
+		select count(1) from(
+		SELECT DISTINCT(vd.`dev_id`) as id  FROM 
+		vc_user_devgroup vp
+		JOIN
+		vc_devgroup_dev vd 
+		ON vp.`devgroup_id`=vd.`devgroup_id`
+		<where>
+			<if test="userId != '' and userId != null">
+				and vp.user_id = #{userId}
+			</if>
+			<if test="id != '' and id != null">
+				and
+				vd.dev_id like CONCAT('%',#{id},'%')
+			</if>
+		</where>
+		UNION
+		SELECT DISTINCT(ve.id) as id  FROM 
+		vc_dev ve
+		JOIN 
+		vc_user_dev vv
+		ON vv.dev_id = ve.id
+		<where>
+			<if test="userId != '' and userId != null">
+				and vv.user_id = #{userId}
+			</if>
+			<if test="id != '' and id != null">
+				and
+				ve.id like CONCAT('%',#{id},'%')
+			</if>
+		</where>)
+	</select>
+	
+	<!-- 手机会控获取所有设备信息 -->
+	<select id="getDevInfo" resultType="DeviceVO" parameterType="map">
+		select vc_dev.id as zonedevno,
+		vc_dev.name,
+		vc_dev.alias,
+		vc_dev.mac,
+		vc_dev.ip,
+		vc_dev.type as typeId,
+		vc_dev.alias,
+		vc_dev.role as roleId,
+		vc_dev.svrid,
+		vc_dev.updatetime,
+		vc_dev.svr_region_id as svrRegionId,
+		vc_dev.address,
+		vc_dev.devno as id,
+		vc_dev.zoneno
+		FROM 
+		vc_dev
+		<where>
+			<if test="name != '' and name != null">
+				and (
+				 	vc_dev.devno like CONCAT('%',#{name},'%')
+					or
+					vc_dev.name like CONCAT('%',#{name},'%')
+					or
+					vc_dev.alias like CONCAT('%',#{name},'%')
+				)
+			</if>
+			<if test="devno != '' and devno != null">
+				and vc_dev.devno like CONCAT('%',#{devno},'%')
+			</if>
+			<if test="zoneno != '' and zoneno != null">
+				and vc_dev.zoneno = #{zoneno}
+			</if>
+		</where>
+	</select>
+	
+	<!-- 查询用户是否已经分配指定设备-->
+	<select id="getDitributeDev" parameterType="map" resultType="UserVO" >
+		select user_id ,
+		dev_id ,
+		update_time as updateTime
+		FROM vc_user_dev 
+		WHERE
+		user_id=#{userId}
+		and dev_id =#{devId}
+	</select>
+	
+	
+	<!-- 添加用户与设备关联（设备分配给用户）-->
+	<insert id="distributeDevToUser" parameterType="map">
+		insert into vc_user_dev (user_id,dev_id,data_type,alias)
+		values
+		<foreach collection="list" item="item" index="index"
+			separator=",">
+			(#{item.userId},#{item.devId},#{item.dataType},#{item.alias})
+		</foreach>
+	</insert>
+	
+	
+	<!-- 置顶（取消置顶）用户下设备 -->
+	<insert id="updateUserDev" parameterType="map">
+		insert vc_user_dev (user_id,dev_id,data_type,update_time)
+		values (#{userId},#{devId},#{dataType},#{updateTime})
+		ON DUPLICATE KEY UPDATE update_time=values(update_time)
+	</insert>
+	
+	<!-- 以会议主席设备为单位查询所有以此设备为主席的会议-->
+	<select id="getMasterBySchedule" parameterType="map" resultType="ScheduleVO">
+		SELECT vd.devno AS masterNo,
+		vd.`name` AS masterName,
+		vs.`name` AS NAME,
+		vs.`uuid` AS id,
+		vs.`level` AS LEVEL,
+		DATE_FORMAT(vm.start_time,'%Y-%m-%d %H:%i:%s') AS startTime,
+		DATE_FORMAT(vm.stop_time,'%Y-%m-%d %H:%i:%s') AS stopTime,
+		vs.`person_num` AS personNum,
+		(CASE WHEN (ISNULL(e.dev_num)) THEN 0 ELSE e.dev_num END) AS devNum
+		FROM vc_dev vd
+		JOIN 
+		vc_schedule vs
+		ON vs.`master_no` = vd.`id`
+		LEFT JOIN 
+		vc_meeting vm
+		ON vm.`uuid` = vs.`uuid`
+		LEFT JOIN 
+		(SELECT schedule_id,COUNT(*) AS dev_num FROM vc_schedule_dev GROUP BY schedule_id) AS e
+		ON e.schedule_id = vs.`uuid`
+		<where>
+			<if test="id != null">
+				vd.devno like CONCAT('%',#{id},'%')
+			</if>
+			<if test="masterName != null and masterName != '' ">
+				and vd.`name` like CONCAT('%',#{masterName},'%')
+			</if>
+			<if test="startTime != null and startTime != '' ">
+				and UNIX_TIMESTAMP(vm.start_time) &gt;=
+				UNIX_TIMESTAMP(#{startTime})
+			</if>
+			<if test="endTime != null and endTime != '' ">
+				and UNIX_TIMESTAMP(vm.start_time) &lt;
+				UNIX_TIMESTAMP(#{endTime})
+			</if>
+		</where>
+		ORDER BY vd.id,vm.start_time desc
+	</select>
+	
+	
+	<!-- 以会议主席设备为单位查询所有以此设备为主席的会议-->
+	<select id="getMasterByScheduleCount" parameterType="map" resultType="int">
+		SELECT count(vd.id)
+		FROM vc_dev vd
+		JOIN 
+		vc_schedule vs
+		ON vs.`master_no` = vd.`id`
+		LEFT JOIN 
+		vc_meeting vm
+		ON vm.`uuid` = vs.`uuid`
+		<where>
+			<if test="id != null">
+				vd.id like CONCAT('%',#{id},'%')
+			</if>
+			<if test="masterName != null and masterName != '' ">
+				and vd.`name` like CONCAT('%',#{masterName},'%')
+			</if>
+			<if test="startTime != null and startTime != '' ">
+				and UNIX_TIMESTAMP(vm.start_time) &gt;=
+				UNIX_TIMESTAMP(#{startTime})
+			</if>
+			<if test="endTime != null and endTime != '' ">
+				and UNIX_TIMESTAMP(vm.start_time) &lt;
+				UNIX_TIMESTAMP(#{endTime})
+			</if>
+		</where>
+	</select>
+	
+	<!-- 获取会议详情 -->
+	<select id="getMasterDetail" parameterType="map" resultType="ScheduleVO">
+		SELECT vd.devno AS masterNo,
+		vd.`name` AS masterName,
+		vs.`name` AS NAME,
+		vs.`uuid` AS id,
+		vs.`level` AS LEVEL,
+		DATE_FORMAT(vm.start_time,'%Y-%m-%d %H:%i:%s') AS startTime,
+		DATE_FORMAT(vm.stop_time,'%Y-%m-%d %H:%i:%s') AS stopTime,
+		vs.`person_num` AS personNum,
+		(CASE WHEN (ISNULL(e.dev_num)) THEN 0 ELSE e.dev_num END) AS devNum
+		FROM vc_dev vd
+		JOIN 
+		vc_schedule vs
+		ON vs.`master_no` = vd.`id`
+		LEFT JOIN 
+		vc_meeting vm
+		ON vm.`uuid` = vs.`uuid`
+		LEFT JOIN 
+		(SELECT schedule_id,COUNT(*) AS dev_num FROM vc_schedule_dev GROUP BY schedule_id) AS e
+		ON e.schedule_id = vs.`uuid`
+		<where>
+			vs.`uuid` = #{scheduleId}
+		</where>
+	</select>
+	
+	
+	<!-- 获取会议设备相关信息-->
+	<select id="getScheduleDevice" parameterType="map" resultType="DeviceVO">
+		SELECT vd.`devno` AS id,
+		(CASE WHEN (ISNULL(vs.`dev_name`) OR vs.`dev_name`='') THEN vd.name ELSE vs.`dev_name` END) AS NAME,
+		getRegionNameById(vr.id) AS svrName
+		FROM vc_schedule_dev vs 
+		LEFT JOIN vc_dev vd ON vs.`dev_id` = vd.`id` 
+		LEFT JOIN vc_region vr ON vr.id = vd.region_id
+		<where>
+			vs.`schedule_id` = #{scheduleId}
+		</where>
+		order by vd.`devno`
+	</select>
+
+	<!-- 获取会议终端列表（详细信息） -->
+	<select id="getMeetingDevList" parameterType="map" resultType="map">
+		SELECT
+		d.devno, 
+		(CASE WHEN (ISNULL(sd.`dev_name`)) THEN d.name ELSE sd.`dev_name` END) AS devName,
+		s.name AS svrName, 
+		dd.lxr, 
+		dd.lxrdh, 
+		r.name AS regionName,
+		r.`id` AS regionId
+		FROM vc_schedule_dev sd
+		LEFT JOIN vc_dev d
+		ON sd.`dev_id`=d.`id`
+		LEFT JOIN vc_server_info s
+		ON d.`svrid`=s.`id`
+		LEFT JOIN vc_region r
+		ON d.`region_id`=r.`id`
+		LEFT JOIN vc_dev_detail dd
+		ON d.`id`=dd.`devno`
+		<where> 
+			sd.`schedule_id` = #{scheduleId}
+		</where>
+		order by sd.`dev_id`
+	</select>
+	<!-- 获取会议终端列表总数 -->
+	<select id="getMeetingDevListCount" parameterType="map" resultType="int">
+		SELECT count(sd.`dev_id`) FROM vc_schedule_dev sd
+		LEFT JOIN vc_dev d
+		ON sd.`dev_id`=d.`id`
+		LEFT JOIN vc_server_info s
+		ON d.`svrid`=s.`id`
+		LEFT JOIN vc_region r
+		ON d.`region_id`=r.`id`
+		LEFT JOIN vc_dev_detail dd
+		ON d.`id`=dd.`devno`
+		<where>
+			sd.`schedule_id` = #{scheduleId}
+		</where>
+	</select>
+	
+	<select id="getSingleRegionSvrName" parameterType="map" resultType="string">
+		SELECT getRegionNameById(#{regionId}) as svrName
+	</select>
+	
+	
+	<!-- 统计获取区域节点下的所有正在会议中的设备数量 -->
+	<select id="getMeetingDevicesCount" parameterType="map" resultType="int">
+		SELECT COUNT(vd.`id`) FROM vc_dev vd
+		LEFT JOIN vc_schedule_dev ve
+		ON vd.id = ve.`dev_id`
+		LEFT JOIN vc_schedule vs
+		ON ve.`schedule_id` = vs.`uuid`
+		LEFT JOIN vc_region vr
+		ON vd.`region_id`=vr.id
+		<where>
+			vs.`status` = 4
+			<if test="regionId != '' and regionId != null">
+				and vr.id like CONCAT(#{regionId},'%')
+			</if>
+		</where>
+	</select>
+	
+	<!-- 根据设备号码获取这个设备所在会议中的会议详情信息-->
+	<select id="getRegionSvrName" parameterType="list" resultType="DeviceVO">
+		<if test="list != '' and list != null">
+			<foreach item="item" index="index" collection="list" separator=";">
+			SELECT id,getRegionNameById(#{item.regionId}
+			) as svrName
+			FROM vc_dev 
+				<where>
+					<if test="item.devno != null and item.devno != '' ">
+						AND vc_dev.`devno` like CONCAT('%',#{item.devno},'%')
+					</if>
+					<if test="item.zoneno != null and item.zoneno != '' ">
+						AND vc_dev.`zoneno` like CONCAT('%',#{item.zoneno},'%')
+					</if>
+				</where>
+			</foreach>
+		</if>
+	</select>
+	
+	<!-- 获取会议设备相关信息-->
+	<select id="getDevRegion" parameterType="map" resultType="DeviceVO">
+		<!-- SELECT vs.`dev_id` AS id,
+		(CASE WHEN (ISNULL(vs.`dev_name`) OR vs.`dev_name`='') THEN vd.name ELSE vs.`dev_name` END) AS NAME,
+		getRegionNameById(vr.id) AS svrName
+		FROM vc_schedule_dev vs 
+		LEFT JOIN vc_schedule vu
+		ON vu.`uuid` = vs.`schedule_id`
+		LEFT JOIN vc_dev vd 
+		ON vs.`dev_id` = vd.`id` 
+		JOIN vc_region vr
+		ON vr.`id` = vd.`region_id`
+		<where>
+			vu.status = 4
+			<if test="devId != null and devId != '' ">
+				AND vd.`id` like CONCAT('%',#{devId},'%')
+			</if>
+			<if test="devName != null and devName != '' ">
+				AND vd.`name` like CONCAT('%',#{devName},'%')
+			</if>
+			<if test="regionId != '000000000000' ">
+				and vr.`id` = #{regionId}
+			</if>
+		</where>
+		union -->
+		SELECT distinct(vd.`devno`) AS id,
+		vd.name AS NAME,
+		getRegionNameById(vr.id) AS svrName,
+		vd.type as typeId,
+		vd.`region_id` as regionId
+		FROM vc_schedule_dev vs 
+		LEFT JOIN vc_schedule vu
+		ON vu.`uuid` = vs.`schedule_id`
+		LEFT JOIN vc_dev vd 
+		ON vs.`dev_id` = vd.`id` 
+		JOIN vc_region vr
+		ON CONCAT(SUBSTR(vd.`region_id`, 1, 2), '0000000000')=vr.`id`
+		<where>
+			vu.status = 4
+			<if test="devId != null and devId != '' ">
+				AND vd.`devno` like CONCAT('%',#{devId},'%')
+			</if>
+			<if test="zoneno != null and zoneno != '' ">
+				AND vd.`zoneno` like CONCAT('%',#{zoneno},'%')
+			</if>
+			<if test="devName != null and devName != '' ">
+				AND vd.`name` like CONCAT('%',#{devName},'%')
+			</if>
+			<if test="regionId != '000000000000' ">
+				and vr.`id` = #{regionId}
+			</if>
+		</where>
+	</select>
+	
+	<!-- 获取设备信息（获取所有字段） -->
+	<select id="getDevicesMeeting" parameterType="map" resultType="DeviceVO">
+		SELECT distinct(vd.id) as zonedevno,
+		vd.devno as id,
+		vd.zoneno,
+		vd.`name`,
+		vd.`alias`,
+		vdt.`name` AS type,
+		vd.type as typeId,
+		vr.`id` AS regionId
+		FROM vc_dev vd
+		LEFT JOIN vc_region vr
+		ON vd.`region_id`=vr.id
+		LEFT JOIN vc_dev_type vdt
+		ON vd.`type`=vdt.`id`
+		LEFT JOIN vc_schedule_dev ve
+		ON vd.id = ve.`dev_id`
+		LEFT JOIN vc_schedule vs
+		ON ve.`schedule_id` = vs.`uuid`
+		<where>
+			vs.status = 4
+			<if test="id != '' and id != null">
+				and vd.id like CONCAT('%',#{id},'%')
+			</if>
+			<if test="devno != '' and devno != null">
+				and vd.devno like CONCAT('%',#{devno},'%')
+			</if>
+			<if test="zoneno != '' and zoneno != null">
+				and vd.zoneno = #{zoneno}
+			</if>
+			<if test="ip != '' and ip != null">
+				and vd.ip = #{ip}
+			</if>
+			<if test="name != '' and name != null">
+				and vd.name like CONCAT('%',#{name},'%')
+			</if>
+			<if test="regionId != '' and regionId != null">
+				and vr.id = #{regionId}
+			</if>
+		</where>
+		order by vd.id
+	</select>
+	
+	
+	<!-- 根据设备号码获取这个设备所在会议中的会议详情信息-->
+	<select id="getDevicesMeetingDetail" parameterType="map" resultType="ScheduleVO">
+		SELECT  
+		vs.`uuid` AS uuid,
+		vs.`name` AS NAME,
+		vd2.`devno`AS masterNO,
+		vs.`level` AS LEVEL,
+		vs.`creator_id` AS creatorId,
+		vs.`notice` AS notice,
+		vs.`create_type` AS createType,
+		vs.`svr_region_id` AS svrRegionId,
+		vs.`login_mode` AS loginMode,
+		ve.`status` AS devStatus,
+		(CASE WHEN (ISNULL(e.dev_num)) THEN 0 ELSE e.dev_num END) AS devNum
+		FROM vc_dev vd
+		LEFT JOIN vc_schedule_dev ve
+		ON vd.`id`=ve.`dev_id`
+		LEFT JOIN vc_schedule vs
+		ON ve.`schedule_id` = vs.`uuid`
+		LEFT JOIN vc_dev vd2 
+		ON vd2.id=vs.master_no
+		LEFT JOIN 
+		(SELECT schedule_id,COUNT(*) AS dev_num FROM vc_schedule_dev GROUP BY schedule_id) AS e
+		ON e.schedule_id = vs.`uuid`
+		<where>
+			vs.status = 4
+			<if test="devId != null and devId != '' ">
+				and vd.`devno` = #{devId}
+			</if>
+			<if test="devno != '' and devno != null">
+				and vd.devno like CONCAT('%',#{devno},'%')
+			</if>
+			<if test="zoneno != '' and zoneno != null">
+				and vd.zoneno = #{zoneno}
+			</if>
+			<if test="v2vno != null and v2vno != '' ">
+				and vd.`id` = #{v2vno}
+			</if>
+			<if test="createType != '' and createType != null">
+				and vs.create_type = #{createType}
+			</if>
+		</where>
+	</select>
+	
+	<delete id="deleteDevOfUser">
+		DELETE
+		FROM
+			vc_user_dev
+		WHERE
+			user_id = #{userId}
+		AND dev_id IN
+		(
+           <foreach collection="devId" item="item" separator=",">
+               #{item}
+           </foreach>
+        )
+	</delete>
+	
+	<update id="updateById" parameterType="map">
+	    UPDATE `vc_user_dev` 
+	    	set alias= #{alias}
+			,update_time=now()
+	    <where>
+			<if test="userId != '' and userId != null">
+				and user_id=#{userId}
+			</if>
+			<if test="devId != '' and devId != null">
+				and dev_id=#{devId}
+			</if>
+		</where>
+	</update>
+	
+	
+	<!-- 获取所有设备详情数据（掌上通）-->
+	<select id="getDevDetail" parameterType="map" resultType="map">
+		SELECT 
+		vdd.regionid,
+		vdd.xmname,
+		vd.name,
+		vdd.lxr,
+		vdd.lxrzw,
+		vdd.lxrdh,
+		vdd.lxr2,
+		vdd.lxrzw2,
+		vdd.lxrdh2,
+		vdd.lxr3,
+		vdd.lxrzw3,
+		vdd.lxrdh3,
+		vdd.yysm,
+		vdd.yyslxr,
+		vdd.yyslxrdh,
+		vdd.xxdz,
+		vdd.zonedevno,
+		vd.devno,
+		vd.`type`,
+		vd.`ssjgid` 
+		FROM vc_dev_detail vdd
+		LEFT JOIN vc_dev vd
+		ON vdd.`zonedevno`=vd.`zonedevno`
+	</select>
+	
+	<!-- 获取所有成员单位数据数据（掌上通）-->
+	<select id="getAllUnits" parameterType="map" resultType="map">
+		SELECT id,pid,name,regionid FROM vc_customer_unit
+	</select>	
+	
+	<!-- 会控助手-20171018 start -->
+	<!-- 获取联系人（设备）列表(为了兼容视联管家获取昵称，该昵称是从vc_user_dev表获取) -->
+	<select id="getUserDevicesInfo" resultType="DeviceVO" parameterType="map">
+		SELECT id,name,alias,typeId,ip,type,roleId,role,dataType,updateTime,zonedevno,zoneno
+		FROM
+		(SELECT DISTINCT(vd.`id`) AS zonedevno,
+		vd.`name` AS NAME,
+		vud.`alias` AS alias,
+		vd.`type` AS typeId,
+		vd.`ip` AS ip,
+		vdt.`name` AS TYPE,
+		vd.`role` AS roleId,
+		vdr.`name` AS role,	
+		vud.`data_type` AS dataType,
+		vud.`update_time` AS updateTime,
+		vd.`devno` AS id,
+		vd.`zoneno` AS zoneno
+		FROM vc_user_dev vud 
+		JOIN vc_dev vd ON vud.`dev_id`=vd.`id`
+		JOIN vc_dev_type vdt ON vd.`type`=vdt.`id`
+		JOIN vc_dev_role vdr ON vd.`role`=vdr.`id` 
+		<where>
+			<if test="userId != '' and userId != null">
+				and vud.user_id = #{userId}
+			</if>
+			<if test="dataType != '' and dataType != null">
+				and vud.data_type = #{dataType}
+			</if>
+			<if test="id != '' and id != null">
+				and vd.id like CONCAT('%',#{id},'%')
+			</if>
+			<if test="zoneno != '' and zoneno != null">
+				and vd.zoneno = #{zoneno}
+			</if>
+			<if test="devno != '' and devno != null">
+				and vd.devno like CONCAT('%',#{devno},'%')
+			</if>
+			<if test="name != '' and name != null">
+				and vd.name like CONCAT('%',#{name},'%')
+			</if>
+			<if test="typeId != '' and typeId != null">
+				and vd.type = #{typeId}
+			</if>
+			<if test="regionId != '' and regionId != null">
+				and vd.region_id = #{regionId}
+			</if>
+		</where>
+		UNION
+		SELECT 
+		vv.`id` AS zonedevno,
+		vv.`name` AS NAME,
+		vv.`alias` AS alias,
+		vv.`type` AS typeId,
+		vv.`ip` AS ip,
+		vdt.`name` AS TYPE,
+		vv.`role` AS roleId,
+		vdr.`name` AS role,	
+		'1' AS dataType,
+		'' AS updateTime,
+		vv.`devno` AS id,
+		vv.`zoneno` AS zoneno
+		FROM vc_user_devgroup vdp
+		JOIN vc_devgroup_dev vde ON vde.devgroup_id = vdp.devgroup_id
+		JOIN vc_dev vv ON vv.`id`=vde.`dev_id`
+		JOIN vc_dev_role vdr ON vv.`role`=vdr.`id`
+		JOIN vc_dev_type vdt ON vv.`type`=vdt.`id`
+		<where>
+			vv.id NOT IN 
+			(SELECT vs.`dev_id` AS id 
+			FROM 
+			vc_user_dev vs WHERE vs.`user_id` =#{userId})
+			<if test="userId != '' and userId != null">
+				and vdp.user_id = #{userId}
+			</if>
+			<if test="id != '' and id != null">
+				and vv.id like CONCAT('%',#{id},'%')
+			</if>
+			<if test="zoneno != '' and zoneno != null">
+				and vv.zoneno = #{zoneno}
+			</if>
+			<if test="devno != '' and devno != null">
+				and vv.devno like CONCAT('%',#{devno},'%')
+			</if>
+			<if test="name != '' and name != null">
+				and vv.name like CONCAT('%',#{name},'%')
+			</if>
+			<if test="typeId != '' and typeId != null">
+				and vv.type = #{typeId}
+			</if>
+			<if test="regionId != '' and regionId != null">
+				and vv.region_id = #{regionId}
+			</if>
+		</where>) dev
+		order by CONVERT(dev.name USING gbk)
+	</select>
+
+	<!-- 获取联系人（设备）列表总数 -->
+	<select id="getUserDevicesInfoCount" resultType="int" parameterType="map">
+		SELECT count(vd.`id`)
+		FROM vc_user_dev vud 
+		JOIN vc_dev vd ON vud.`dev_id`=vd.`id`
+		JOIN vc_dev_type vdt ON vd.`type`=vdt.`id`
+		<where>
+			<if test="userId != '' and userId != null">
+				and vud.user_id = #{userId}
+			</if>
+			<if test="dataType != '' and dataType != null">
+				and vud.data_type = #{dataType}
+			</if>
+			<if test="id != '' and id != null">
+				and vd.id like CONCAT('%',#{id},'%')
+			</if>
+			<if test="zoneno != '' and zoneno != null">
+				and vd.zoneno = #{zoneno}
+			</if>
+			<if test="devno != '' and devno != null">
+				and vd.devno like CONCAT('%',#{devno},'%')
+			</if>
+			<if test="name != '' and name != null">
+				and vd.name like CONCAT('%',#{name},'%')
+			</if>
+			<if test="typeId != '' and typeId != null">
+				and vd.type = #{typeId}
+			</if>
+			<if test="regionId != '' and regionId != null">
+				and vd.region_id like CONCAT(#{regionId},'%')
+			</if>
+		</where>
+	</select>
+	
+	
+	<!-- 获取精确设备号码 -->
+	<select id="getThisDevInfo" resultType="DeviceVO" parameterType="map">
+		select vc_dev.id as zonedevno,
+		vc_dev.name,
+		vc_dev.mac,
+		vc_dev.ip,
+		vc_dev.type as typeId,
+		vc_dev.alias,
+		vc_dev.role as roleId,
+		vc_dev.svrid,
+		vc_dev.updatetime,
+		vc_dev.svr_region_id as svrRegionId,
+		vc_dev.address,
+		vc_dev.devno as id,
+		vc_dev.zoneno
+		FROM 
+		vc_dev
+		<where>
+			<if test="devno != '' and devno != null">
+				and vc_dev.devno = #{devno}
+			</if>
+			<if test="zoneno != '' and zoneno != null">
+				and vc_dev.zoneno = #{zoneno}
+			</if>
+			<if test="name != '' and name != null">
+				or
+				vc_dev.name like CONCAT('%',#{name},'%')
+			</if>
+			<if test="alias != '' and alias != null">
+				or
+				vc_dev.alias like CONCAT('%',#{alias},'%')
+			</if>
+		</where>
+	</select>
+	
+	
+	<!-- 获取设备别名 -->
+	<select id="getDevAlias" resultType="DeviceVO" parameterType="map">
+		SELECT DISTINCT(vc_dev.devno) as id,vc_user_dev.alias,vc_dev.devno as devNo,vc_dev.zonedevno as zonedevno
+		FROM vc_user_dev
+		LEFT JOIN  vc_dev
+		ON vc_dev.`id` = vc_user_dev.`dev_id`
+		WHERE vc_user_dev.`user_id` = #{userId}
+	</select>
+	<!-- 根据终端号码，查询号码和对应的MAC -->
+	<select id="getNumberAndMacByNumbers" resultType="DeviceVO" parameterType="list">
+		SELECT devno ,
+		zonedevno, 
+		mac
+		from vc_dev
+		where devno in
+		<foreach collection="list" item="item" separator="," open="(" close=")">
+			#{item}
+		</foreach>
+	</select>
+	<!-- 获取终端业务状态 -->
+	<select id="getDevOperationStatus" resultType="DeviceVO" parameterType="map">
+		SELECT vc_dev_status.uuid AS uuid,
+		vc_dev.devno,
+		vc_dev.mac AS mac,
+		vc_dev_status.uuid,
+		vc_dev_status.devid as devId,
+		vc_dev_status.operstatus,
+		vc_dev_status.opertype,
+		vc_dev_status.firstspeaker,
+		vc_dev_status.isopering,
+		vc_dev_status.masterid, 
+		DATE_FORMAT(vc_dev_status.operstarttime,'%Y-%m-%d %H:%i:%s') AS startTime,
+		vc_dev_status.operendtime AS stopTime,
+		vc_dev_status.serverno AS serverNo,
+		vc_dev_status.returnvirno AS returnVirNo,
+		vc_dev_status.meetname AS meetName,
+		vc_dev_status.videoname AS videoName,
+		ABS(NOW() - operstarttime)  AS diffTime
+		from vc_dev_status 
+		left join vc_dev 
+		on vc_dev.id = vc_dev_status.devid
+		<where>
+			<if test="devno != '' and devno != null">
+				and vc_dev.devno = #{devno}
+			</if>
+			<if test="devid != '' and devid != null">
+				and vc_dev_status.devid = #{devid}
+			</if>
+			<if test="zoneno != '' and zoneno != null">
+				and vc_dev.zoneno = #{zoneno}
+			</if>
+			<if test="operstatus != '' and operstatus != null">
+				and vc_dev_status.operstatus = #{operstatus}
+			</if>
+			<if test="opertype != '' and opertype != null">
+				and vc_dev_status.opertype = #{opertype}
+			</if>
+			<if test="isstartdev != '' and isstartdev != null">
+				and vc_dev_status.isstartdev = #{isstartdev}
+			</if>
+			<if test="isopering != '' and isopering != null">
+				and vc_dev_status.isopering = #{isopering}
+			</if>
+			<if test="masterid != '' and masterid != null">
+				and vc_dev_status.masterid = #{masterid}
+				and vc_dev_status.masterid != vc_dev_status.devid
+			</if>
+		</where>
+		ORDER BY diffTime ASC
+	</select>
+	
+	<!-- 根据主席号码获取会议信息 -->
+	<select id="getScheduleByMaster" resultType="ScheduleFormVO" parameterType="map">
+		SELECT uuid,master_no as masterId
+		FROM vc_schedule
+		<where>
+			vc_schedule.create_type = 11
+			and vc_schedule.creator_id IS NULL
+			<if test="devId != '' and devId != null">
+				and vc_schedule.master_no = #{devId}
+			</if>
+		</where>
+	</select>
+	
+	<!-- 获取终端数据 -->
+	<select id="getDevMessage" resultType="DeviceVO" parameterType="map">
+		select * from vc_dev where zonedevno = #{zonedevno}
+	</select>
+	
+	<!-- 手机会控获取所有设备信息 -->
+	<select id="getDevInfo64" resultType="DeviceVO" parameterType="map">
+		select vc_dev.id,
+		vc_dev.devno as devNo,
+		vc_dev.name,
+		vc_dev.alias,
+		vc_dev.mac,
+		vc_dev.ip,
+		vc_dev.type as typeId,
+		dt.name AS `type`,
+		vc_dev.alias,
+		vc_dev.role as roleId,
+		vc_dev.svrid,
+		vc_dev.updatetime,
+		vc_dev.svr_region_id as svrRegionId,
+		vc_dev.address
+		FROM vc_dev LEFT JOIN vc_dev_type dt ON vc_dev.type=dt.id
+		<where>
+			<if test="id != '' and id != null">
+				and vc_dev.id like CONCAT('%',#{id},'%')
+			</if>
+			<if test="devNo != '' and devNo != null">
+				and vc_dev.devno like CONCAT('%',#{devNo},'%')
+			</if>
+			<if test="name != '' and name != null">
+				or
+				vc_dev.name like CONCAT('%',#{name},'%')
+			</if>
+		</where>
+	</select>
+	
+</mapper>

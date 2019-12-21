@@ -1,0 +1,66 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+        "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.visionvera.dao.ywcore.ServersHardwareDao">
+	<!-- 查询xx天前的服务器监控信息 -->  
+	<select id="getServersHardwareListBeforeDay" resultType="long">
+		SELECT 
+			id
+		FROM 
+			t_servers_hardware hardware
+		WHERE 
+			createTime &lt; SUBDATE(NOW(),INTERVAL #{reserverDays} DAY)
+			AND serverUnique = #{serverUnique} 
+			ORDER BY id DESC
+	</select>
+	<!-- 根据硬件信息id删除 -->
+	<delete id="deleteServersHardwareList" parameterType="list" >
+		DELETE FROM t_servers_hardware 
+		WHERE id in
+		<foreach collection="serverHardwareIds" index="index" item="hardId" open="(" separator="," close=")">
+			#{hardId}
+		</foreach>
+		AND yw_uuid = ''
+	</delete>
+	<!-- 插入应用服务器硬件信息 -->
+	<insert id="insertServersHardware" parameterType="ServersHardware" keyProperty="id" useGeneratedKeys="true">
+		INSERT INTO 
+			t_servers_hardware 
+   		(
+	        serverCPUType ,serverCPUnumber ,
+	        serverCPUSumRate ,serverCPUEveryRate ,
+	        serverDDRGross ,serverDDRRate ,
+	        serverDDRUsable ,serverHDDGross ,
+	        serverHDDName ,serverHDDVolume ,
+	        serverHDDUsage ,serverHDDRate ,
+	        serverHDDAllRate,
+	        netWorkMacAddr,serverNETIP,
+	        serverNETUpData ,serverNETDownData ,
+	        serverUnique,createTime	        
+	    )
+	    VALUES
+	    (
+		    #{serverCPUType},#{serverCPUnumber},
+		    #{serverCPUSumRate},#{serverCPUEveryRate},
+		    #{serverDDRGross},#{serverDDRRate},
+		    #{serverDDRUsable},#{serverHDDGross},
+		    #{serverHDDName},#{serverHDDVolume},
+		    #{serverHDDUsage},#{serverHDDRate},
+		    #{serverHDDAllRate},
+		    #{netWorkMacAddr},#{serverNETIP},
+		    #{serverNETUpData},#{serverNETDownData},
+		    #{serverUnique},#{createTime}  
+	    )
+	</insert>
+
+	<!-- 获取最早的服务器硬件信息 -->
+	<select id="getServersHardwareListEarlist" resultType="long">
+		SELECT
+		id
+		FROM
+		t_servers_hardware hardware
+		WHERE
+		serverUnique = #{serverUnique}
+		ORDER BY id ASC LiMIT #{size}
+	</select>
+</mapper>

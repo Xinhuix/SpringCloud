@@ -1,0 +1,42 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<project version="4">
+  <component name="FrameworkDetectionExcludesConfiguration">
+    <file type="web" url="file://$PROJECT_DIR$/serverwatchV2" />
+    <file type="web" url="file://$PROJECT_DIR$/slweomsV2" />
+  </component>
+  <component name="JavaScriptSettings">
+    <option name="languageLevel" value="ES6" />
+  </component>
+  <component name="MavenProjectsManager">
+    <option name="originalFiles">
+      <list>
+        <option value="$PROJECT_DIR$/visionvera-app-server/pom.xml" />
+        <option value="$PROJECT_DIR$/serverwatchV2/pom.xml" />
+        <option value="$PROJECT_DIR$/slweomsV2/pom.xml" />
+        <option value="$PROJECT_DIR$/visionvera-authentication/pom.xml" />
+        <option value="$PROJECT_DIR$/visionvera-common/pom.xml" />
+        <option value="$PROJECT_DIR$/visionvera-common-api/pom.xml" />
+        <option value="$PROJECT_DIR$/visionvera-eureka-server/pom.xml" />
+        <option value="$PROJECT_DIR$/visionvera-gateway/pom.xml" />
+        <option value="$PROJECT_DIR$/visionvera-operation/pom.xml" />
+        <option value="$PROJECT_DIR$/visionvera-parent/pom.xml" />
+        <option value="$PROJECT_DIR$/visionvera-resource/pom.xml" />
+        <option value="$PROJECT_DIR$/visionvera-serverwatch/pom.xml" />
+        <option value="$PROJECT_DIR$/visionvera-serverwatch-upgrade/pom.xml" />
+        <option value="$PROJECT_DIR$/visionvera-server-test/pom.xml" />
+      </list>
+    </option>
+  </component>
+  <component name="ProjectRootManager" version="2" project-jdk-name="1.8" project-jdk-type="JavaSDK" />
+  <component name="SvnBranchConfigurationManager">
+    <option name="myConfigurationMap">
+      <map>
+        <entry key="$PROJECT_DIR$">
+          <value>
+            <SvnBranchConfiguration />
+          </value>
+        </entry>
+      </map>
+    </option>
+  </component>
+</project>

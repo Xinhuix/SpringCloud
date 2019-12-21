@@ -1,0 +1,8 @@
+{
+  "timestamp": 1561359131876,
+  "status": 400,
+  "error": "Bad Request",
+  "exception": "org.springframework.http.converter.HttpMessageNotReadableException",
+  "message": "Required request body is missing: public com.visionvera.bean.base.ReturnData com.visionvera.web.controller.rest.UserController.addHgEntry(com.visionvera.bean.datacore.HgListVO)",
+  "path": "/user/addHgEntry"
+}

@@ -1,0 +1,23 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.visionvera.dao.ywcore.SetProvRateDao">
+	<!-- 通过regionId查询最新的一条数据，获取其上下行带宽 Start -->
+	<select id="selectRateByRegionId" parameterType="com.visionvera.bean.ywcore.SetProvRateVO" resultType="com.visionvera.bean.ywcore.SetProvRateVO">
+		SELECT
+			provRate.regionid AS regionId,
+			provRate.prov AS prov,
+			provRate.up_allrate AS upAllRate,
+			provRate.down_allrate AS downAllRate
+		FROM
+			t_setprovratert AS provRate
+		<where>
+			<if test="regionId != null and regionId.length() > 0">
+				AND provRate.regionid = #{regionId}
+			</if>
+			<if test="life != null and life.length() > 0">
+				AND provRate.life = #{life}
+			</if>
+		</where>
+	</select>
+	<!-- 通过regionId查询最新的一条数据，获取其上下行带宽 End -->
+</mapper>

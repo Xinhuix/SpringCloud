@@ -1,0 +1,100 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+        "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+
+<mapper namespace="com.visionvera.dao.cms.DeviceDao">
+	<!-- 根据会议ID获取会议终端列表（详细信息） Start -->
+	<select id="selectDeviceListByMeetingId" parameterType="map" resultType="map">
+		SELECT 
+			* 
+		FROM (
+			SELECT
+				s.`name` as scheduleName,
+				d.`devno` AS devNo,
+				d.`zonedevno` AS zonedevno,
+				d.name AS devName,
+				d.`svrid` AS svrId,
+				d.zoneno AS zoneno,
+				dd.lxr, 
+				dd.lxrdh, 
+				r.name AS regionName,
+				r.`id` AS regionId,
+				ss.`speaker_1` AS speaker_1,
+				ss.`speaker_2` AS speaker_2
+			FROM
+				vc_schedule s
+			LEFT JOIN	vc_schedule_dev AS sd on sd.schedule_id=s.uuid
+			RIGHT JOIN 
+				vc_dev AS d
+			ON 
+				sd.`dev_id`=d.`id`
+			LEFT JOIN 
+				vc_region AS r
+			ON 
+				d.`region_id`=r.`id`
+			LEFT JOIN 
+				vc_dev_detail AS dd
+			ON 
+				d.`id`=dd.`devno`
+			LEFT JOIN 
+				vc_schedule_state AS ss
+	    	ON 
+	    		sd.`schedule_id` = ss.`schedule_id`
+			WHERE
+				sd.`schedule_id` = #{scheduleId}) a
+		<where>
+			<if test="keyWord != null and keyWord != '' ">
+				devNo like CONCAT('%', #{keyWord}, '%')
+				or zonedevno like CONCAT('%', #{keyWord}, '%')
+				or devName like CONCAT('%', #{keyWord}, '%')
+				<!-- or svrName like CONCAT('%', #{keyWord}, '%') -->
+				or regionName like CONCAT('%', #{keyWord}, '%')
+			</if>
+		</where>
+		ORDER BY devNo
+	</select>
+	<!-- 根据会议ID获取会议终端列表（详细信息） End -->
+	
+	<!-- 通过8位号码批量查询设备信息 Start -->
+	<select id="selectDeviceByZonedevnoBatch" resultType="com.visionvera.bean.cms.DeviceVO" parameterType="java.lang.String">
+		SELECT
+			device.devno AS devno,
+			device.zoneno AS zoneno,
+			IF(LENGTH(device.zonedevno)=8,device.zonedevno,device.id) AS zonedevno
+		FROM
+			vc_dev AS device
+		WHERE
+			device.zonedevno
+		IN
+		<foreach collection="array" item="zonedevno" open="(" separator="," close=")">
+			#{zonedevno}
+		</foreach>
+		or device.devno
+		IN
+		<foreach collection="array" item="zonedevno" open="(" separator="," close=")">
+			#{zonedevno}
+		</foreach>
+	</select>
+	<!-- 通过8位号码批量查询设备信息 End -->
+
+
+	<!-- 根据会议ID获取会议终端区域列表 Start -->
+	<select id="selectDeviceRegionListByMeetingId" parameterType="map" resultType="map">
+		SELECT
+			DISTINCT(CONCAT(LEFT(d.region_id, 2), '0000000000')) AS regionId,
+			vr.name AS regionName
+		FROM 
+			vc_schedule_dev AS sd
+		JOIN 
+			vc_dev AS d
+		ON 
+			sd.`dev_id`=d.`id`
+		JOIN
+			vc_region vr
+		ON
+			vr.id = CONCAT(LEFT(d.region_id, 2), '0000000000')
+		WHERE
+			sd.`schedule_id` = #{scheduleId}
+	</select>
+	<!-- 根据会议ID获取会议终端区域列表 End -->
+</mapper>

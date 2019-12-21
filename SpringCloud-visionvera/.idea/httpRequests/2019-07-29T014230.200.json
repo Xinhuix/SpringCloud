@@ -1,0 +1,59 @@
+{
+  "errcode": 0,
+  "errmsg": "获取成功",
+  "access_token": null,
+  "data": {
+    "items": [
+      {
+        "uuid": "6eysgu236872846823hdiwe83773hdhu",
+        "name": "遥控服务器",
+        "type": 7,
+        "ip": "10.1.24.91",
+        "port": "8899",
+        "account": "admin",
+        "password": "123456",
+        "tcpState": 0
+      },
+      {
+        "uuid": "6yetasa89u9su9duandd98u9so290ejk",
+        "name": "分布图服务器",
+        "type": 9,
+        "ip": "192.168.109.96",
+        "port": "8080",
+        "account": "admin",
+        "password": "123456",
+        "tcpState": 0
+      },
+      {
+        "uuid": "76hdye77fg78gfhy88eu829h923udjei",
+        "name": "点播服务器",
+        "type": 8,
+        "ip": "192.168.109.96",
+        "port": "8080",
+        "account": "admin",
+        "password": "123456",
+        "tcpState": 0
+      },
+      {
+        "uuid": "hdh8r8eue83ue92e9292821183i0202u",
+        "name": "V观服务器",
+        "type": 6,
+        "ip": "192.168.109.98",
+        "port": "9090",
+        "account": "admin",
+        "password": "123456",
+        "tcpState": 0
+      },
+      {
+        "uuid": null,
+        "name": null,
+        "type": 9999,
+        "ip": "10.1.24.237",
+        "port": "58080",
+        "account": null,
+        "password": null,
+        "tcpState": 0
+      }
+    ]
+  }
+}

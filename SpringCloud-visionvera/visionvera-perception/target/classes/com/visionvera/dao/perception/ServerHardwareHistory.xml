@@ -1,0 +1,35 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+        "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.visionvera.dao.perception.ServerHardwareHistoryDao">
+    <insert id="batchInsert" parameterType="java.util.Map">
+        <if test="items.size() != 0">
+            INSERT INTO t_watch_servers_hardware_history_${times}(history_time_point,cpu_use_ratio,ram_use_ratio,disk_use_ratio,network_down_rate,network_up_rate,service_unique)
+            values
+            <foreach collection="items.values" item="item" index="index" separator=",">
+                (#{item.time,jdbcType=TIMESTAMP}, #{item.cpuUsed,jdbcType=INTEGER},
+                #{item.ramUsed,jdbcType=VARCHAR}, #{item.diskUsed,jdbcType=INTEGER},
+                #{item.networkInRate,jdbcType=VARCHAR},
+                #{item.networkOutRate,jdbcType=BIT}, #{item.serviceUnique,jdbcType=VARCHAR})
+            </foreach>
+        </if>
+    </insert>
+    <select id="selectServerHardwareHistory" resultType="java.util.Map">
+      select DATE_FORMAT(history_time_point,'%Y-%m-%d %H:%i:00') time,cpu_use_ratio as cpuUsed,ram_use_ratio AS ramUsed,disk_use_ratio AS diskUsed
+           ,network_down_rate AS networkInRate,network_up_rate as networkOutRate,service_unique as serviceUnique from
+        t_watch_servers_hardware_history_${times}
+        <where>
+            <if test="startTime!=null and endTime !=null">
+              history_time_point <![CDATA[>=]]> #{startTime,jdbcType=TIMESTAMP} and history_time_point <![CDATA[<= ]]> #{endTime,jdbcType=TIMESTAMP}
+            </if>
+            <if test="serverUnique!=null ">
+                AND service_unique = #{serverUnique,jdbcType=VARCHAR}
+            </if>
+        </where>
+        order by history_time_point
+    </select>
+    <delete id="deleteHistory">
+        delete from t_watch_servers_hardware_history_${times}
+        where history_time_point <![CDATA[<=]]> #{time,jdbcType=TIMESTAMP}
+    </delete>
+</mapper>

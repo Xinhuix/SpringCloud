@@ -1,0 +1,72 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+        "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.visionvera.dao.ywcore.PlatformDao">
+	<select id="getProcessExceptionCount" parameterType="string" resultType="int">
+		SELECT 
+			COUNT(1)
+		FROM 
+			tpos_process_relation a 
+			JOIN t_platform_process b ON a.tpos_process_id = b.id
+		WHERE 
+			b.process_status = 'PROBLEM' 
+			AND a.tpos_registerid = #{registerid} and b.state = 0
+	</select>
+	
+	<!-- 根据服务器唯一标识查询平台列表 -->
+	<select id="getPlatformListByServerUnique" parameterType="string" resultType="com.visionvera.bean.slweoms.PlatformVO">
+		SELECT 
+			tpos_id tposId,tpos_registerid tposRegisterid,tpos_name tposName,
+			tpos_platform_type tposPlatformType,tpos_ip tposIp,
+			tpos_platform_version tposPlatformVersion,tpos_linkman tposLinkman,
+			tpos_phone tposPhone,tpos_email tposEmail,server_unique serverUnique
+		FROM 
+			t_platform_tpos 
+		WHERE 
+			server_unique = #{serverUnique} AND tpos_state = 0
+	</select>
+	
+	<!-- 添加平台  -->
+	<insert id="insertPlatform" parameterType="PlatformVO">
+		INSERT INTO 
+			t_platform_tpos
+			(tpos_name ,tpos_phone ,tpos_linkman ,tpos_email ,
+			tpos_platform_version,tpos_platform_type ,tpos_ip ,
+			server_unique ,
+			tpos_registerid ,tpos_state ,tpos_createtime )
+		VALUES
+			(#{tposName},#{tposPhone},#{tposLinkman},#{tposEmail},
+			#{tposPlatformVersion},#{tposPlatformType},#{tposIp},
+			#{serverUnique},
+			#{tposRegisterid},0,now())
+	</insert>
+	
+	<!-- 修改平台 -->
+	<update id="updatePlatform" parameterType="PlatformVO">
+		UPDATE t_platform_tpos
+        <set>
+            <if test="tposName != null and tposName !='' ">tpos_name = #{tposName},</if>
+            <if test="tposPhone != null and tposPhone !='' ">tpos_phone = #{tposPhone},</if>
+            <if test="tposLinkman != null and tposLinkman !='' ">tpos_linkman = #{tposLinkman},</if>
+            <if test="tposEmail != null and tposEmail !='' ">tpos_email = #{tposEmail},</if>
+            <if test="tposPlatformVersion != null and tposPlatformVersion !='' ">tpos_platform_version =
+                #{tposPlatformVersion},
+            </if>
+            <if test="tposPlatformType != null">tpos_platform_type = #{tposPlatformType},</if>
+            <if test="tposIp != null and tposIp !='' ">tpos_ip = #{tposIp},</if>
+            <if test="serverUnique != null and serverUnique !='' ">server_unique=#{serverUnique},</if>
+            <if test="tposModifytime != null">tpos_modifytime = now(),</if>
+        </set>
+        WHERE 
+        	tpos_registerid = #{tposRegisterid}
+	</update>
+	<!-- 删除平台 -->
+	<update id="deletePlatform" parameterType="string">
+		UPDATE 
+			t_platform_tpos 
+		SET 
+			tpos_state = -1,tpos_modifytime = now() 
+		WHERE 
+			tpos_registerid = #{tposRegisterid}
+	</update>
+</mapper>

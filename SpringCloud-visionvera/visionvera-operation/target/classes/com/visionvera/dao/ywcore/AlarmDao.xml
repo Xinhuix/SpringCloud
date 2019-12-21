@@ -1,0 +1,94 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+        "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.visionvera.dao.ywcore.AlarmDao">
+	<!-- 根据报警ID查询服务器离线报警 -->
+	<select id="getServerOfflineAlarmIds" parameterType="string" resultType="int">
+		SELECT 
+			id
+		FROM 
+			t_alarm_information
+		WHERE 
+			treatmentStates = 1 AND kindType = 6 
+			AND registerid = #{serverUnique}
+	</select>
+	<!-- 设置报警为已处理 -->
+	<update id="updateAlarmTreatmentStates" parameterType="list">
+		UPDATE 
+	 		t_alarm_information 
+	 	SET treatmentStates = 0 
+	 	WHERE id in
+	 	<foreach collection="alarmIds" index="index" item="alarmId" open="(" separator="," close=")">
+			#{alarmId}
+		</foreach>	
+	</update>
+	<!-- 插入报警 -->
+	<insert id="insertAlarm" parameterType="AlarmInfo">
+		INSERT INTO 
+			 t_alarm_information 
+   		(
+	        endpoint ,metric ,
+	        note ,status ,
+	        timestamp ,registerid ,
+	        alarmType ,treatmentStates ,
+	        alarmLevel ,kindType ,
+	        state ,createTime ,
+	        modifyTime    
+	    )
+	    VALUES
+	    (
+		    #{endpoint},#{metric},
+		    #{note},#{status},
+		    #{timestamp},#{registerid},
+		    #{alarmType},#{treatmentStates},
+		    #{alarmLevel},#{kindType},
+		    #{state},#{createTime},
+		    #{modifyTime} 
+	    )
+	</insert>
+	<!-- 批量插入报警 -->
+	<insert id="insertAlarmBatch" parameterType="list">
+		INSERT INTO t_alarm_information
+			(
+	        endpoint ,metric ,
+	        note ,status ,
+	        timestamp ,registerid ,
+	        alarmType ,treatmentStates ,
+	        alarmLevel ,kindType ,
+	        state ,createTime ,
+	        modifyTime    
+	    )
+		VALUES 
+		<foreach collection="alarmInfoList" item="val" separator=",">
+			(
+		    #{val.endpoint},#{val.metric},
+		    #{val.note},#{val.status},
+		    #{val.timestamp},#{val.registerid},
+		    #{val.alarmType},#{val.treatmentStates},
+		    #{val.alarmLevel},#{val.kindType},
+		    #{val.state},#{val.createTime},
+		    #{val.modifyTime} 
+	    )
+		</foreach>
+	</insert>
+	
+	<!-- 查询xx天前的服务器监控信息 -->  
+	<select id="getAlarmInfoEarlist" resultType="long">
+		SELECT 
+			id
+		FROM 
+			t_alarm_information alarm
+		WHERE 
+			createTime &lt; SUBDATE(NOW(),INTERVAL #{expireDay} DAY)			
+			ORDER BY id ASC LIMIT #{size}
+	</select>
+	
+	<!-- 根据报警信息id删除 -->
+	<delete id="deleteAlarmInfoList" parameterType="list" >
+		DELETE FROM t_alarm_information 
+		WHERE id in
+		<foreach collection="alarmIdList" index="index" item="alarmId" open="(" separator="," close=")">
+			#{alarmId}
+		</foreach>
+	</delete>	
+</mapper>

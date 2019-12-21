@@ -1,0 +1,475 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.visionvera.dao.authentication.ServerConfigDao">
+
+    <!-- 通用查询映射结果 -->
+    <resultMap id="BaseResultMap" type="com.visionvera.bean.datacore.ServerConfig">
+        <id column="id" property="id"/>
+        <result column="ip" property="ip"/>
+        <result column="port" property="port"/>
+        <result column="loginName" property="loginName"/>
+        <result column="loginPwd" property="loginPwd"/>
+        <result column="token" property="token"/>
+        <result column="platformId" property="platformId"/>
+        <result column="other_platform_id" property="otherPlatformId"/>
+        <result column="updateTime" property="updateTime"/>
+        <result column="remark" property="remark"/>
+        <result column="field1" property="field1"/>
+        <result column="field2" property="field2"/>
+        <result column="field3" property="field3"/>
+        <result column="field4" property="field4"/>
+    </resultMap>
+
+    <!-- 通用查询结果 -->
+    <sql id="Base_Column_List">
+        id, ip, port, loginName, loginPwd, token, platformId, other_platform_id AS otherPlatformId, updateTime, remark, field1, field2, field3, field4
+    </sql>
+
+  <!-- 通用查询条件 -->
+  <sql id="Where_Common">
+  		<if test="null != id">
+			AND id = #{id}
+		</if>
+		<if test="null != ip">
+			AND ip = #{ip}
+		</if>
+		<if test="null != port">
+			AND port = #{port}
+		</if>
+		<if test="null != loginName">
+			AND loginName = #{loginName}
+		</if>
+		<if test="null != loginPwd">
+			AND loginPwd = #{loginPwd}
+		</if>
+		<if test="null != token">
+			AND token = #{token}
+		</if>
+		<if test="null != platformId">
+			AND platformId = #{platformId}
+		</if>
+		<if test="null != otherPlatformId">
+			AND other_platform_id = #{otherPlatformId}
+		</if>
+		<if test="null != updateTime">
+			AND updateTime = #{updateTime}
+		</if>
+		<if test="null != remark">
+			AND remark = #{remark}
+		</if>
+		<if test="null != field1">
+			AND field1 = #{field1}
+		</if>
+		<if test="null != field2">
+			AND field2 = #{field2}
+		</if>
+		<if test="null != field3">
+			AND field3 = #{field3}
+		</if>
+		<if test="null != field4">
+			AND field4 = #{field4}
+		</if>
+	   </sql>
+ 	<select id="selectByPrimaryKey" resultType="com.visionvera.bean.datacore.ServerConfig">
+		SELECT  <include refid="Base_Column_List"/> FROM t_server_config WHERE id = #{id}
+	</select>
+	
+	<select id="get" resultType="com.visionvera.bean.datacore.ServerConfig">
+		SELECT  <include refid="Base_Column_List"/> FROM t_server_config
+		<where>
+     		 <include refid="Where_Common"/>
+ 		</where>
+		limit 1
+	</select>
+	
+	<select id="queryList" resultType="com.visionvera.bean.datacore.ServerConfig" parameterType="com.visionvera.bean.datacore.ServerConfig">
+		SELECT  <include refid="Base_Column_List"/> FROM t_server_config
+		 <where>
+     		 <include refid="Where_Common"/>
+ 		</where>
+	</select>
+	<select id="queryCount" resultType="java.lang.Integer" parameterType="com.visionvera.bean.datacore.ServerConfig">
+		SELECT count(*) FROM t_server_config
+		<where>
+     		 <include refid="Where_Common"/>
+ 		</where>
+	</select>
+	
+    <insert id="insert" parameterType="com.visionvera.bean.datacore.ServerConfig">
+		INSERT INTO t_server_config
+		<trim prefix="(" suffix=")" suffixOverrides="," >
+			ip,
+			port,
+			loginName,
+			loginPwd,
+			token,
+			platformId,
+			other_platform_id,
+			updateTime,
+			remark,
+			field1,
+			field2,
+			field3,
+			field4,
+		</trim>	
+		<trim prefix="values (" suffix=")" suffixOverrides="," >
+			#{ip},
+			#{port},
+			#{loginName},
+			#{loginPwd},
+			#{token},
+			#{platformId},
+			#{otherPlatformId},
+			#{updateTime},
+			#{remark},
+			#{field1},
+			#{field2},
+			#{field3},
+			#{field4},
+		</trim>	
+	</insert>
+	
+    <insert id="insertSelective" parameterType="com.visionvera.bean.datacore.ServerConfig">
+		INSERT INTO t_server_config
+		<trim prefix="(" suffix=")" suffixOverrides="," >
+		<if test="null != id">
+			id,
+		</if>
+		<if test="null != ip">
+			ip,
+		</if>
+		<if test="null != port">
+			port,
+		</if>
+		<if test="null != loginName">
+			loginName,
+		</if>
+		<if test="null != loginPwd">
+			loginPwd,
+		</if>
+		<if test="null != token">
+			token,
+		</if>
+		<if test="null != platformId">
+			platformId,
+		</if>
+		<if test="null != otherPlatformId">
+			other_platform_id,
+		</if>
+		<if test="null != updateTime">
+			updateTime,
+		</if>
+		<if test="null != remark">
+			remark,
+		</if>
+		<if test="null != field1">
+			field1,
+		</if>
+		<if test="null != field2">
+			field2,
+		</if>
+		<if test="null != field3">
+			field3,
+		</if>
+		<if test="null != field4">
+			field4,
+		</if>
+	</trim>	
+	<trim prefix="values (" suffix=")" suffixOverrides="," >
+		<if test="null != id">
+			#{id},
+		</if>
+		<if test="null != ip">
+			#{ip},
+		</if>
+		<if test="null != port">
+			#{port},
+		</if>
+		<if test="null != loginName">
+			#{loginName},
+		</if>
+		<if test="null != loginPwd">
+			#{loginPwd},
+		</if>
+		<if test="null != token">
+			#{token},
+		</if>
+		<if test="null != platformId">
+			#{platformId},
+		</if>
+		<if test="null != otherPlatformId">
+			#{otherPlatformId},
+		</if>
+		<if test="null != updateTime">
+			#{updateTime},
+		</if>
+		<if test="null != remark">
+			#{remark},
+		</if>
+		<if test="null != field1">
+			#{field1},
+		</if>
+		<if test="null != field2">
+			#{field2},
+		</if>
+		<if test="null != field3">
+			#{field3},
+		</if>
+		<if test="null != field4">
+			#{field4},
+		</if>
+	</trim>	
+	</insert>
+	
+	 <update id="updateByPrimaryKeySelective" parameterType="com.visionvera.bean.datacore.ServerConfig" >
+	 update t_server_config
+    <set>
+    <trim suffixOverrides="," >
+    <if test="null != ip">
+		ip = #{ip},
+	</if>
+	<if test="null != port">
+		port = #{port},
+	</if>
+	<if test="null != loginName">
+		loginName = #{loginName},
+	</if>
+	<if test="null != loginPwd">
+		loginPwd = #{loginPwd},
+	</if>
+	<if test="null != token">
+		token = #{token},
+	</if>
+	<if test="null != platformId">
+		platformId = #{platformId},
+	</if>
+	<if test="null != otherPlatformId">
+		other_platform_id = #{otherPlatformId},
+	</if>
+	<if test="null != updateTime">
+		updateTime = #{updateTime},
+	</if>
+	<if test="null != remark">
+		remark = #{remark},
+	</if>
+	<if test="null != field1">
+		field1 = #{field1},
+	</if>
+	<if test="null != field2">
+		field2 = #{field2},
+	</if>
+	<if test="null != field3">
+		field3 = #{field3},
+	</if>
+	<if test="null != field4">
+		field4 = #{field4},
+	</if>
+	</trim>
+</set>
+   WHERE id = #{id}
+  </update>
+	
+	 <update id="updateByPrimaryKey" parameterType="com.visionvera.bean.datacore.ServerConfig" >
+	 update t_server_config
+    <set>
+    <trim suffixOverrides="," >
+    		ip = #{ip},
+			port = #{port},
+			loginName = #{loginName},
+			loginPwd = #{loginPwd},
+			token = #{token},
+			platformId = #{platformId},
+			other_platform_id = #{otherPlatformId},
+			updateTime = #{updateTime},
+			remark = #{remark},
+			field1 = #{field1},
+			field2 = #{field2},
+			field3 = #{field3},
+			field4 = #{field4},
+	</trim>
+</set>
+   WHERE id = #{id}
+  </update>
+  
+  <delete id="deleteByPrimaryKey" parameterType="java.lang.Integer" >
+    delete from t_server_config
+    where id = #{id}
+  </delete>
+  
+  <delete id="delete" parameterType="com.visionvera.bean.datacore.ServerConfig" >
+    delete from t_server_config
+    where 1=1
+    <if test="null != id">
+		and id = #{id}
+	</if>
+	<if test="null != ip">
+		and ip = #{ip}
+	</if>
+	<if test="null != port">
+		and port = #{port}
+	</if>
+	<if test="null != loginName">
+		and loginName = #{loginName}
+	</if>
+	<if test="null != loginPwd">
+		and loginPwd = #{loginPwd}
+	</if>
+	<if test="null != token">
+		and token = #{token}
+	</if>
+	<if test="null != platformId">
+		and platformId = #{platformId}
+	</if>
+	<if test="null != otherPlatformId">
+		and other_platform_id = #{otherPlatformId}
+	</if>
+	<if test="null != updateTime">
+		and updateTime = #{updateTime}
+	</if>
+	<if test="null != remark">
+		and remark = #{remark}
+	</if>
+	<if test="null != field1">
+		and field1 = #{field1}
+	</if>
+	<if test="null != field2">
+		and field2 = #{field2}
+	</if>
+	<if test="null != field3">
+		and field3 = #{field3}
+	</if>
+	<if test="null != field4">
+		and field4 = #{field4}
+	</if>
+	</delete>
+	
+	<!-- 查询流媒体配置列表 -->
+	<select id="queryLmtConfigList" resultType="com.visionvera.bean.datacore.ServerConfig" >
+		select   sc.id, sc.ip, sc.port, sc.loginName, sc.loginPwd, sc.token, sc.platformId, sc.other_platform_id AS otherPlatformId, sc.updateTime, sc.remark from t_server_config  sc 
+		left join  t_applicationdeviceb ta on sc.other_platform_id=ta.id 
+        where ta.devtype =5
+	</select>
+
+	<!-- 通过条件查询服务配置信息 Start -->
+	<select id="selectServerConfigByCondition" parameterType="com.visionvera.bean.datacore.ServerConfig" resultType="com.visionvera.bean.datacore.ServerConfig">
+		SELECT
+			serverConfig.id AS id,
+			serverConfig.ip AS ip,
+			serverConfig.port AS port,
+			serverConfig.loginName AS loginName,
+			serverConfig.loginPwd AS loginPwd,
+			serverConfig.token AS token,
+			serverConfig.platformId AS platformId,
+			serverConfig.other_platform_id AS otherPlatformId,
+			DATE_FORMAT(serverConfig.updateTime,'%Y-%m-%d %H:%i:%s') AS updateTime,
+			serverConfig.remark AS remark,
+			platform.devtype AS platformType,
+			platform.devname AS platformName
+		FROM
+			t_server_config AS serverConfig
+		LEFT JOIN
+			t_applicationdeviceb AS platform
+		ON
+			serverConfig.other_platform_id = platform.id
+		<where>
+			<if test="id != null">
+				AND serverConfig.id = #{id}
+			</if>
+			<if test="ip != null and ip.length() > 0">
+				AND serverConfig.ip LIKE CONCAT(#{ip}, '%')
+			</if>
+			<if test="port != null">
+				AND serverConfig.port = #{port}
+			</if>
+			<if test="otherPlatformId != null and otherPlatformId.length() > 0">
+				AND serverConfig.other_platform_id = #{otherPlatformId}
+			</if>
+			<if test="platformType != null and platformType.length() > 0">
+				AND platform.devtype = #{platformType}
+			</if>
+		</where>
+	</select>
+	<!-- 通过条件查询服务配置信息 End -->
+
+	<!-- 通过平台ID查询服务器配置信息 Start -->
+	<select id="selectServerConfigByOtherPlatformId" parameterType="java.lang.String" resultType="com.visionvera.bean.datacore.ServerConfig">
+		SELECT
+			serverConfig.id AS id,
+			serverConfig.ip AS ip,
+			serverConfig.port AS port,
+			serverConfig.loginName AS loginName,
+			serverConfig.loginPwd AS loginPwd,
+			serverConfig.token AS token,
+			serverConfig.platformId AS platformId,
+			serverConfig.other_platform_id AS otherPlatformId,
+			DATE_FORMAT(serverConfig.updateTime,'%Y-%m-%d %H:%i:%s') AS updateTime,
+			serverConfig.remark AS remark,
+			platform.devtype AS platformType,
+			platform.devname AS platformName
+		FROM
+			t_server_config AS serverConfig
+		LEFT JOIN
+			t_applicationdeviceb AS platform
+		ON
+			serverConfig.other_platform_id = platform.id
+		WHERE
+			serverConfig.other_platform_id = #{otherPlatformId}
+		LIMIT 1
+	</select>
+	<!-- 通过平台ID查询服务器配置信息 End -->
+
+	<!-- 通过平台类别批量查询服务配置信息 Start -->
+	<select id="selectServerConfigByPlatformType" resultType="com.visionvera.bean.datacore.ServerConfig">
+		SELECT
+			serverConfig.id AS id,
+			serverConfig.ip AS ip,
+			serverConfig.port AS port,
+			serverConfig.loginName AS loginName,
+			serverConfig.loginPwd AS loginPwd,
+			serverConfig.token AS token,
+			serverConfig.platformId AS platformId,
+			serverConfig.other_platform_id AS otherPlatformId,
+			DATE_FORMAT(serverConfig.updateTime,'%Y-%m-%d %H:%i:%s') AS updateTime,
+			serverConfig.remark AS remark,
+			platform.devtype AS platformType,
+			platform.devname AS platformName
+		FROM
+			t_server_config AS serverConfig
+		LEFT JOIN
+			t_applicationdeviceb AS platform
+		ON
+			serverConfig.other_platform_id = platform.id
+		WHERE platform.devtype IN 
+		<foreach collection="array" item="platformType" open="(" separator="," close=")">
+			#{platformType}
+		</foreach>
+	</select>
+	<!-- 通过平台类别批量查询服务配置信息 End -->
+
+	<!-- 通过主键ID查询服务配置信息 Start -->
+	<select id="selectServerConfigById" parameterType="java.lang.String" resultType="com.visionvera.bean.datacore.ServerConfig">
+		SELECT
+			serverConfig.id AS id,
+			serverConfig.ip AS ip,
+			serverConfig.port AS port,
+			serverConfig.loginName AS loginName,
+			serverConfig.loginPwd AS loginPwd,
+			serverConfig.token AS token,
+			serverConfig.platformId AS platformId,
+			serverConfig.other_platform_id AS otherPlatformId,
+			DATE_FORMAT(serverConfig.updateTime,'%Y-%m-%d %H:%i:%s') AS updateTime,
+			serverConfig.remark AS remark,
+			platform.devtype AS platformType,
+			platform.devname AS platformName
+		FROM
+			t_server_config AS serverConfig
+		LEFT JOIN
+			t_applicationdeviceb AS platform
+		ON
+			serverConfig.other_platform_id = platform.id
+		WHERE
+			serverConfig.id = #{serverConfigId}
+		LIMIT 1
+	</select>
+	<!-- 通过主键ID查询服务配置信息 End -->
+</mapper>

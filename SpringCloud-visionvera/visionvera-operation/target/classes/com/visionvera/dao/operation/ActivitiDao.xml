@@ -1,0 +1,702 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+        "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.visionvera.dao.operation.ActivitiDao">
+	<!-- 获取会议保障申请表 -->
+	<select id="getForm" resultType="ScheduleFormVO" parameterType="ScheduleFormVO">
+		SELECT
+		vs.uuid,
+		title,
+		vs.status as status,
+		form_no AS formNo,
+		vs.NAME,
+		DATE_FORMAT(schedule_time,'%Y-%m-%d') AS scheduleTime,
+		DATE_FORMAT(vs.create_time,'%Y-%m-%d') AS createTime,
+		vu.`name` as creator,
+		rank,
+		dept,
+		devices,
+		vd.devno as chairman,
+		HOST,
+		functions,
+		plan_dev_num AS deviceCount,
+		member_level AS memberLevel,
+		level AS scheduleLevel,
+		DATE_FORMAT(start_time,'%Y-%m-%d %H:%i:%s') AS startTime,
+		DATE_FORMAT(end_time,'%Y-%m-%d %H:%i:%s') AS endTime,
+		schedule_id AS scheduleId,
+		COMMENT,
+		customer_comment AS customerComment,
+		commander_hq AS commanderHq,
+		commander_out AS commanderOut,
+		switch_hq AS switchHq,
+		switch_out AS switchOut,
+		problem_hq AS problemHq,
+		problem_out AS problemOut,
+		feedback_hq AS feedbackHq,
+		feedback_out AS feedbackOut,
+		response_hq AS responseHq,
+		response_out AS responseOut,
+		assist_hq AS assistHq,
+		assist_out AS assistOut,
+		prepare_hq AS prepareHq,
+		prepare_out AS prepareOut,
+		process_id AS processId,
+		state,
+		region,
+		main_bw as mainBw,
+		auxiliary_bw as auxiliaryBw,
+		master_addr as masterAddr
+		FROM vc_schedule vs
+		left join vc_user vu
+		on vs.creator_id=vu.uuid
+		left join vc_dev vd
+		on vd.id = vs.master_no
+		<where>
+			<if test="processId != null and processId != '' ">
+				and vs.process_id = #{processId}
+			</if>
+			<if test="uuid != null and uuid != '' ">
+				and vs.uuid = #{uuid}
+			</if>
+		</where>
+		order by vs.create_time desc
+	</select>
+	
+	<!-- 批量获取会议保障申请表（简化字段，提高效率，给待审、已审、已建列表使用） -->
+	<select id="getForms" resultType="ScheduleFormVO" parameterType="list">
+		SELECT
+		process_id as processId,
+		title,
+		form_no AS formNo,
+		state,
+		vu.`name` as creator
+		FROM vc_schedule vs
+		left join vc_user vu
+		on vs.creator_id=vu.uuid
+		<where>
+			<if test="list != null and list.size() > 0">
+				vs.process_id in
+				<foreach item="id" index="index" collection="list" open="("
+					separator="," close=")">
+					#{id}
+				</foreach>
+			</if>
+		</where>
+	</select>
+	
+	<!-- 通过条件批量获取会议保障申请表（简化字段，提高效率，给待审、已审、已建列表使用） -->
+	<select id="getFormsByConfition" resultType="ScheduleFormVO" parameterType="java.util.Map">
+		SELECT
+			process_id as processId,
+			vs.title,
+			vs.form_no AS formNo,
+			vs.state,
+			vu.`name` as creator
+		FROM 
+			vc_schedule AS vs
+		LEFT JOIN 
+			vc_user AS vu
+		ON 
+			vs.creator_id=vu.uuid
+		<where>
+			<if test="list != null and list.size() > 0">
+				AND vs.process_id in
+				<foreach item="id" index="index" collection="list" open="("
+					separator="," close=")">
+					#{id}
+				</foreach>
+			</if>
+			<if test="title != null and title.length() > 0">
+				AND vs.title LIKE CONCAT(#{title}, '%')
+			</if>
+			<if test="startCreateTime != null and startCreateTime.length() > 0">
+				<![CDATA[ AND vs.start_time >= #{startCreateTime} ]]>
+			</if>
+			<if test="endCreateTime != null and endCreateTime.length() > 0">
+				<![CDATA[ AND vs.start_time <= #{endCreateTime} ]]>
+			</if>
+		</where>
+	</select>
+
+	<!-- 获取会议保障申请表审批情况 -->
+	<select id="getIsApproved" resultType="ScheduleFormVO" parameterType="ScheduleFormVO">
+		SELECT
+		vu.`name` as accessorName,
+		vs.accessor_id as accessorId,
+		state
+		FROM vc_schedule vs
+		left join vc_user vu
+		on vs.accessor_id=vu.uuid
+		<where>
+			<if test="processId != null and processId != '' ">
+				and vs.process_id = #{processId}
+			</if>
+			<if test="uuid != null and uuid != '' ">
+				and vs.uuid = #{uuid}
+			</if>
+		</where>
+	</select>
+
+	<!-- 插入表单 -->
+	<insert id="addForm" parameterType="ScheduleFormVO" keyProperty="uuid">
+		<selectKey resultType="java.lang.String" order="BEFORE"
+			keyProperty="uuid">
+			select replace(uuid(), '-', '') from dual
+		</selectKey>
+		insert into vc_schedule(uuid,title,form_no,name,schedule_time,create_time,creator_id,rank,dept,devices,
+		master_no,host,functions,plan_dev_num,member_level,level,start_time,end_time,schedule_id,
+		comment,customer_comment,commander_hq,commander_out,switch_hq,switch_out,problem_hq,problem_out,
+		feedback_hq,feedback_out,response_hq,response_out,assist_hq,assist_out,prepare_hq,prepare_out,process_id,
+		state,region,accessor_id,usergroup_id,plan_person_num,call_mode,xmcu,dvr_server_number,
+		monitor,main_bw,auxiliary_bw,master_addr,devgroup_id,client_type,create_type)
+		values(#{uuid},#{title},#{formNo},#{name},#{scheduleTime},NOW(),#{creator},#{rank},#{dept},#{devices},#{chairman},
+		#{host},#{functions},#{deviceCount},#{memberLevel},#{scheduleLevel},#{startTime},#{endTime},
+		#{scheduleId},#{comment},#{customerComment},#{commanderHq},#{commanderOut},#{switchHq},#{switchOut},
+		#{problemHq},#{problemOut},#{feedbackHq},#{feedbackOut},#{responseHq},#{responseOut},#{assistHq},
+		#{assistOut},#{prepareHq},#{prepareOut},#{processId},#{state},#{region},#{accessorId},#{usergroupId},
+		#{planPersonNum},#{callMode},#{xmcu},#{dvr},#{monitor},#{mainBw},#{auxiliaryBw},#{masterAddr},#{devGroupId},#{clientType},#{createType})
+	</insert>
+
+	<!-- 更新表单 -->
+	<update id="updateForm" parameterType="ScheduleFormVO">
+		update vc_schedule set process_id = #{processId}
+			<if test="title != null and title != '' ">
+				,title = #{title}
+			</if>
+			<if test="name != null and name != '' ">
+				,name = #{name}
+			</if>
+			<if test="scheduleTime != null and scheduleTime != '' ">
+				,schedule_time = #{scheduleTime}
+			</if>
+			<if test="rank != null and rank != '' ">
+				,rank = #{rank}
+			</if>
+			<if test="dept != null and dept != '' ">
+				,dept = #{dept}
+			</if>
+			<if test="devices != null and devices != '' ">
+				,devices = #{devices}
+			</if>
+			<if test="chairman != null and chairman != '' ">
+				,master_no = #{chairman}
+			</if>
+			<if test="host != null and host != '' ">
+				,host = #{host}
+			</if>
+			<if test="functions != null and functions != '' ">
+				,functions = #{functions}
+			</if>
+			<if test="deviceCount != null and deviceCount != '' ">
+				,plan_dev_num = #{deviceCount}
+			</if>
+			<if test="memberLevel != null and memberLevel != '' ">
+				,member_level = #{memberLevel}
+			</if>
+			<if test="scheduleLevel != null and scheduleLevel != '' ">
+				,level = #{scheduleLevel}
+			</if>
+			<if test="startTime != null and startTime != '' ">
+				,start_time = #{startTime}
+			</if>
+			<if test="endTime != null and endTime != '' ">
+				,end_time = #{endTime}
+			</if>
+			<if test="scheduleId != null and scheduleId != '' ">
+				,schedule_id = #{scheduleId}
+			</if>
+			<if test="comment != null and comment != '' ">
+				,comment = #{comment}
+			</if>
+			<if test="customerComment != null and customerComment != '' ">
+				,customer_comment = #{customerComment}
+			</if>
+			<if test="commanderHq != null and commanderHq != '' ">
+				,commander_hq = #{commanderHq}
+			</if>
+			<if test="commanderOut != null and commanderOut != '' ">
+				,commander_out = #{commanderOut}
+			</if>
+			<if test="switchHq != null and switchHq != '' ">
+				,switch_hq = #{switchHq}
+			</if>
+			<if test="switchOut != null and switchOut != '' ">
+				,switch_out = #{switchOut}
+			</if>
+			<if test="problemHq != null and problemHq != '' ">
+				,problem_hq = #{problemHq}
+			</if>
+			<if test="problemOut != null and problemOut != '' ">
+				,problem_out = #{problemOut}
+			</if>
+			<if test="feedbackHq != null and feedbackHq != '' ">
+				,feedback_hq = #{feedbackHq}
+			</if>
+			<if test="feedbackOut != null and feedbackOut != '' ">
+				,feedback_out = #{feedbackOut}
+			</if>
+			<if test="responseHq != null and responseHq != '' ">
+				,response_hq = #{responseHq}
+			</if>
+			<if test="responseOut != null and responseOut != '' ">
+				,response_out = #{responseOut}
+			</if>
+			<if test="assistHq != null and assistHq != '' ">
+				,assist_hq = #{assistHq}
+			</if>
+			<if test="assistOut != null and assistOut != '' ">
+				,assist_out = #{assistOut}
+			</if>
+			<if test="prepareHq != null and prepareHq != '' ">
+				,prepare_hq = #{prepareHq}
+			</if>
+			<if test="prepareOut != null and prepareOut != '' ">
+				,prepare_out = #{prepareOut}
+			</if>
+			<if test="state != null and state != '' ">
+				,state = #{state}
+			</if>
+			<if test="status != null and status != '' ">
+				,status = #{status}
+			</if>
+			<if test="region != null and region != '' ">
+				,region = #{region}
+			</if>
+			<if test="accessorId != null and accessorId != '' ">
+				,accessor_id = #{accessorId}
+			</if>
+			<if test="accessorTime != null and accessorTime != '' ">
+				,accessor_time = NOW()
+			</if>
+			<if test="usergroupId != null and usergroupId != '' ">
+				,usergroup_id = #{usergroupId}
+			</if>
+			<if test="planPersonNum != null and planPersonNum != '' ">
+				,plan_person_num = #{planPersonNum}
+			</if>
+			<if test="callMode != null and callMode != '' ">
+				,call_mode = #{callMode}
+			</if>
+			<if test="xmcu != null and xmcu != '' ">
+				,xmcu = #{xmcu}
+			</if>
+			<if test="dvr != null and dvr != '' ">
+				,dvr_server_number = #{dvr}
+			</if>
+			<if test="monitor != null and monitor != '' ">
+				,monitor = #{monitor}
+			</if>
+			<if test="devNum != null and devNum != '' ">
+				,dev_num = #{devNum}
+			</if>
+			<if test="mainBw != null and mainBw != '' ">
+				,main_bw = #{mainBw}
+			</if>
+			<if test="auxiliaryBw != null and auxiliaryBw != '' ">
+				,auxiliary_bw = #{auxiliaryBw}
+			</if>
+			<if test="masterAddr != null and masterAddr != '' ">
+				,master_addr = #{masterAddr}
+			</if>
+		<where>
+			uuid = #{uuid} or process_id = #{processId}
+		</where>
+	</update>
+
+	<!-- 删除表单 -->
+	<delete id="deleteForm" parameterType="ScheduleFormVO">
+		DELETE FROM vc_schedule
+		<where>
+			process_id = #{processId}
+		</where>
+	</delete>
+	
+	<!-- 获取一级节点信息 -->
+	<select id="getDepRoot" parameterType="map" resultType="DepartmentVO">
+		select id,name,path
+		from org_unit
+	</select>
+	
+	<!-- 查询部门节点下员工的个数 -->
+	<select id="getEmployeeCount" parameterType="DepartmentVO" resultType="int">
+		select count(*) from org_member where org_department_id = #{id}
+	</select>
+
+	<!-- 查询指定用户名的员工是否存在-->
+	<select id="getEmployee" parameterType="map" resultType="EmployeeVO">
+		select id, name from org_member where name = #{name}
+	</select>
+	
+	<!-- 查询节点下的员工信息 -->
+	<select id="getDepEmpInfo" parameterType="DepartmentVO" resultType="EmployeeVO">
+		select 
+		org_member.ID as id,
+		org_member.NAME as name,
+		org_member.EXT_ATTR_1 as phoneNumber,
+		org_post.NAME as empPost
+		from org_member
+		left join org_post 
+		on org_member.ORG_POST_ID= org_post.ID 
+		where org_member.ORG_DEPARTMENT_ID = #{id}
+	</select>
+	
+	<!--根据节点信息获取员工信息-->
+	<select id="getDepEmpAll" resultType="EmployeeVO">
+		select om.id,ou.name as empUnit, om.name as name, om.ext_attr_1 as phoneNumber, op.name as empPost from org_unit ou
+		join org_member om
+		on ou.id=om.org_department_id
+		join org_post op
+		on om.org_post_id = op.id
+		where ou.path like CONCAT('%',#{originalPath},'%')
+	</select>
+	
+	<!-- 创建表单时获取填单人员信息 -->
+	<select id="getInfo" resultType="EmployeeVO">
+		select om.id as id,
+		us.name as name,
+		us.area as areaId,
+		om.ext_attr_1 as phoneNumber,
+		(CASE WHEN (`us`.`post_name` IS NULL OR `us`.`post_name`='') THEN `op`.`name` ELSE `us`.`post_name` END) AS empPost,
+		(CASE WHEN (`us`.`depart_name` IS NULL OR `us`.`depart_name`='') THEN `ou`.`name` ELSE `us`.`depart_name` END) AS empUnit
+		from vc_user us
+		join org_member om
+		on om.name = us.name
+		left join org_post op
+		on om.org_post_id = op.id
+		left join org_unit ou
+		on ou.id = om.org_department_id
+		where us.login_name=#{attribute} or us.uuid=#{attribute}
+	</select>
+	
+	<!-- 根据id获取员工信息 -->
+	<select id="getInfoId" parameterType="list" resultType="EmployeeVO">
+		select om.id as id,
+		om.name as name,
+		om.ext_attr_1 as phoneNumber,
+		ou.name as empUnit,
+		op.name as empPost 
+		from 
+		org_member om
+		left join org_unit ou
+		on om.org_department_id = ou.id
+		left join org_post op
+		on om.org_post_id = op.id
+		<where>
+			om.id in
+			<foreach item="id" index="index" collection="list" open="("
+				separator="," close=")">
+				#{id}
+			</foreach>
+		</where>
+	</select>
+	<!-- 通过获取OA id查询uuid-->
+	<select id="getUserIdByOaId" parameterType="list" resultType="String">
+		SELECT vu.uuid as uuid 
+		FROM vc_user vu 
+		LEFT JOIN org_member om 
+		ON om.NAME= vu.name
+		<where>
+			om.id in
+			<foreach item="id" index="index" collection="list" open="("
+				separator="," close=")">
+				#{id}
+			</foreach>
+		</where>
+	</select>
+	
+	
+	<!-- 获取当前部门节点员工（不包含子节点） -->
+	<select id="getDepEmployee" parameterType="map" resultType="EmployeeVO">
+		select om.id as id,om.name as name,om.ext_attr_1 as phoneNumber,op.name as empPost,ou.name as empUnit from 
+		org_member om
+		join org_unit ou
+		on om.org_Department_id = ou.id
+		join org_post op
+		on om.org_post_id = op.id
+		where org_department_id = #{depId}
+	</select>
+
+	<!-- 获取会议保障总结表 -->
+	<select id="getSumForm"  resultType="SummaryFormVO" parameterType="SummaryFormVO">
+		SELECT
+		title,
+		form_no AS formNo,
+		NAME,
+		schedule_id as scheduleId,
+		incharge,
+		schedule_level as scheduleLevel,
+		DATE_FORMAT(create_time,'%Y-%m-%d') AS createTime,
+		creator,
+		rank,
+		dept,
+		start_unit AS startUnit,
+		main_dept AS mainDept,
+		main_leader AS mainLeader,
+		functions,
+		device_expect AS deviceExpect,
+		device_actual AS deviceActual,
+		device_problem AS deviceProblem,
+		DATE_FORMAT(start_time,'%Y-%m-%d %H:%i:%s') AS startTime,
+		DATE_FORMAT(end_time,'%Y-%m-%d %H:%i:%s') AS endTime,
+		customer_comment AS customerComment,
+		customer_advice AS customerAdvice,
+		opt_name AS optName,
+		opt_phone AS optPhone,
+		func_name AS funcName,
+		func_phone AS funcPhone,
+		resp_name AS respName,
+		resp_phone AS respPhone,
+		mon_name AS monName,
+		mon_phone AS monPhone,
+		prob_name AS probName,
+		prob_phone AS probPhone,
+		sum_name AS sumName,
+		sum_phone AS sumPhone,
+		summary,
+		related,
+		process_id as processId
+		FROM vc_summary_form
+		<where>
+			<if test="processId != null and processId != '' ">
+				and process_id = #{processId}
+			</if>
+			<if test="scheduleId != null and scheduleId != '' ">
+				and schedule_id = #{scheduleId}
+			</if>
+		</where>
+		order by create_time desc
+	</select>
+
+	<!-- 插入会议保障总结表单 -->
+	<insert id="addSumForm" parameterType="SummaryFormVO" keyProperty="uuid">
+		insert into vc_summary_form(title,form_no,name,schedule_id,incharge,schedule_level,create_time,creator,rank,
+		dept,start_unit,main_dept,main_leader,functions,device_expect,device_actual,device_problem,start_time,
+		end_time,customer_comment,customer_advice,opt_name,opt_phone,func_name,func_phone,resp_name,resp_phone,
+		mon_name,mon_phone,prob_name,prob_phone,sum_name,sum_phone,summary,related,process_id)
+		values(#{title},#{formNo},#{name},#{scheduleId},#{incharge},#{scheduleLevel},NOW(),#{creator},#{rank},#{dept},#{startUnit},#{mainDept},
+		#{mainLeader},#{functions},#{deviceExpect},#{deviceActual},#{deviceProblem},#{startTime},#{endTime},
+		#{customerComment},#{customerAdvice},#{optName},#{optPhone},#{funcName},#{funcPhone},#{respName},
+		#{respPhone},#{monName},#{monPhone},#{probName},#{probPhone},#{sumName},#{sumPhone},
+		#{summary},#{related},#{processId})
+	</insert>
+
+	<!-- 更新会议保障总结表单 -->
+	<update id="updateSumForm" parameterType="SummaryFormVO">
+		update vc_summary_form set process_id = #{processId}
+			<if test="title != null and title != '' ">
+				,title = #{title}
+			</if>
+			<if test="name != null and name != '' ">
+				,name = #{name}
+			</if>
+			<if test="incharge != null and incharge != '' ">
+				,incharge = #{incharge}
+			</if>
+			<if test="scheduleLevel != null and scheduleLevel != '' ">
+				,schedule_level = #{scheduleLevel}
+			</if>
+			<if test="rank != null and rank != '' ">
+				,rank = #{rank}
+			</if>
+			<if test="dept != null and dept != '' ">
+				,dept = #{dept}
+			</if>
+			<if test="startUnit != null and startUnit != '' ">
+				,start_unit = #{startUnit}
+			</if>
+			<if test="mainDept != null and mainDept != '' ">
+				,main_dept = #{mainDept}
+			</if>
+			<if test="mainLeader != null and mainLeader != '' ">
+				,main_leader = #{mainLeader}
+			</if>
+			<if test="functions != null and functions != '' ">
+				,functions = #{functions}
+			</if>
+			<if test="deviceExpect != null and deviceExpect != '' ">
+				,device_expect = #{deviceExpect}
+			</if>
+			<if test="deviceActual != null and deviceActual != '' ">
+				,device_actual = #{deviceActual}
+			</if>
+			<if test="deviceProblem != null and deviceProblem != '' ">
+				,device_problem = #{deviceProblem}
+			</if>
+			<if test="startTime != null and startTime != '' ">
+				,start_time = #{startTime}
+			</if>
+			<if test="endTime != null and endTime != '' ">
+				,end_time = #{endTime}
+			</if>
+			<if test="customerComment != null and customerComment != '' ">
+				,customer_comment = #{customerComment}
+			</if>
+			<if test="customerAdvice != null and customerAdvice != '' ">
+				,customer_advice = #{customerAdvice}
+			</if>
+			<if test="customerComment != null and customerComment != '' ">
+				,customer_comment = #{customerComment}
+			</if>
+			<if test="optName != null and optName != '' ">
+				,opt_name = #{optName}
+			</if>
+			<if test="optPhone != null and optPhone != '' ">
+				,opt_phone = #{optPhone}
+			</if>
+			<if test="funcName != null and funcName != '' ">
+				,func_name = #{funcName}
+			</if>
+			<if test="funcPhone != null and funcPhone != '' ">
+				,func_phone = #{funcPhone}
+			</if>
+			<if test="respName != null and respName != '' ">
+				,resp_name = #{respName}
+			</if>
+			<if test="respPhone != null and respPhone != '' ">
+				,resp_phone = #{respPhone}
+			</if>
+			<if test="monName != null and monName != '' ">
+				,mon_name = #{monName}
+			</if>
+			<if test="monPhone != null and monPhone != '' ">
+				,mon_phone = #{monPhone}
+			</if>
+			<if test="probName != null and probName != '' ">
+				,prob_name = #{probName}
+			</if>
+			<if test="probPhone != null and probPhone != '' ">
+				,prob_phone = #{probPhone}
+			</if>
+			<if test="sumName != null and sumName != '' ">
+				,sum_name = #{sumName}
+			</if>
+			<if test="sumPhone != null and sumPhone != '' ">
+				,sum_phone = #{sumPhone}
+			</if>
+			<if test="summary != null and summary != '' ">
+				,summary = #{summary}
+			</if>
+			<if test="related != null and related != '' ">
+				,related = #{related}
+			</if>
+		<where>
+			process_id = #{processId}
+		</where>
+	</update>
+
+	<!-- 删除会议保障总结表单 -->
+	<delete id="deleteSumForm" parameterType="SummaryFormVO">
+		DELETE FROM vc_summary_form
+		<where>
+			process_id = #{processId}
+		</where>
+	</delete>
+
+	<!-- 删除流程 -->
+	<delete id="deleteProcess" parameterType="SummaryFormVO">
+		<foreach item="uuid" index="index" collection="uuids">
+			CALL del_act_process(#{uuid})
+		</foreach>
+	</delete>
+	
+	<!-- 根据终端号码查询所在省份 -->
+	<select id="getDevProvince" parameterType="map" resultType="String">
+		SELECT DISTINCT(vr.name) AS region FROM vc_region vr
+		JOIN vc_dev vd
+		ON vr.id=CONCAT(SUBSTR(vd.`region_id`, 1, 2),'0000000000')
+		<where>
+			vd.`id`=#{devId}
+		</where>
+	</select>
+	<!-- 根据终端号码查询所在城市 -->
+	<select id="getDevCity" parameterType="map" resultType="String">
+		SELECT DISTINCT(vr.name) AS region FROM vc_region vr
+		JOIN vc_dev vd
+		ON vr.id=CONCAT(SUBSTR(vd.`region_id`, 1, 4),'00000000')
+		<where>
+			vd.`id`=#{devId}
+		</where>
+	</select>
+	<!-- 根据父节点查询子区域 -->
+	<select id="getChildRegions" parameterType="map" resultType="String">
+		SELECT DISTINCT(vr.name) AS region FROM vc_region vr
+		<where>
+			vr.`pid` = #{regionId}
+		</where>
+	</select>
+	
+	<!-- 根据终端号码查询此终端号是否存在 -->
+	<select id="getDevId" parameterType="Integer" resultType="Integer">
+		select count(id) from vc_dev where id=#{chairman}
+	</select>
+	
+	<!-- 新增预约与设备关联（pamir创建预约） -->
+	<insert id="addDevs2Schedule" parameterType="list">
+		INSERT INTO vc_schedule_dev(`uuid`,schedule_id,dev_id,dev_name)
+		VALUES
+    	<foreach collection="list" item="item" index="index" separator="," > 
+        	(replace(uuid(), '-', ''), #{item.id},#{item.no},#{item.name})
+    	</foreach> 
+	</insert>
+	
+	<delete id="delDevs2Schedule" parameterType="map">
+		delete from vc_schedule_dev where `schedule_id` = #{scheduleId}
+	</delete>
+
+	<!-- 把新部署流程图`act_re_procdef`中的ID_修改为ActivitiProcess:1:4 -->
+	<update id="setDefActId" parameterType="map">
+		UPDATE `act_re_procdef` SET id_ = 'ActivitiProcess:1:4'
+	</update>
+	
+	<select id="getUserInfo" parameterType="String" resultType="UserVo">
+		SELECT login_name as loginName,name FROM vc_user where uuid = #{userId}
+	</select>
+	
+	<!-- 获取所有已通过的本平台跨域会议 Start -->
+	<select id="selectCrossDisciplinaryList" parameterType="java.util.Map" resultType="com.visionvera.bean.cms.ScheduleFormVO">
+		SELECT 
+			vsbi.uuid AS uuid,
+			vsbi.`name` AS name,
+			vsbi.`processId` AS processId,
+			vsbi.`startTime` AS startTime,
+			vsbi.`endTime` AS endTime,
+			vsbi.`auxiliaryBw` AS auxiliaryBw,
+			vsbi.`creatorId` AS creatorId,
+			vsbi.`devices` AS devices,
+			vsbi.`planDevNum` AS deviceCount,
+			vsbi.`mainBw` AS mainBw,
+			vsbi.`masterNo` AS masterNo,
+			vsbi.`status` AS STATUS,
+			vsbi.`state` AS state,
+			vsbi.`masterName` AS masterName,
+			vsbi.`level` AS scheduleLevel
+		FROM 
+			view_schedule_base_info AS vsbi
+		LEFT JOIN 
+			vc_dev
+		ON 
+			vsbi.`masterNo` = vc_dev.`id`
+		LEFT JOIN 
+			vc_region 
+		ON 
+			CONCAT(SUBSTR(vc_dev.`region_id`, 1, 2),'0000000000') = vc_region.`id`
+		<where>
+			(vsbi.status = 2 OR vsbi.status = 4)
+			AND svrRegionId LIKE 'local'
+			AND LENGTH(devices) &gt; 2
+			<if test="coverage != null and coverage != ''">
+				AND FIND_IN_SET(#{coverage},vsbi.devices)
+			</if>
+			<if test="processId != null and processId != ''">
+				AND vsbi.processId != #{processId}
+			</if>
+			<if test="startTime != null and startTime != '' ">
+				AND ((UNIX_TIMESTAMP(vsbi.endTime) BETWEEN UNIX_TIMESTAMP(#{startTime}) AND UNIX_TIMESTAMP(#{endTime})) 
+			    OR (UNIX_TIMESTAMP(vsbi.startTime) BETWEEN UNIX_TIMESTAMP(#{startTime}) AND UNIX_TIMESTAMP(#{endTime})) 
+			    OR (UNIX_TIMESTAMP(vsbi.startTime) &lt;= UNIX_TIMESTAMP(#{startTime}) AND UNIX_TIMESTAMP(vsbi.endTime) &gt;= UNIX_TIMESTAMP(#{endTime})))
+			</if>
+		</where>
+	</select>
+	<!-- 获取所有已通过的本平台跨域会议 End -->
+</mapper>

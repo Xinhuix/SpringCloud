@@ -1,0 +1,24 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+        "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.visionvera.dao.ywcore.PlatformTypeDao">
+	<!-- 查询所有的平台类型  -->
+	<select id="getAllPlatformType" resultType="PlatformTypeVO">
+		SELECT  
+			platformType,platformName,
+			createTime,modifyTime 
+		FROM 
+			t_platform_type
+	</select>
+
+	<!-- 根据平台类型Id获取平台类型 -->
+	<select id="getPlatformTypeByTypeId" parameterType="int" resultType="PlatformTypeVO">
+		SELECT
+			platformType,platformName,abbreviation,
+			createTime,modifyTime
+		FROM
+			t_platform_type
+		WHERE
+			platformType = #{tposPlatformType}
+	</select>
+</mapper>

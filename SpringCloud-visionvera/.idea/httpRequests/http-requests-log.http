@@ -1,0 +1,281 @@
+GET http://localhost:8806/rest/publish/queryByStatus
+Content-Type: application/json;charset=utf-8
+
+<> 2019-11-25T044227.200.json
+
+###
+
+GET http://localhost:8806/rest/tglRest/getMonitorByOrganization
+
+<> 2019-10-10T112644.400.json
+
+###
+
+GET http://localhost:8801/rest/industry/getAllIndustry
+
+<> 2019-09-30T044446.200.json
+
+###
+
+GET http://localhost:8806/rest/unifiedInterface/netWork/getOrganizationalStructures
+Content-Type: application/json;charset=utf-8
+
+<> 2019-09-30T031514.400.json
+
+###
+
+GET http://localhost:8806/rest/unifiedInterface/netWork/getOrganizationalStructures
+Content-Type: application/json;charset=utf-8
+
+<> 2019-09-30T103242.400.json
+
+###
+
+GET http://localhost:8806/rest/sysConfig/getPerServer
+
+<> 2019-09-27T064245.200.json
+
+###
+
+POST http://localhost:8806/rest/unifiedInterface/netWork/{userId}/{id}/batchadd/addOrUpdateImage
+
+###
+
+GET http://localhost:8806/rest/unifiedInterface/netWork/getOrganizationalStructures
+Content-Type: application/json;charset=utf-8
+
+<> 2019-09-24T091850.400.json
+
+###
+
+GET http://localhost:8806/rest/sysConfig/getPerServer
+
+<> 2019-09-20T075216.200.json
+
+###
+
+GET http://localhost:8803/probe/{transferType}/getRecentVersion
+
+###
+
+GET http://localhost:8806/rest/user/{uuid}/getUserInfo
+
+###
+
+GET http://localhost:8806/rest/vms/getVtersvrcountb
+
+<> 2019-09-05T081831.400.json
+
+###
+
+GET http://localhost:8806/rest/meet/util/sysConfig/getPerServer
+
+<> 2019-08-16T061929.400.json
+
+###
+
+GET http://localhost:8806/rest/vms/getVtersvrcountList
+
+<> 2019-08-16T044133.200.json
+
+###
+
+POST http://localhost:8806/rest/meet/schedule/create
+Content-Type: application/json;charset=utf-8
+
+<> 2019-08-15T054310.400.json
+
+###
+
+GET http://localhost:8806/rest/meet/util/sysConfig/getPerServer
+
+<> 2019-08-06T101304.400.json
+
+###
+
+GET http://localhost:8806/rest/meet/util/sysConfig/getPerServer
+
+<> 2019-07-29T015029.400.json
+
+###
+
+GET http://localhost:8803/rest/sysConfig/getPerServer
+
+<> 2019-07-29T014230.200.json
+
+###
+
+GET http://localhost:8806/rest/meet/device/{devId}/{userId}/updateUserDevice.do
+
+###
+
+GET http://localhost:8806/rest/meet/device/{devId}/{userId}/updateUserDevice.do
+
+###
+
+GET http://localhost:8806/rest/meet/util/sysConfig/getPerServer
+
+<> 2019-07-08T111926.400.json
+
+###
+
+POST http://localhost:8806/user/{userId}/addMyApps
+Content-Type: application/json;charset=utf-8
+
+###
+
+POST http://localhost:8806/user/{userId}/addMyApps
+Content-Type: application/json;charset=utf-8
+
+###
+
+POST http://localhost:8806/user/addHgEntry
+Content-Type: application/json;charset=utf-8
+
+<> 2019-06-24T025515.400.json
+
+###
+
+POST http://localhost:8806/user/addHgEntry
+Content-Type: application/json;charset=utf-8
+
+<> 2019-06-24T025211.400.json
+
+###
+
+GET http://localhost:8806/rest/vms/getVtersvrcountList
+
+<> 2019-06-23T040023.200.json
+
+###
+
+GET http://localhost:8806/rest/vms/{gradeId}/getBigDataInfo
+Content-Type: application/json;charset=utf-8
+
+###
+
+POST http://localhost:8806/user/addHgEntry
+Content-Type: application/json;charset=utf-8
+
+<> 2019-06-17T021311.400.json
+
+###
+
+GET http://localhost:8806/rest/meet/{userId}/{groupId}/getGroupDevs
+
+###
+
+GET http://localhost:8806/rest/vms/getVtersvrcountList
+
+<> 2019-06-15T115714.200.json
+
+###
+
+GET http://localhost:8806/rest/vms/getVtersvrcountList
+
+<> 2019-06-15T115652.200.json
+
+###
+
+GET http://localhost:8806/rest/meet/{userId}/schedules/notExpired
+Content-Type: application/json;charset=utf-8
+
+###
+
+GET http://localhost:8806/rest/vms/{gradeId}/getBigDataInfo
+Content-Type: application/json;charset=utf-8
+
+###
+
+GET http://localhost:8806/rest/userGrouping/{userId}/getUserGrouping
+Content-Type: application/json;charset=utf-8
+
+###
+
+GET http://localhost:8806/rest/userGrouping/{userId}/getUserGrouping
+Content-Type: application/json;charset=utf-8
+
+###
+
+GET http://localhost:8806/rest/vms/{gradeId}/getVtersvrcountFilter
+Content-Type: application/json;charset=utf-8
+
+###
+
+GET http://localhost:8806/rest/vms/{gradeId}/getVtersvrcountFilter
+Content-Type: application/json;charset=utf-8
+
+###
+
+GET http://localhost:8806/rest/vms/{gradeId}/getVtersvrcountFilter
+Content-Type: application/json;charset=utf-8
+
+###
+
+GET http://localhost:8806/rest/vms/getVtersvrList
+
+<> 2019-06-11T043022.400.json
+
+###
+
+GET http://localhost:8806/rest/vms/{gradeId}/getVtersvrcountFilter
+Content-Type: application/json;charset=utf-8
+
+###
+
+POST http://localhost:8806/user/{userId}/editUserHg
+Content-Type: application/json;charset=utf-8
+
+###
+
+POST http://localhost:8806/user/{userId}/getHgIp
+Content-Type: application/json;charset=utf-8
+
+###
+
+GET http://localhost:8806/rest/vms/getVtersvrcountList
+
+<> 2019-06-06T041146.200.json
+
+###
+
+GET http://localhost:8806/rest/vms/getVtersvrcountList
+
+<> 2019-06-06T040953.200.json
+
+###
+
+GET http://localhost:8806/rest/vms/getVtersvrcountList
+
+<> 2019-06-06T030736.200.json
+
+###
+
+GET http://localhost:8806/rest/vms/getVtersvrcountList
+
+<> 2019-06-06T095214.200.json
+
+###
+
+GET http://localhost:8806/rest/vms/getVtersvrcountList
+
+<> 2019-06-06T095105.200.json
+
+###
+
+GET http://localhost:8806/rest/nms/gradeid/{gradeid}/id/{id}/dwsl
+Content-Type: application/json;charset=utf-8
+
+###
+
+GET http://localhost:8806/rest/vms/getVtersvrcountList
+
+<> 2019-06-05T031658.200.json
+
+###
+
+POST http://localhost:8806/rest/userGrouping/{userId}/{groupingId}/editGrouping
+Content-Type: application/json;charset=utf-8
+
+###
+

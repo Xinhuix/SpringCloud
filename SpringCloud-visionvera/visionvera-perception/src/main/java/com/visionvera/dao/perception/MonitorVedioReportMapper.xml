@@ -1,0 +1,985 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.visionvera.dao.perception.MonitorVedioReportDao">
+
+	<!-- 通用查询映射结果 -->
+	<resultMap id="BaseResultMap"
+		type="com.visionvera.bean.datacore.MonitorVedioReport">
+		<id column="uniq_id" property="uniqId" />
+		<result column="virtual_no" property="virtualNo" />
+		<result column="vedio_name" property="vedioName" />
+		<result column="msg_no" property="msgNo" />
+		<result column="dev_no" property="devNo" />
+		<result column="dev_id" property="devId" />
+		<result column="zoneno" property="zoneno" />
+		<result column="zonedevno" property="zonedevno" />
+		<result column="dev_name" property="devName" />
+		<result column="dev_addr" property="devAddr" />
+		<result column="dev_mac" property="devMac" />
+		<result column="svr_name" property="svrName" />
+		<result column="svr_addr" property="svrAddr" />
+		<result column="subscribe_count" property="subscribeCount" />
+		<result column="record_type" property="recordType" />
+		<result column="record_content" property="recordContent" />
+		<result column="ip" property="ip" />
+		<result column="port" property="port" />
+		<result column="monitor_id" property="monitorId" />
+		<result column="devgroup_id" property="devgroupId" />
+		<result column="start_time" property="startTime" />
+		<result column="end_time" property="endTime" />
+		<result column="user_name" property="userName" />
+		<result column="filename" property="filename" />
+		<result column="filesize" property="filesize" />
+		<result column="fileversion" property="fileversion" />
+		<result column="filetypename" property="filetypename" />
+		<result column="business_mode" property="businessMode" />
+		<result column="business_type" property="businessType" />
+		<result column="business_state" property="businessState" />
+		<result column="platform_type" property="platformType" />
+		<result column="platform_id" property="platformId" />
+		<result column="creat_time" property="creatTime" />
+		<result column="update_time" property="updateTime" />
+		<result column="bus_code" property="busCode" />
+		<result column="bus_msg" property="busMsg" />
+		<result column="is_del" property="isDel" />
+		<result column="ext_attr1" property="extAttr1" />
+		<result column="ext_attr2" property="extAttr2" />
+		<result column="ext_attr3" property="extAttr3" />
+		<result column="ext_attr4" property="extAttr4" />
+	</resultMap>
+
+	<!-- 通用查询结果列 -->
+	<sql id="Base_Column_List">
+		uniq_id AS uniqId, virtual_no AS virtualNo, vedio_name AS vedioName, msg_no
+		AS msgNo, dev_no AS devNo, dev_id AS devId, zoneno, zonedevno,
+		dev_name AS devName, dev_addr AS devAddr, dev_mac AS devMac, svr_name
+		AS svrName, svr_addr AS svrAddr, subscribe_count AS subscribeCount,
+		record_type AS recordType, record_content AS recordContent, ip, port,
+		monitor_id AS monitorId, devgroup_id AS devgroupId, start_time AS
+		startTime, end_time AS endTime, user_name AS userName, filename,
+		filesize, fileversion, filetypename, business_mode AS businessMode,
+		business_type AS businessType, business_state AS businessState,
+		platform_type AS platformType, platform_id AS platformId, creat_time
+		AS creatTime, update_time AS updateTime, bus_code AS busCode, bus_msg
+		AS busMsg, is_del AS isDel, ext_attr1 AS extAttr1, ext_attr2 AS
+		extAttr2, ext_attr3 AS extAttr3, ext_attr4 AS extAttr4
+	</sql>
+
+	<!-- 通用查询条件 -->
+	<sql id="Where_Common">
+		<if test="null != uniqId">
+			AND uniq_id = #{uniqId}
+		</if>
+		<if test="null != virtualNo">
+			AND virtual_no = #{virtualNo}
+		</if>
+		<if test="null != vedioName">
+			AND vedio_name = #{vedioName}
+		</if>
+		<if test="null != msgNo">
+			AND msg_no = #{msgNo}
+		</if>
+		<if test="null != devNo">
+			AND dev_no = #{devNo}
+		</if>
+		<if test="null != devId">
+			AND dev_id = #{devId}
+		</if>
+		<if test="null != zoneno">
+			AND zoneno = #{zoneno}
+		</if>
+		<if test="null != zonedevno">
+			AND zonedevno = #{zonedevno}
+		</if>
+		<if test="null != devName">
+			AND dev_name = #{devName}
+		</if>
+		<if test="null != devAddr">
+			AND dev_addr = #{devAddr}
+		</if>
+		<if test="null != devMac">
+			AND dev_mac = #{devMac}
+		</if>
+		<if test="null != svrName">
+			AND svr_name = #{svrName}
+		</if>
+		<if test="null != svrAddr">
+			AND svr_addr = #{svrAddr}
+		</if>
+		<if test="null != subscribeCount">
+			AND subscribe_count = #{subscribeCount}
+		</if>
+		<if test="null != recordType">
+			AND record_type = #{recordType}
+		</if>
+		<if test="null != recordContent">
+			AND record_content = #{recordContent}
+		</if>
+		<if test="null != ip">
+			AND ip = #{ip}
+		</if>
+		<if test="null != port">
+			AND port = #{port}
+		</if>
+		<if test="null != monitorId">
+			AND monitor_id = #{monitorId}
+		</if>
+		<if test="null != devgroupId">
+			AND devgroup_id = #{devgroupId}
+		</if>
+		<if test="null != startTime">
+			AND start_time = #{startTime}
+		</if>
+		<if test="null != endTime">
+			AND end_time = #{endTime}
+		</if>
+		<if test="null != userName">
+			AND user_name = #{userName}
+		</if>
+		<if test="null != filename">
+			AND filename = #{filename}
+		</if>
+		<if test="null != filesize">
+			AND filesize = #{filesize}
+		</if>
+		<if test="null != fileversion">
+			AND fileversion = #{fileversion}
+		</if>
+		<if test="null != filetypename">
+			AND filetypename = #{filetypename}
+		</if>
+		<if test="null != businessMode">
+			AND business_mode = #{businessMode}
+		</if>
+		<if test="null != businessType">
+			AND business_type = #{businessType}
+		</if>
+		<if test="null != businessState">
+			AND business_state = #{businessState}
+		</if>
+		<if test="null != platformType">
+			AND platform_type = #{platformType}
+		</if>
+		<if test="null != platformId">
+			AND platform_id = #{platformId}
+		</if>
+		<if test="null != creatTime">
+			AND creat_time = #{creatTime}
+		</if>
+		<if test="null != updateTime">
+			AND update_time = #{updateTime}
+		</if>
+		<if test="null != busCode">
+			AND bus_code = #{busCode}
+		</if>
+		<if test="null != busMsg">
+			AND bus_msg = #{busMsg}
+		</if>
+		<if test="null != isDel">
+			AND is_del = #{isDel}
+		</if>
+		<if test="null != extAttr1">
+			AND ext_attr1 = #{extAttr1}
+		</if>
+		<if test="null != extAttr2">
+			AND ext_attr2 = #{extAttr2}
+		</if>
+		<if test="null != extAttr3">
+			AND ext_attr3 = #{extAttr3}
+		</if>
+		<if test="null != extAttr4">
+			AND ext_attr4 = #{extAttr4}
+		</if>
+	</sql>
+	<select id="selectByPrimaryKey" resultType="com.visionvera.bean.datacore.MonitorVedioReport">
+		SELECT
+		<include refid="Base_Column_List" />
+		FROM t_monitor_vedio_report 
+		 WHERE uniq_id = #{uniqId}
+	</select>
+	<select id="selectDevNameByDevNoAndZoneNo" resultType="java.lang.String">
+		select t1.name AS devName from
+			t_nmsserver tn
+				LEFT JOIN t_terminalinfob t1 on t1.omcid=tn.omcid
+		where tn.omcid2 = #{zoneNo}
+		  and t1.devno=#{devNo}
+
+	</select>
+
+	<select id="get" resultType="com.visionvera.bean.datacore.MonitorVedioReport">
+		SELECT
+		<include refid="Base_Column_List" />
+		FROM t_monitor_vedio_report
+		<where>
+			<include refid="Where_Common" />
+		</where>
+		limit 1
+	</select>
+
+	<select id="queryList" resultType="com.visionvera.bean.datacore.MonitorVedioReport"
+		parameterType="com.visionvera.bean.datacore.MonitorVedioReport">
+		SELECT
+		<include refid="Base_Column_List" />
+		FROM t_monitor_vedio_report
+		<where>
+			<include refid="Where_Common" />
+		</where>
+	</select>
+
+	<select id="queryCount" resultType="java.lang.Integer"
+		parameterType="com.visionvera.bean.datacore.MonitorVedioReport">
+		SELECT count(1) FROM t_monitor_vedio_report
+		<where>
+			<include refid="Where_Common" />
+		</where>
+	</select>
+
+	<insert id="insert" parameterType="com.visionvera.bean.datacore.MonitorVedioReport">
+		INSERT INTO t_monitor_vedio_report
+		<trim prefix="(" suffix=")" suffixOverrides=",">
+			virtual_no,
+			vedio_name,
+			msg_no,
+			dev_no,
+			dev_id,
+			zoneno,
+			zonedevno,
+			dev_name,
+			dev_addr,
+			dev_mac,
+			svr_name,
+			svr_addr,
+			subscribe_count,
+			record_type,
+			record_content,
+			ip,
+			port,
+			monitor_id,
+			devgroup_id,
+			start_time,
+			end_time,
+			user_name,
+			filename,
+			filesize,
+			fileversion,
+			filetypename,
+			business_mode,
+			business_type,
+			business_state,
+			platform_type,
+			platform_id,
+			creat_time,
+			update_time,
+			bus_code,
+			bus_msg,
+			is_del,
+			ext_attr1,
+			ext_attr2,
+			ext_attr3,
+			ext_attr4,
+		</trim>
+		<trim prefix="values (" suffix=")" suffixOverrides=",">
+			#{virtualNo},
+			#{vedioName},
+			#{msgNo},
+			#{devNo},
+			#{devId},
+			#{zoneno},
+			#{zonedevno},
+			#{devName},
+			#{devAddr},
+			#{devMac},
+			#{svrName},
+			#{svrAddr},
+			#{subscribeCount},
+			#{recordType},
+			#{recordContent},
+			#{ip},
+			#{port},
+			#{monitorId},
+			#{devgroupId},
+			#{startTime},
+			#{endTime},
+			#{userName},
+			#{filename},
+			#{filesize},
+			#{fileversion},
+			#{filetypename},
+			#{businessMode},
+			#{businessType},
+			#{businessState},
+			#{platformType},
+			#{platformId},
+			#{creatTime},
+			#{updateTime},
+			#{busCode},
+			#{busMsg},
+			#{isDel},
+			#{extAttr1},
+			#{extAttr2},
+			#{extAttr3},
+			#{extAttr4},
+		</trim>
+	</insert>
+
+	<insert id="insertSelective" parameterType="com.visionvera.bean.datacore.MonitorVedioReport">
+		INSERT INTO t_monitor_vedio_report
+		<trim prefix="(" suffix=")" suffixOverrides=",">
+			<if test="null != uniqId">
+				uniq_id,
+			</if>
+			<if test="null != virtualNo">
+				virtual_no,
+			</if>
+			<if test="null != vedioName">
+				vedio_name,
+			</if>
+			<if test="null != msgNo">
+				msg_no,
+			</if>
+			<if test="null != devNo">
+				dev_no,
+			</if>
+			<if test="null != devId">
+				dev_id,
+			</if>
+			<if test="null != zoneno">
+				zoneno,
+			</if>
+			<if test="null != zonedevno">
+				zonedevno,
+			</if>
+			<if test="null != devName">
+				dev_name,
+			</if>
+			<if test="null != devAddr">
+				dev_addr,
+			</if>
+			<if test="null != devMac">
+				dev_mac,
+			</if>
+			<if test="null != svrName">
+				svr_name,
+			</if>
+			<if test="null != svrAddr">
+				svr_addr,
+			</if>
+			<if test="null != subscribeCount">
+				subscribe_count,
+			</if>
+			<if test="null != recordType">
+				record_type,
+			</if>
+			<if test="null != recordContent">
+				record_content,
+			</if>
+			<if test="null != ip">
+				ip,
+			</if>
+			<if test="null != port">
+				port,
+			</if>
+			<if test="null != monitorId">
+				monitor_id,
+			</if>
+			<if test="null != devgroupId">
+				devgroup_id,
+			</if>
+			<if test="null != startTime">
+				start_time,
+			</if>
+			<if test="null != endTime">
+				end_time,
+			</if>
+			<if test="null != userName">
+				user_name,
+			</if>
+			<if test="null != filename">
+				filename,
+			</if>
+			<if test="null != filesize">
+				filesize,
+			</if>
+			<if test="null != fileversion">
+				fileversion,
+			</if>
+			<if test="null != filetypename">
+				filetypename,
+			</if>
+			<if test="null != businessMode">
+				business_mode,
+			</if>
+			<if test="null != businessType">
+				business_type,
+			</if>
+			<if test="null != businessState">
+				business_state,
+			</if>
+			<if test="null != platformType">
+				platform_type,
+			</if>
+			<if test="null != platformId">
+				platform_id,
+			</if>
+			<if test="null != creatTime">
+				creat_time,
+			</if>
+			<if test="null != updateTime">
+				update_time,
+			</if>
+			<if test="null != busCode">
+				bus_code,
+			</if>
+			<if test="null != busMsg">
+				bus_msg,
+			</if>
+			<if test="null != isDel">
+				is_del,
+			</if>
+			<if test="null != extAttr1">
+				ext_attr1,
+			</if>
+			<if test="null != extAttr2">
+				ext_attr2,
+			</if>
+			<if test="null != extAttr3">
+				ext_attr3,
+			</if>
+			<if test="null != extAttr4">
+				ext_attr4,
+			</if>
+		</trim>
+		<trim prefix="values (" suffix=")" suffixOverrides=",">
+			<if test="null != uniqId">
+				#{uniqId},
+			</if>
+			<if test="null != virtualNo">
+				#{virtualNo},
+			</if>
+			<if test="null != vedioName">
+				#{vedioName},
+			</if>
+			<if test="null != msgNo">
+				#{msgNo},
+			</if>
+			<if test="null != devNo">
+				#{devNo},
+			</if>
+			<if test="null != devId">
+				#{devId},
+			</if>
+			<if test="null != zoneno">
+				#{zoneno},
+			</if>
+			<if test="null != zonedevno">
+				#{zonedevno},
+			</if>
+			<if test="null != devName">
+				#{devName},
+			</if>
+			<if test="null != devAddr">
+				#{devAddr},
+			</if>
+			<if test="null != devMac">
+				#{devMac},
+			</if>
+			<if test="null != svrName">
+				#{svrName},
+			</if>
+			<if test="null != svrAddr">
+				#{svrAddr},
+			</if>
+			<if test="null != subscribeCount">
+				#{subscribeCount},
+			</if>
+			<if test="null != recordType">
+				#{recordType},
+			</if>
+			<if test="null != recordContent">
+				#{recordContent},
+			</if>
+			<if test="null != ip">
+				#{ip},
+			</if>
+			<if test="null != port">
+				#{port},
+			</if>
+			<if test="null != monitorId">
+				#{monitorId},
+			</if>
+			<if test="null != devgroupId">
+				#{devgroupId},
+			</if>
+			<if test="null != startTime">
+				#{startTime},
+			</if>
+			<if test="null != endTime">
+				#{endTime},
+			</if>
+			<if test="null != userName">
+				#{userName},
+			</if>
+			<if test="null != filename">
+				#{filename},
+			</if>
+			<if test="null != filesize">
+				#{filesize},
+			</if>
+			<if test="null != fileversion">
+				#{fileversion},
+			</if>
+			<if test="null != filetypename">
+				#{filetypename},
+			</if>
+			<if test="null != businessMode">
+				#{businessMode},
+			</if>
+			<if test="null != businessType">
+				#{businessType},
+			</if>
+			<if test="null != businessState">
+				#{businessState},
+			</if>
+			<if test="null != platformType">
+				#{platformType},
+			</if>
+			<if test="null != platformId">
+				#{platformId},
+			</if>
+			<if test="null != creatTime">
+				#{creatTime},
+			</if>
+			<if test="null != updateTime">
+				#{updateTime},
+			</if>
+			<if test="null != busCode">
+				#{busCode},
+			</if>
+			<if test="null != busMsg">
+				#{busMsg},
+			</if>
+			<if test="null != isDel">
+				#{isDel},
+			</if>
+			<if test="null != extAttr1">
+				#{extAttr1},
+			</if>
+			<if test="null != extAttr2">
+				#{extAttr2},
+			</if>
+			<if test="null != extAttr3">
+				#{extAttr3},
+			</if>
+			<if test="null != extAttr4">
+				#{extAttr4},
+			</if>
+		</trim>
+	</insert>
+
+	<update id="updateByPrimaryKeySelective" parameterType="com.visionvera.bean.datacore.MonitorVedioReport">
+		update t_monitor_vedio_report
+		<set>
+			<trim suffixOverrides=",">
+				<if test="null != virtualNo">
+					virtual_no = #{virtualNo},
+				</if>
+				<if test="null != vedioName">
+					vedio_name = #{vedioName},
+				</if>
+				<if test="null != msgNo">
+					msg_no = #{msgNo},
+				</if>
+				<if test="null != devNo">
+					dev_no = #{devNo},
+				</if>
+				<if test="null != devId">
+					dev_id = #{devId},
+				</if>
+				<if test="null != zoneno">
+					zoneno = #{zoneno},
+				</if>
+				<if test="null != zonedevno">
+					zonedevno = #{zonedevno},
+				</if>
+				<if test="null != devName">
+					dev_name = #{devName},
+				</if>
+				<if test="null != devAddr">
+					dev_addr = #{devAddr},
+				</if>
+				<if test="null != devMac">
+					dev_mac = #{devMac},
+				</if>
+				<if test="null != svrName">
+					svr_name = #{svrName},
+				</if>
+				<if test="null != svrAddr">
+					svr_addr = #{svrAddr},
+				</if>
+				<if test="null != subscribeCount">
+					subscribe_count = #{subscribeCount},
+				</if>
+				<if test="null != recordType">
+					record_type = #{recordType},
+				</if>
+				<if test="null != recordContent">
+					record_content = #{recordContent},
+				</if>
+				<if test="null != ip">
+					ip = #{ip},
+				</if>
+				<if test="null != port">
+					port = #{port},
+				</if>
+				<if test="null != monitorId">
+					monitor_id = #{monitorId},
+				</if>
+				<if test="null != devgroupId">
+					devgroup_id = #{devgroupId},
+				</if>
+				<if test="null != startTime">
+					start_time = #{startTime},
+				</if>
+				<if test="null != endTime">
+					end_time = #{endTime},
+				</if>
+				<if test="null != userName">
+					user_name = #{userName},
+				</if>
+				<if test="null != filename">
+					filename = #{filename},
+				</if>
+				<if test="null != filesize">
+					filesize = #{filesize},
+				</if>
+				<if test="null != fileversion">
+					fileversion = #{fileversion},
+				</if>
+				<if test="null != filetypename">
+					filetypename = #{filetypename},
+				</if>
+				<if test="null != businessMode">
+					business_mode = #{businessMode},
+				</if>
+				<if test="null != businessType">
+					business_type = #{businessType},
+				</if>
+				<if test="null != businessState">
+					business_state = #{businessState},
+				</if>
+				<if test="null != platformType">
+					platform_type = #{platformType},
+				</if>
+				<if test="null != platformId">
+					platform_id = #{platformId},
+				</if>
+				<if test="null != creatTime">
+					creat_time = #{creatTime},
+				</if>
+				<if test="null != updateTime">
+					update_time = #{updateTime},
+				</if>
+				<if test="null != busCode">
+					bus_code = #{busCode},
+				</if>
+				<if test="null != busMsg">
+					bus_msg = #{busMsg},
+				</if>
+				<if test="null != isDel">
+					is_del = #{isDel},
+				</if>
+				<if test="null != extAttr1">
+					ext_attr1 = #{extAttr1},
+				</if>
+				<if test="null != extAttr2">
+					ext_attr2 = #{extAttr2},
+				</if>
+				<if test="null != extAttr3">
+					ext_attr3 = #{extAttr3},
+				</if>
+				<if test="null != extAttr4">
+					ext_attr4 = #{extAttr4},
+				</if>
+			</trim>
+		</set>
+		WHERE uniq_id = #{uniqId}
+	</update>
+
+	<update id="updateByPrimaryKey" parameterType="com.visionvera.bean.datacore.MonitorVedioReport">
+		update t_monitor_vedio_report
+		<set>
+			<trim suffixOverrides=",">
+				virtual_no = #{virtualNo},
+				vedio_name = #{vedioName},
+				msg_no = #{msgNo},
+				dev_no = #{devNo},
+				dev_id = #{devId},
+				zoneno = #{zoneno},
+				zonedevno = #{zonedevno},
+				dev_name = #{devName},
+				dev_addr = #{devAddr},
+				dev_mac = #{devMac},
+				svr_name = #{svrName},
+				svr_addr = #{svrAddr},
+				subscribe_count = #{subscribeCount},
+				record_type = #{recordType},
+				record_content = #{recordContent},
+				ip = #{ip},
+				port = #{port},
+				monitor_id = #{monitorId},
+				devgroup_id = #{devgroupId},
+				start_time = #{startTime},
+				end_time = #{endTime},
+				user_name = #{userName},
+				filename = #{filename},
+				filesize = #{filesize},
+				fileversion = #{fileversion},
+				filetypename = #{filetypename},
+				business_mode = #{businessMode},
+				business_type = #{businessType},
+				business_state = #{businessState},
+				platform_type = #{platformType},
+				platform_id = #{platformId},
+				creat_time = #{creatTime},
+				update_time = #{updateTime},
+				bus_code = #{busCode},
+				bus_msg = #{busMsg},
+				is_del = #{isDel},
+				ext_attr1 = #{extAttr1},
+				ext_attr2 = #{extAttr2},
+				ext_attr3 = #{extAttr3},
+				ext_attr4 = #{extAttr4},
+			</trim>
+		</set>
+		WHERE uniq_id = #{uniqId}
+	</update>
+
+	<delete id="deleteByPrimaryKey" parameterType="java.lang.Integer">
+		delete from t_monitor_vedio_report
+		where uniq_id = #{uniqId}
+	</delete>
+
+	<delete id="delete" parameterType="com.visionvera.bean.datacore.MonitorVedioReport">
+		delete from t_monitor_vedio_report
+		where 1=1
+		<if test="null != uniqId">
+			and uniq_id = #{uniqId}
+		</if>
+		<if test="null != virtualNo">
+			and virtual_no = #{virtualNo}
+		</if>
+		<if test="null != vedioName">
+			and vedio_name = #{vedioName}
+		</if>
+		<if test="null != msgNo">
+			and msg_no = #{msgNo}
+		</if>
+		<if test="null != devNo">
+			and dev_no = #{devNo}
+		</if>
+		<if test="null != devId">
+			and dev_id = #{devId}
+		</if>
+		<if test="null != zoneno">
+			and zoneno = #{zoneno}
+		</if>
+		<if test="null != zonedevno">
+			and zonedevno = #{zonedevno}
+		</if>
+		<if test="null != devName">
+			and dev_name = #{devName}
+		</if>
+		<if test="null != devAddr">
+			and dev_addr = #{devAddr}
+		</if>
+		<if test="null != devMac">
+			and dev_mac = #{devMac}
+		</if>
+		<if test="null != svrName">
+			and svr_name = #{svrName}
+		</if>
+		<if test="null != svrAddr">
+			and svr_addr = #{svrAddr}
+		</if>
+		<if test="null != subscribeCount">
+			and subscribe_count = #{subscribeCount}
+		</if>
+		<if test="null != recordType">
+			and record_type = #{recordType}
+		</if>
+		<if test="null != recordContent">
+			and record_content = #{recordContent}
+		</if>
+		<if test="null != ip">
+			and ip = #{ip}
+		</if>
+		<if test="null != port">
+			and port = #{port}
+		</if>
+		<if test="null != monitorId">
+			and monitor_id = #{monitorId}
+		</if>
+		<if test="null != devgroupId">
+			and devgroup_id = #{devgroupId}
+		</if>
+		<if test="null != startTime">
+			and start_time = #{startTime}
+		</if>
+		<if test="null != endTime">
+			and end_time = #{endTime}
+		</if>
+		<if test="null != userName">
+			and user_name = #{userName}
+		</if>
+		<if test="null != filename">
+			and filename = #{filename}
+		</if>
+		<if test="null != filesize">
+			and filesize = #{filesize}
+		</if>
+		<if test="null != fileversion">
+			and fileversion = #{fileversion}
+		</if>
+		<if test="null != filetypename">
+			and filetypename = #{filetypename}
+		</if>
+		<if test="null != businessMode">
+			and business_mode = #{businessMode}
+		</if>
+		<if test="null != businessType">
+			and business_type = #{businessType}
+		</if>
+		<if test="null != businessState">
+			and business_state = #{businessState}
+		</if>
+		<if test="null != platformType">
+			and platform_type = #{platformType}
+		</if>
+		<if test="null != platformId">
+			and platform_id = #{platformId}
+		</if>
+		<if test="null != creatTime">
+			and creat_time = #{creatTime}
+		</if>
+		<if test="null != updateTime">
+			and update_time = #{updateTime}
+		</if>
+		<if test="null != busCode">
+			and bus_code = #{busCode}
+		</if>
+		<if test="null != busMsg">
+			and bus_msg = #{busMsg}
+		</if>
+		<if test="null != isDel">
+			and is_del = #{isDel}
+		</if>
+		<if test="null != extAttr1">
+			and ext_attr1 = #{extAttr1}
+		</if>
+		<if test="null != extAttr2">
+			and ext_attr2 = #{extAttr2}
+		</if>
+		<if test="null != extAttr3">
+			and ext_attr3 = #{extAttr3}
+		</if>
+		<if test="null != extAttr4">
+			and ext_attr4 = #{extAttr4}
+		</if>
+	</delete>
+
+	<!--获取收看直播、监控、升级列表 -->
+	<select id="getSubscribeList" resultType="map" parameterType="map">
+		SELECT mvr.uniq_id AS uniqId,
+		mvr.dev_no AS devNo,
+		mvr.msg_no AS msgNo,
+		mvr.platform_type AS platformType,
+		mvr.platform_id AS platformId,
+		mvr.business_type AS businessType,
+		DATE_FORMAT(mvr.start_time,'%Y-%m-%d %H:%i:%s') AS `startTime`,
+		mvr.user_name As userName,
+		mvr.filename,
+		mvr.filesize,
+		mvr.fileversion,
+		mvr.filetypename,
+		mvr.virtual_no AS virtualNo,
+		mvr.vedio_name AS vedioName,
+		mvr.record_type AS recordType,
+		mvr.zoneno AS zoneno,
+		mvr.zonedevno AS zonedevno,
+		t1.name AS devName,
+		t2.xxdz AS devAddr,
+		t2.regionid AS regionid,
+		t3.svrno AS svrNo,
+		t3.name AS svrName,
+		mvr.dev_name AS devName
+		FROM t_monitor_vedio_report mvr
+		LEFT JOIN t_nmsserver tn on tn.omcid2 = mvr.zoneno
+		<choose>
+			<when test="businessType==7 or businessType==8">
+				LEFT JOIN t_terminalinfob t1 on mvr.virtual_no
+				=t1.devno AND mvr.`zoneno` = tn.`omcid2` and t1.omcid=tn.omcid
+			</when>
+			<otherwise>
+				LEFT JOIN t_terminalinfob t1 on mvr.dev_no =t1.devno AND
+				mvr.`zoneno` = tn.`omcid2` and t1.omcid=tn.omcid
+			</otherwise>
+		</choose>
+		LEFT JOIN t_customerinfob t2 ON t1.devno = t2.userno AND t1.omcid =
+		t2.omcid
+		LEFT JOIN t_serverinfob t3 ON t1.svrid = t3.id AND t1.omcid = t3.omcid
+		<where>
+			mvr.business_state = 0
+			<if test="null != businessType and businessType !=''">
+				and mvr.business_type = #{businessType}
+			</if>
+			<if test="null != platformType and platformType !=''">
+				and mvr.platform_type = #{platformType}
+			</if>
+			<if test="null != msgNo and msgNo !=''">
+				and mvr.msg_no = #{msgNo}
+			</if>
+			<if test="null != monitorId and monitorId !=''">
+				and mvr.monitor_id = #{monitorId}
+			</if>
+			<if test="null != virtualNo and virtualNo !=''">
+				and mvr.virtual_no = #{virtualNo}
+			</if>
+			<if test="businessType==4 or businessType==5">
+				<if test="searchWord != null and searchWord !=''">
+					and (t1.name like CONCAT('%',#{searchWord},'%')
+					or mvr.dev_no like CONCAT('%',#{searchWord},'%')
+					or t2.xxdz like CONCAT('%',#{searchWord},'%')
+					or t3.name like CONCAT('%',#{searchWord},'%')
+					)
+				</if>
+			</if>
+			<if test="businessType==6 ">
+				<if test="searchWord != null and searchWord !=''">
+					and mvr.filename like CONCAT('%',#{searchWord},'%')
+				</if>
+			</if>
+			<if test="businessType==7 or businessType==8">
+				<if test="searchWord != null and searchWord !=''">
+					and (
+					mvr.filename like CONCAT('%',#{searchWord},'%')
+					or
+					t1.name like CONCAT('%',#{searchWord},'%')
+					or mvr.dev_no like CONCAT('%',#{searchWord},'%')
+					or t2.xxdz like CONCAT('%',#{searchWord},'%')
+					or t3.name like CONCAT('%',#{searchWord},'%')
+					)
+				</if>
+			</if>
+		</where>
+		GROUP BY mvr.dev_no,mvr.user_name
+		<if test="sidx !=null and sidx != ''">
+			order by ${sidx}
+			<if test="order !=null and order != ''">
+				${order}
+			</if>
+		</if>
+
+	</select>
+
+	
+</mapper>

@@ -1,0 +1,21 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+        "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.visionvera.dao.resource.PlatformTypeDao">
+	 <!-- 获取平台类型列表 -->
+	 <select id="getPlatformTypeList" resultType="TPlatformTypeVO">
+	 	SELECT 
+			platform_type AS platformType,platform_name AS platformName 
+		FROM 
+			t_platform_type
+		WHERE
+			platform_type NOT IN (2,3,4)
+			<if test="platformType !=null and platformType !=''">
+			and platform_type in
+			<foreach collection="platformType" item="type" separator="," open="(" close=")">
+			#{type}
+			</foreach>
+			</if>
+			
+	 </select>
+</mapper>

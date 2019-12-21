@@ -1,0 +1,28 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd" >
+<mapper namespace="com.visionvera.dao.xinhxu.UserDao">
+	
+
+	 
+	 <!--添加地址  -->
+	<!-- <insert id="adduser">
+	  insert into t_user values(#{id},#{name},#{password})
+	 </insert>-->
+
+	<select id="querAll" resultType="com.visionvera.vo.User">
+
+		select * from  user
+	</select>
+	 
+	<!--<select id="loginuser" resultType="User">
+	  select *  from t_user
+	   <where>
+	   <if test="name !=null ">
+	     name=#{name}
+	   </if>
+	   <if test="password !=null ">
+	     and password = #{password}
+	   </if>
+	  </where>
+	</select> -->
+</mapper>

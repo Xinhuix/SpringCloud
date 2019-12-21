@@ -1,0 +1,50 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+        "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.visionvera.dao.ywcore.SenseDao">
+	
+	<!-- 获取某视联网服务器的流量趋势接口 -->
+	<select id="getServerRateTrend" resultType="map" parameterType="map">
+		SELECT ROUND(up_allrate,2) AS upflow, ROUND(down_allrate,2) AS downflow, 
+		DATE_FORMAT(`datetime`,'%Y-%m-%d %H:%i:%s') AS DATETIME 
+		FROM t_setserverrate
+		<where>
+			UNIX_TIMESTAMP(`datetime`) &gt;= (UNIX_TIMESTAMP() - 60 * #{minute})
+			AND servermac = #{mac}
+			<if test="minute &gt; 60">
+				AND (UNIX_TIMESTAMP(`datetime`) MOD (#{minute} / 60 * 100) = 0 or UNIX_TIMESTAMP(`datetime`) = unix_timestamp() div 10 * 100)
+			</if>
+			<if test="ip!=null and ip!=''">
+			    AND ip = #{ip}
+			</if>
+			ORDER BY `datetime` ASC
+		</where>
+	</select>
+	
+	<!-- 获取某省的流量趋势接口 -->
+	<select id="getProvinceRateTrend" resultType="map" parameterType="map">
+		SELECT ROUND(up_allrate,2) AS upflow, ROUND(down_allrate,2) AS downflow, 
+		date_format(`datetime`,'%Y-%m-%d %H:%i:%s') AS datetime 
+		FROM t_setprovrate
+		<where>
+			UNIX_TIMESTAMP(`datetime`) &gt;= (UNIX_TIMESTAMP()-60 * #{minute})
+			AND regionid = #{regionId}
+			AND ip = #{ip}
+			<if test="minute &gt; 60">
+				AND (UNIX_TIMESTAMP(`datetime`) MOD (#{minute} / 60 * 100) = 0 or UNIX_TIMESTAMP(`datetime`) = unix_timestamp() div 10 * 100)
+			</if>
+			ORDER BY `datetime` ASC
+		</where>
+	</select>
+	<!-- 获取某视联网服务器的流量趋势接口(通过小时) -->
+	<select id="getServerRateTrendByHour" resultType="map" parameterType="map"  statementType="CALLABLE">
+		call p_GetServerRateList(
+		#{hour,mode=IN,jdbcType=INTEGER}
+		,#{mac,mode=IN,jdbcType=VARCHAR}
+		,#{ip,mode=IN,jdbcType=VARCHAR})
+	</select>
+	<!-- 获取某省的流量趋势接口(通过小时) -->
+	<select id="getProvinceRateTrendByHour" resultType="map" parameterType="map"  statementType="CALLABLE">
+		call p_GetProvRateList(#{hour,mode=IN,jdbcType=INTEGER},#{regionId,mode=IN,jdbcType=VARCHAR},#{ip,mode=IN,jdbcType=VARCHAR})
+	</select>
+</mapper>

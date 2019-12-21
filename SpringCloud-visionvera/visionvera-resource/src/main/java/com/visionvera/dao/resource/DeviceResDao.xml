@@ -1,0 +1,166 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+        "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+
+<mapper namespace="com.visionvera.dao.resource.DeviceResDao">
+	
+	<!-- 获取联系人（设备）列表 -->
+	<select id="getUserDevices" resultType="DeviceVO" parameterType="map">
+		SELECT ti.id as id,
+			   ti.name as name,
+			   ti.devtype as typeId,
+			   ti.ip as ip,
+			   ti.mac as mac,
+		       dtype.typemc as type,
+		       null as roleId,
+		       <!-- urole.role_uuid as role -->
+		       null as role,
+		       ti.online
+		FROM t_terminalinfob ti
+		JOIN t_customerinfob ci ON ti.`devno`=ci.`userno` AND ci.`useflg`=0
+		<!-- JOIN t_regionb region ON region.`id`=ci.`regionid`
+		JOIN t_user ur ON ur.`area`=region.`id` -->
+		JOIN t_devicetypeb dtype ON dtype.`id`=ti.`devtype`
+		<!-- JOIN t_user_role_rel urole ON urole.user_uuid=ur.uuid -->
+		<where>
+			<!-- <if test="userId != '' and userId != null">
+				and ur.uuid = #{userId}
+			</if> -->
+			<!-- <if test="dataType != '' and dataType != null">
+				and vud.data_type = #{dataType}
+			</if> -->
+			<if test="id != '' and id != null">
+				and ti.devno like CONCAT('%',#{id},'%')
+			</if>
+			<if test="name != '' and name != null">
+				and ti.name like CONCAT('%',#{name},'%')
+			</if>
+			<if test="typeId != '' and typeId != null">
+				and ti.devtype = #{typeId}
+			</if>
+			<if test="regionId != '' and regionId != null">
+				and ci.regionid like CONCAT(#{regionId},'%')
+			</if>
+		</where>
+		order by CONVERT(ti.name USING gbk)
+	</select>
+
+	<!-- 获取联系人（设备）列表总数（该功能暂没用到） -->
+	<select id="getUserDevicesCount" resultType="int" parameterType="map">
+		SELECT COUNT(ti.`id`) 
+		FROM t_terminalinfob ti
+		JOIN t_customerinfob ci ON ti.`devno`=ci.`userno` AND ci.`useflg`=0
+		JOIN t_regionb region ON region.`id`=ci.`regionid`
+		JOIN t_user ur ON ur.`area`=region.`id`
+		<!-- JOIN t_devicetypeb dtype ON dtype.`id`=ti.`devtype` -->
+		<where>
+			<if test="userId != '' and userId != null">
+				and ur.uuid = #{userId}
+			</if>
+			<!-- <if test="dataType != '' and dataType != null">
+				and vud.data_type = #{dataType}
+			</if> -->
+			<if test="id != '' and id != null">
+				and ti.devno like CONCAT('%',#{id},'%')
+			</if>
+			<if test="name != '' and name != null">
+				and ti.name like CONCAT('%',#{name},'%')
+			</if>
+			<if test="typeId != '' and typeId != null">
+				and ti.devtype = #{typeId}
+			</if>
+			<if test="regionId != '' and regionId != null">
+				and region.id like CONCAT(#{regionId},'%')
+			</if>
+		</where>
+	</select>
+	
+	<!-- 获取设备列表总数 -->
+	<select id="getDevicesCount" resultType="int" parameterType="map">
+		SELECT COUNT(1) 
+		FROM t_terminalinfob ti
+		JOIN t_customerinfob ci ON ti.`devno`=ci.`userno` AND ci.`useflg`=0
+		<!-- JOIN t_regionb region ON region.`id`=ci.`regionid` -->
+		<!-- JOIN t_devicetypeb dtype ON dtype.`id`=ti.`devtype` -->
+		<where>
+			<!-- <if test="userId != '' and userId != null">
+				and ur.uuid = #{userId}
+			</if>
+			<if test="dataType != '' and dataType != null">
+				and vud.data_type = #{dataType}
+			</if> -->
+			<if test="id != '' and id != null">
+				and ti.devno like CONCAT('%',#{id},'%')
+			</if>
+			<if test="name != '' and name != null">
+				and ti.name like CONCAT('%',#{name},'%')
+			</if>
+			<if test="typeId != '' and typeId != null">
+				and ti.devtype = #{typeId}
+			</if>
+			<if test="regionId != '' and regionId != null">
+				and ci.regionid like CONCAT(#{regionId},'%')
+			</if>
+		</where>
+	</select>
+	
+	<!-- 获取行政结构信息（子节点） -->
+	<select id="getChild" parameterType="map" resultType="RegionVO">
+		select vr.id,
+		vr.pid,
+		vr.name,
+		vr.gradeid as gradeId,
+		vr.isleaf as isLeaf,
+		date_format(vr.updatetime,'%Y-%m-%d %H:%i:%s') AS updateTime
+		FROM t_regionb vr
+		<where>
+			<if test="pId != '' and pId != null">
+				vr.pid =#{pId}
+			</if>
+			<if test="regionName != '' and regionName != null">
+				and vr.`name` like CONCAT('%',#{regionName},'%')
+			</if>
+		</where>
+		order by CONVERT(vr.name USING gbk)
+	</select>
+	
+	<!-- 获取终端信息，携带出项目名称和详细地址 Start -->
+	<select id="selectTerminalInfo" resultType="com.visionvera.bean.datacore.TTerminalInfoVO">
+		SELECT
+			tc.regionid AS regionid, 
+			tt.id AS id, 
+			tt.devno AS devno, 
+			tt.name AS NAME, 
+			tt.ip AS ip,
+			tt.mac AS mac,
+			tt.devtype AS devtype,
+			tt.svrid AS svrid,
+			DATE_FORMAT(tt.updatetime,'%Y-%m-%d %H:%i:%s') AS updatetime,
+			tt.longitude AS longitude,
+			tt.latitude AS latitude,
+			tc.xxdz AS xxdz,
+			tt.online AS isonline,
+			DATE_FORMAT(tt.createtime,'%Y-%m-%d %H:%i:%s') AS createtime,
+			tt.whfzr1 AS whfzr1,
+			tt.whfzrtel1 AS whfzrtel1,
+			tb.name AS xmname,
+			tc.ssjgid AS ssjgid,
+			tn.omcid2 AS omcid2
+		FROM 
+			t_terminalinfob AS tt 
+		LEFT JOIN 
+			t_customerinfob AS tc 
+		ON 
+			tt.devno = tc.userno AND tt.omcid = tc.omcid
+        LEFT JOIN 
+        	t_businessprojectb_total AS tb 
+        ON 
+        	tc.ssxmid = tb.id AND tc.`omcid`= tb.`omcid`
+        LEFT JOIN
+        	t_nmsserver AS tn
+       	ON
+       		tt.omcid = tn.omcid
+        ORDER BY tt.id 
+	</select>
+	<!-- 获取终端信息，携带出项目名称和详细地址 End -->
+</mapper>

@@ -1,0 +1,39 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd" >
+<mapper namespace="com.visionvera.dao.resource.RegionDao">
+	<resultMap id="BaseResultMap" type="com.visionvera.bean.datacore.TRegionb">
+		<id column="id" property="id" jdbcType="VARCHAR" />
+		<result column="pid" property="pid" jdbcType="VARCHAR" />
+		<result column="name" property="name" jdbcType="VARCHAR" />
+		<result column="gradeid" property="gradeid" jdbcType="INTEGER" />
+		<result column="isleaf" property="isleaf" jdbcType="CHAR" />
+		<result column="updatetime" property="updatetime" jdbcType="TIMESTAMP" />
+	</resultMap>
+
+	<sql id="Base_Column_List">
+		id, pid, name, gradeid, isleaf, updatetime
+	</sql>
+	
+	<!-- 获取行政区域列表 Start -->
+	<select id="selectRegions" parameterType="com.visionvera.bean.datacore.TRegionb" resultType="com.visionvera.bean.datacore.TRegionb">
+		SELECT 
+			<include refid="Base_Column_List"></include>
+		FROM 
+			t_regionb vr
+		<where>
+			<if test="name != '' and name != null">
+				AND vr.name LIKE CONCAT('%',#{name},'%')
+			</if>
+			<if test="gradeid != '' and gradeid != null">
+				AND vr.gradeid = #{gradeid}
+			</if>
+			<if test="pid != '' and pid != null">
+				AND vr.pid =#{pid}
+			</if>
+			<if test="id != '' and id != null">
+				AND vr.id =#{id}
+			</if>
+		</where>
+	</select>
+	<!-- 获取行政区域列表 End -->
+</mapper>

@@ -1,0 +1,72 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+        "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.visionvera.dao.resource.ServerConfigDao">
+	<!-- 查询服务配置，并携带出对应的平台相关信息 Start -->
+	<select id="selectServerConfigWithPlatform" parameterType="com.visionvera.bean.datacore.ServerConfig" resultType="com.visionvera.bean.datacore.ServerConfig">
+		SELECT
+			serverConfig.id AS id,
+			serverConfig.ip AS ip,
+			serverConfig.port AS port,
+			serverConfig.loginName AS loginName,
+			serverConfig.token AS token,
+			serverConfig.platformId AS platformId,
+			serverConfig.other_platform_id AS otherPlatformId,
+			DATE_FORMAT(serverConfig.updateTime,'%Y-%m-%d %H:%i:%s') AS updateTime,
+			serverConfig.remark AS remark,
+			platform.devtype AS platformType,
+			platform.devname AS platformName
+		FROM
+			t_server_config AS serverConfig
+		RIGHT JOIN
+			t_applicationdeviceb AS platform
+		ON
+			serverConfig.other_platform_id = platform.id
+		<where>
+			<if test="id != null">
+				AND serverConfig.id = #{id}
+			</if>
+			<if test="ip != null and ip.length() > 0">
+				AND serverConfig.ip LIKE CONCAT(#{ip}, '%')
+			</if>
+			<if test="port != null">
+				AND serverConfig.port = #{port}
+			</if>
+			<if test="otherPlatformId != null and otherPlatformId.length() > 0">
+				AND serverConfig.other_platform_id = #{otherPlatformId}
+			</if>
+			AND platform.devtype IN ('5','6','8','9','10')
+		</where>
+	</select>
+	<!-- 查询服务配置，并携带出对应的平台相关信息 End -->
+
+	<!-- 通过用户ID和平台类别查询服务器信息 Start -->
+	<select id="selectServerConfigByUserIdAndPlatformType" resultType="com.visionvera.bean.datacore.ServerConfig">
+		SELECT
+		DISTINCT(serverConfig.id) AS id,
+		serverConfig.ip AS ip,
+		serverConfig.port AS port,
+		serverConfig.loginName AS loginName,
+		serverConfig.token AS token,
+		serverConfig.platformId AS platformId,
+		serverConfig.other_platform_id AS otherPlatformId,
+		DATE_FORMAT(serverConfig.updateTime,'%Y-%m-%d %H:%i:%s') AS updateTime,
+		serverConfig.remark AS remark,
+		platform.devtype AS platformType,
+		platform.devname AS platformName
+		FROM t_server_config AS serverConfig
+		LEFT JOIN t_applicationdeviceb AS platform
+		ON serverConfig.`other_platform_id` = platform.`id`
+		LEFT JOIN t_role_platform_rel AS rolePlat
+		ON platform.`id` = rolePlat.`platform_uuid`
+		LEFT JOIN t_role AS role
+		ON role.`uuid` = rolePlat.`role_uuid`
+		LEFT JOIN t_user_role_rel AS userRole
+		ON userRole.`role_uuid` = role.`uuid`
+		LEFT JOIN t_user AS `user`
+		ON `user`.`uuid` = userRole.`user_uuid`
+		WHERE user.`uuid` = #{userId}
+		AND platform.`devtype` = #{platformType}
+	</select>
+	<!-- 通过用户ID和平台类别查询服务器信息 End -->
+</mapper>

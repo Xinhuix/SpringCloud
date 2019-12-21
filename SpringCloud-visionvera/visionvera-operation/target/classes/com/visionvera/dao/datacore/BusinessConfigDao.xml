@@ -1,0 +1,197 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+        "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+
+<mapper namespace="com.visionvera.dao.datacore.BusinessConfigDao">
+	<!-- 获取告警推送配置 -->
+	<select id="getBusinessConfig"  resultType="map" parameterType="map">
+		SELECT 
+		tc.uuid as uuid,
+		tc.`alarm_level` as level,
+		tc.`alarm_type` as type,
+		tc.`alarm_sub_type` as subType,
+		te.`name` AS levelName,
+		ty.`chn` AS  typeName,
+		tp.`chn` AS subTypeName,
+		COUNT(user_id) AS userCount,
+		GROUP_CONCAT(tu.login_name) AS loginName,
+		GROUP_CONCAT(tu.`name`,'(',tu.`login_name`,')') AS name
+		FROM t_alarm_user_config tc
+		LEFT JOIN t_user tu
+		ON tu.`uuid` = tc.user_id
+		LEFT JOIN t_alarm_level te
+		ON tc.`alarm_level` = te.`id`
+		LEFT JOIN t_alarm_type ty
+		ON tc.`alarm_type` = ty.`id`
+		LEFT JOIN t_alarm_type tp
+		ON tc.`alarm_sub_type` = tp.`id`
+		<where>
+			<if test="level != null ">
+				tc.alarm_level = #{level}
+			</if>
+			<if test="type != null ">
+				and tc.alarm_type = #{type}
+			</if>
+			<if test="subType != null ">
+				and tc.alarm_sub_type = #{subType}
+			</if>
+			<if test="typeName != null and typeName != '' ">
+				and tp.`chn` like  CONCAT('%',#{typeName},'%')
+			</if>
+			<if test="realName != null and realName != '' ">
+				and tu.`name` like  CONCAT('%',#{realName},'%')
+			</if>
+		</where>
+		GROUP BY alarm_level,alarm_type 
+	</select>
+	
+	
+	<!-- 获取推送人员 -->
+	<select id="getPushUserConfig"  resultType="map" parameterType="map">
+		SELECT tu.login_name AS loginName,tc.user_id AS userId,tu.`name` AS realName,
+		CONCAT(tu.`name`,'(',tu.`login_name`,')') AS name
+		FROM t_alarm_user_config tc
+		LEFT JOIN t_user tu
+		ON tc.`user_id` = tu.`uuid`
+		<where>
+			<if test="level != null and level != '' ">
+				tc.alarm_level = #{level}
+			</if>
+			<if test="type != null and type != '' ">
+				and tc.alarm_type = #{type}
+			</if>
+			<if test="subType != null and subType != ''">
+				and tc.alarm_sub_type = #{subType}
+			</if>
+		</where>
+	</select>
+	
+	
+	<!-- 删除配置 -->
+	<delete id="deleteBusinessConfig" parameterType="map">
+		delete from t_alarm_user_config where t_alarm_user_config.uuid in
+		<foreach item="uuid" index="index" collection="uuids" open="("
+			separator="," close=")">
+			#{uuid}
+		</foreach>
+	</delete>
+	
+	
+	
+	<!-- 获取预设用户 -->
+	<select id="getDefaultUser"  resultType="map" parameterType="map">
+		SELECT tu.`uuid` AS userId, tu.`name` AS realName,tu.`login_name` AS loginName,
+		CONCAT(tu.`name`,'(',tu.`login_name`,')') AS name
+		FROM t_alarm_user ta
+		LEFT JOIN t_user tu
+		ON ta.uuid = tu.`uuid`
+		<where>
+			<if test="uuid != null and uuid != '' ">
+				tu.uuid = #{uuid}
+			</if>
+			<if test="realName != null and realName != '' ">
+				and tu.name like  CONCAT('%',#{realName},'%')
+			</if>
+		</where>
+	</select>
+	
+	
+	<!-- 更新可操作上传文件人员 -->
+	<insert id="updateDefaultUser" parameterType="list">
+		insert ignore into t_alarm_user(uuid)
+		values
+		<foreach collection="list" item="item" index="index" separator=",">
+			(#{item.uuid})
+		</foreach>
+	</insert>
+	
+	<!-- 更新终端分析参数 -->
+	<delete id="deleteDefaultUser">
+		delete from t_alarm_user
+	</delete>
+	
+	
+	<!-- 获取告警级别 -->
+	<select id="getLevelRoot"  resultType="map">
+		SELECT id,name,code,'' as eng,0 as level,'' as parent_id FROM t_alarm_level
+	</select>
+	
+	<!-- 获取告警类别 -->
+	<select id="getTypeRoot"  resultType="map">
+		SELECT id,code,chn as name,eng,level,parent_id FROM t_alarm_type 
+		<where>
+			parent_id = 0
+		</where>
+	</select>
+	
+	<!-- 获取告警类型 -->
+	<select id="getSubTypeRoot"  resultType="map"  parameterType="map">
+		SELECT id,code,chn as name,eng,level,parent_id FROM t_alarm_type 
+		<where>
+			<if test="level != null ">
+				level = #{level}
+			</if>
+			<if test="type != null ">
+				and  parent_id = #{type}
+			</if>
+		</where>
+		<if test="type == 1 || type == 2">
+			UNION
+			SELECT id,code,chn as name,eng,level,parent_id FROM t_alarm_type 
+			<where>
+				level = 0 AND parent_id = #{type}
+			</where>
+		</if>
+	</select>
+	
+	
+	<!-- 添加告警推送配置 -->
+	<insert id="addAlarmUserConfig" parameterType="list">
+		insert ignore into t_alarm_user_config(uuid, alarm_level, alarm_type, alarm_sub_type, user_id)
+		values
+		<foreach collection="list" item="item" index="index" separator=",">
+			(#{item.alarmId},#{item.level},#{item.type},#{item.subType},#{item.userId})
+		</foreach>
+	</insert>
+	
+	
+	<!-- 获取拥有视联汇告警推送权限的用户 -->
+	<select id="getUser"  resultType="map"  parameterType="map">
+		SELECT distinct(uuid) as userId, name as realName,login_name AS loginName,
+		CONCAT(tu.`name`,'(',tu.`login_name`,')') AS name
+		FROM t_user tu
+		LEFT JOIN t_user_role_rel tr
+		ON tu.`uuid` = tr.`user_uuid`
+		LEFT JOIN t_role_permission_rel tp
+		ON tr.`role_uuid` = tp.`role_uuid`
+		<where>
+			tp.`permission_uuid` = '18793d9bb5be447ca44e23er873183c8'
+			<if test="uuid != null and uuid != '' ">
+				tu.uuid = #{uuid}
+			</if>
+			<if test="loginName != null and loginName != '' ">
+				and  tu.login_name like  CONCAT('%',#{loginName},'%')
+			</if>
+			<if test="realName != null and realName != '' ">
+				and  tu.name like  CONCAT('%',#{realName},'%')
+			</if>
+		</where>
+	</select>
+	
+	
+	<!-- 删除配置 -->
+	<delete id="deletePushUserConfig" parameterType="map">
+		delete from t_alarm_user_config 
+		<where>
+			<if test="level != null ">
+				alarm_level = #{level}
+			</if>
+			<if test="type != null ">
+				and alarm_type = #{type}
+			</if>
+			<if test="subType != null ">
+				and alarm_sub_type = #{subType}
+			</if>
+		</where>
+	</delete>
+</mapper>

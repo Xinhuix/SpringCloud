@@ -1,0 +1,829 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.visionvera.dao.authentication.UserDao">
+	<resultMap id="BaseResultMap" type="com.visionvera.bean.cms.UserVO">
+		<id column="uuid" jdbcType="CHAR" property="uuid" />
+		<result column="name" jdbcType="VARCHAR" property="name" />
+		<result column="login_pwd" jdbcType="VARCHAR" property="loginPwd" />
+		<result column="login_name" jdbcType="VARCHAR" property="loginName" />
+		<result column="phone" jdbcType="VARCHAR" property="phone" />
+		<result column="telPhone" jdbcType="VARCHAR" property="telphone" />
+		<result column="mail" jdbcType="VARCHAR" property="mail" />
+		<result column="grade" jdbcType="INTEGER" property="grade" />
+		<result column="depart" jdbcType="CHAR" property="depart" />
+		<result column="status" jdbcType="INTEGER" property="status" />
+		<result column="description" jdbcType="VARCHAR" property="description" />
+		<result column="isvalid" jdbcType="BIT" property="isvalid" />
+		<result column="org_id" jdbcType="CHAR" property="orgId" />
+		<result column="area" jdbcType="CHAR" property="areaId" />
+		<result column="isWsLogin" jdbcType="BIT" property="iswslogin" />
+		<result column="img_url" jdbcType="VARCHAR" property="imgUrl" />
+		<result column="dev_id" jdbcType="VARCHAR" property="devId" />
+		<result column="org_name" jdbcType="VARCHAR" property="orgName" />
+		<result column="depart_name" jdbcType="VARCHAR" property="departName" />
+		<result column="post_name" jdbcType="VARCHAR" property="postName" />
+		<result column="rank_name" jdbcType="VARCHAR" property="rankName" />
+		<result column="id_card" jdbcType="VARCHAR" property="idCard" />
+		<result column="web_login" jdbcType="BIT" property="webLogin" />
+		<result column="info_ok" jdbcType="BIT" property="infoOk" />
+		<result column="create_time" jdbcType="TIMESTAMP" property="createTime" />
+		<result column="area_name" jdbcType="VARCHAR" property="areaName" />
+		<result column="svr_region_id" jdbcType="VARCHAR" property="svrRegionId" />
+		<result column="userid" jdbcType="INTEGER" property="userid" />
+		<result column="nick_name" jdbcType="VARCHAR" property="nickName" />
+		<result column="address" jdbcType="VARCHAR" property="address" />
+		<result column="max_dev_num" jdbcType="INTEGER" property="maxDevNum" />
+		<result column="allow_hkzs" jdbcType="BIT" property="allowHkzs" />
+		<result column="permission" jdbcType="VARCHAR" property="permission" />
+		<result column="login_module" jdbcType="VARCHAR" property="loginModule" />
+		<result column="fail_num" jdbcType="BIT" property="failNum" />
+		<result column="pwd_modify_time" jdbcType="TIMESTAMP" property="pwdModifyTime" />
+		<result column="limit_login_time" jdbcType="TIMESTAMP" property="limitLoginTime" />
+		<result column="md5_pwd" jdbcType="VARCHAR" property="md5Pwd" />
+	</resultMap>
+
+	<sql id="Base_Column_List">
+		uuid, name, login_pwd, login_name, phone, telPhone, mail,
+		grade, depart, status,
+		description, isvalid, org_id, area, isWsLogin,
+		img_url, dev_id, org_name, depart_name,
+		post_name, rank_name, id_card,
+		web_login, info_ok, create_time, area_name, svr_region_id, userid,
+		nick_name, address, max_dev_num, allow_hkzs, permission, login_module
+	</sql>
+
+	<!-- 通过数据库表的唯一键获取用户数据, 用于登录操作 Start -->
+	<select id="selectUserByUniqueKey" resultType="com.visionvera.bean.cms.UserVO" parameterType="map">
+		SELECT
+			DISTINCT(user.uuid) AS `uuid`,
+			user.`name` AS `name`,
+			user.login_name AS loginName,
+			user.login_pwd AS loginPwd,
+			user.phone AS phone,
+			user.area AS areaId,
+			(CASE WHEN (r.`gradeid` IS NULL) THEN 0 ELSE r.`gradeid` END) AS gradeId,
+			user.area_name AS areaName,
+			DATE_FORMAT(user.create_time,'%Y-%m-%d %H:%i:%s') AS createTime,
+			user.ext1 AS ext1,
+			fail_num AS failNum,
+			pwd_modify_time AS pwdModifyTime,
+			limit_login_time AS limitLoginTime
+		FROM
+			t_user AS `user`
+			LEFT JOIN t_regionb r
+			ON user.`area` = r.`id`
+		<where>
+			<if test="uuid != null and uuid.length() > 0">
+				AND user.uuid = #{uuid}
+			</if>
+			<if test="loginName != null and loginName.length() > 0">
+				AND user.login_name = #{loginName}
+			</if>
+			<if test="phone != null and phone.length() > 0">
+				AND user.phone = #{phone}
+			</if>
+		</where>
+		LIMIT 1
+	</select>
+	<!-- 通过数据库表的唯一键获取用户数据, 用于登录操作 End -->
+	
+	<!-- 通过数据库的唯一键获取用户的数量 Start -->
+	<select id="selectUserCountByUniqueKey" resultType="int" parameterType="map">
+		SELECT COUNT(1) FROM t_user AS vu
+		<where>
+			<choose>
+				<when test="loginName != null and loginName.length() > 0">
+					AND vu.login_name = #{loginName}
+				</when>
+				<when test="phone != null and phone.length() > 0">
+					AND vu.phone = #{phone}
+				</when>
+				<otherwise>
+					AND vu.uuid = ''
+				</otherwise>
+			</choose>
+		</where>
+	</select>
+	<!-- 通过数据库的唯一键获取用户的数量 End -->
+	
+	<!-- 插入用户基本信息 Start -->
+	<insert id="insertUser" parameterType="com.visionvera.bean.cms.UserVO" keyProperty="uuid">
+		<selectKey resultType="java.lang.String" order="BEFORE" keyProperty="uuid">
+			SELECT REPLACE(UUID(), '-', '') FROM dual
+		</selectKey>
+		INSERT INTO 
+			t_user(uuid, name, login_pwd, login_name, phone, area, area_name, org_name,max_dev_num, create_time,source,md5_pwd,ext1)
+		VALUES(#{uuid},#{name},#{loginPwd},#{loginName}, #{phone}, #{areaId}, #{areaName}, #{orgName},#{maxDevNum},NOW(),#{source},#{md5Pwd},#{uuid})
+	</insert>
+	<!-- 插入用户基本信息 End -->
+
+	<!-- 插入用户基本信息：不再数据库中生成UUID Start -->
+	<insert id="insertUserWithoutUUID" parameterType="com.visionvera.bean.cms.UserVO">
+		INSERT INTO
+		t_user(uuid, name, login_pwd, login_name, phone, area, area_name, org_name,max_dev_num, create_time,source,ext1, permission,md5_pwd)
+		VALUES(#{uuid},#{name},#{loginPwd},#{loginName}, #{phone}, #{areaId}, #{areaName}, #{orgName},#{maxDevNum},NOW(),#{source},#{uuid}, #{permission},#{md5Pwd})
+	</insert>
+	<!-- 插入用户基本信息：不再数据库中生成UUID End -->
+	
+	<!-- 批量添加用于与角色的关系 Start -->
+	<insert id="insertUserRoleRel" parameterType="map">
+		INSERT IGNORE INTO
+			t_user_role_rel (user_uuid, role_uuid)
+		VALUES
+		<foreach collection="roleIds" item="roleId" index="index" separator=",">
+			(#{userId}, #{roleId})
+		</foreach>
+	</insert>
+	<!-- 批量添加用于与角色的关系 End -->
+	
+	<!-- 更新用户基本信息 Start -->
+	<update id="updateUser" parameterType="com.visionvera.bean.cms.UserVO">
+		UPDATE t_user 
+		<set>
+			<if test="name != null and name.length() > 0">
+				name = #{name},
+			</if>
+			<if test="loginPwd != null and loginPwd != '' ">
+				login_pwd = #{loginPwd},
+			</if>
+			<if test="orgName != null and orgName != '' ">
+				org_name = #{orgName}, 
+			</if>
+			<if test="areaId != null and areaId.length() > 0">
+				area = #{areaId},
+			</if>
+			<if test="areaName != null and areaName.length() > 0">
+				area_name = #{areaName},
+			</if>
+			<!-- <if test="updateTime != null and updateTime.length() > 0">
+				update_time = #{updateTime},
+			</if> -->
+			<if test="source != null and source !='' ">
+				source = #{source},
+			</if>
+			<if test="maxDevNum != null and maxDevNum !='' ">
+				max_dev_num = #{maxDevNum},
+			</if>
+			<if test="ext1 != null and ext1.length() > 0">
+				ext1 = #{ext1},
+			</if>
+			<if test="failNum != null">
+				fail_num = #{failNum},
+			</if>
+			<if test="pwdModifyTime != null">
+				pwd_modify_time = #{pwdModifyTime},
+			</if>
+			<if test="limitLoginTime != null ">
+				limit_login_time = #{limitLoginTime},
+			</if>
+			<if test="md5Pwd != null and md5Pwd != '' ">
+				md5_pwd = #{md5Pwd},
+			</if>
+			   update_time = NOW()
+		</set>
+		WHERE
+			`uuid` = #{uuid}
+	</update>
+	<!-- 更新用户基本信息 End -->
+	
+	<!-- 删除用户与行业归属的关系 Start -->
+	<delete id="deleteUserIndustryRel" parameterType="map">
+		DELETE FROM t_user_industry_rel
+		<where>
+			<choose>
+				<when test="userId != null and userId.length() > 0">
+					AND user_uuid = #{userId}
+				</when>
+				<when test="industryId != null and industryId.length() > 0">
+					AND industry_uuid = #{industryId}
+				</when>
+				<otherwise>
+					AND user_uuid = "" AND industry_uuid = ""
+				</otherwise>
+			</choose>
+		</where>
+	</delete>
+	<!-- 删除用户与行业归属的关系 End -->
+	
+	<!-- 通过用户UUID批量删除用于与行业归属的关联关系 Start -->
+	<delete id="deleteUserIndustryRelBatch" parameterType="java.util.Map">
+		DELETE FROM t_user_industry_rel WHERE user_uuid IN
+		<foreach item="uuid" index="index" collection="uuids" open="(" separator="," close=")">
+			#{uuid}
+		</foreach>
+	</delete>
+	<!-- 通过用户UUID批量删除用于与行业归属的关联关系 End -->
+	
+	<!-- 批量添加用户与行业归属的关系 Start -->
+	<insert id="insertUserIndustryRel" parameterType="map">
+		INSERT INTO
+			t_user_industry_rel (user_uuid, industry_uuid)
+		VALUES
+		<foreach collection="industryIds" item="industryId" index="index" separator=",">
+			(#{userId}, #{industryId})
+		</foreach>
+	</insert>
+	<!-- 批量添加用户与行业归属的关系 End -->
+	
+	<!-- 通过用户UUID批量删除用于与角色的关联关系 Start -->
+	<delete id="deleteUserRoleRelBatch" parameterType="java.util.Map">
+		DELETE FROM t_user_role_rel WHERE user_uuid IN
+		<foreach item="uuid" index="index" collection="uuids" open="(" separator="," close=")">
+			#{uuid}
+		</foreach>
+	</delete>
+	<!-- 通过用户UUID批量删除用于与角色的关联关系 End -->
+	
+	<!-- 删除用于与角色的关联关系 Start -->
+	<delete id="deleteUserRoleRel" parameterType="map">
+		DELETE FROM t_user_role_rel
+		<where>
+			<choose>
+				<when test="userId != null and userId.length() > 0">
+					AND user_uuid = #{userId}
+				</when>
+				<when test="industryId != null and industryId.length() > 0">
+					AND role_uuid = #{roleId}
+				</when>
+				<otherwise>
+					AND user_uuid = "" AND role_uuid = ""
+				</otherwise>
+			</choose>
+		</where>
+	</delete>
+	<!-- 删除用于与角色的关联关系 End -->
+	
+	<!-- 批量删除用户基本信息 Start -->
+	<delete id="deleteUserBatch" parameterType="map">
+		DELETE FROM t_user
+		<where>
+			uuid IN
+			<foreach item="uuid" index="index" collection="uuids" open="(" separator="," close=")">
+				#{uuid}
+			</foreach>
+			AND login_name != 'admin'
+		</where>
+	</delete>
+	<!-- 批量删除用户基本信息 End -->
+	
+	<!-- 根据条件查询用户信息，携带行业归属名、所属角色信息、可登录平台信息 Start -->
+	<select id="selectUserByCondition" parameterType="com.visionvera.bean.cms.UserVO" resultType="com.visionvera.bean.cms.UserVO">
+		SELECT userManage.* FROM
+		(
+			SELECT 
+				DISTINCT(user.uuid) AS `uuid`,
+				user.name AS `name`,
+				user.login_name AS loginName,
+				user.phone AS phone,
+				user.org_name AS orgName,
+				user.area AS areaId,
+				user.max_dev_num AS maxDevNum,
+				industry.id AS industryId,
+				industry.name AS industryName,
+				DATE_FORMAT(user.create_time,'%Y-%m-%d %H:%i:%s') AS createTime,
+				GROUP_CONCAT(DISTINCT(role.`role_name`)) AS role,
+				GROUP_CONCAT(DISTINCT(role.`uuid`)) AS roleIds,
+				GROUP_CONCAT(DISTINCT(plat.`devname`)) AS platformName,
+				GROUP_CONCAT(DISTINCT(plat.`id`)) AS platformId,
+				GROUP_CONCAT(DISTINCT(region.`name`)) AS areaName,
+				user.`is_default` AS isDefault,
+				user.`is_delete` AS isDelete,
+				user.`ext1` AS ext1
+			FROM
+				t_user AS `user` 
+			LEFT JOIN 
+				t_user_role_rel AS userRole 
+		    ON 
+		    	user.`uuid` = userRole.`user_uuid`
+		  	LEFT JOIN 
+		  		t_role AS role
+		    ON 
+		    	role.`uuid` = userRole.`role_uuid` 
+		  	LEFT JOIN 
+		  		t_role_platform_rel AS rolePlat 
+		    ON 
+		    	role.`uuid` = rolePlat.`role_uuid`
+		  	LEFT JOIN 
+		  		t_applicationdeviceb AS plat
+		    ON 
+		    	rolePlat.`platform_uuid` = plat.`id` 
+		  	LEFT JOIN 
+		  		t_user_industry_rel AS userIndustry 
+		    ON 
+		    	user.uuid = userIndustry.user_uuid 
+		  	LEFT JOIN 
+		  		t_industryb_total AS industry
+		    ON 
+		    	userIndustry.industry_uuid = industry.`id`
+		    LEFT JOIN t_regionb AS region
+				ON user.`area` = region.`id`
+			GROUP BY user.`uuid`
+			ORDER BY user.create_time DESC
+		) userManage
+		<where>
+			<if test="uuid != null and uuid.length() > 0">
+				AND userManage.`uuid` = #{uuid}
+			</if>
+			<if test="name != null and name.length() > 0">
+				AND userManage.name LIKE CONCAT('%',#{name},'%')
+			</if>
+			<if test="loginName != null and loginName.length() > 0">
+				AND userManage.loginName LIKE CONCAT('%',#{loginName},'%')
+			</if>
+			<if test="platformId != null and platformId.length() > 0">
+				AND userManage.platformId LIKE CONCAT('%',#{platformId},'%')
+			</if>
+			<if test="industryId != null and industryId.length() > 0">
+				AND userManage.industryId = #{industryId}
+			</if>
+			<if test="orgName != null and orgName.length() > 0">
+				AND userManage.orgName LIKE CONCAT('%',#{orgName},'%')
+			</if>
+			<if test="roleIds != null and roleIds.length() > 0">
+				AND userManage.roleIds LIKE CONCAT('%',#{roleIds},'%')
+			</if>
+			<if test="startCreateTime != null and startCreateTime.length() > 0">
+				<![CDATA[ AND userManage.createTime >= #{startCreateTime} ]]>
+			</if>
+			<if test="endCreateTime != null and endCreateTime.length() > 0">
+				<![CDATA[ AND userManage.createTime <= #{endCreateTime} ]]>
+			</if>
+			<if test="ext1 != null and ext1.length() > 0">
+				AND userManage.ext1 = #{ext1}
+			</if>
+		</where>
+	</select>
+	<!-- 根据条件查询用户信息，携带行业归属名、所属角色信息、可登录平台信息 End -->
+	
+	<!-- 根据条件查询用户信息，用于子平台同步用户信息 Start -->
+	<select id="selectUserByConditionForSync" parameterType="com.visionvera.bean.cms.UserVO" resultType="com.visionvera.bean.cms.UserVO">
+		SELECT 
+			DISTINCT(user.uuid) AS `uuid`,
+			user.name AS `name`,
+			user.`md5_pwd` AS loginPwd,
+			user.`md5_pwd` AS md5Pwd,
+			user.`login_pwd` AS sm3Pwd,
+			user.login_name AS loginName,
+			user.phone AS phone,
+			user.`description` AS description,
+			user.`area` AS areaId,
+			user.`img_url` AS imgUrl,
+			user.org_name AS orgName,
+			user.`area_name` AS areaName,
+			GROUP_CONCAT(DISTINCT(userRole.`role_uuid`)) AS role,
+			GROUP_CONCAT(DISTINCT(tp.`url`)) AS permission,
+			DATE_FORMAT(user.create_time,'%Y-%m-%d %H:%i:%s') AS createTime,
+			DATE_FORMAT(user.update_time,'%Y-%m-%d %H:%i:%s') AS updateTime
+		FROM
+			t_user AS `user`
+		LEFT JOIN 
+			t_user_role_rel AS userRole
+		ON 
+			user.`uuid` = userRole.`user_uuid`
+		LEFT JOIN 
+			t_role AS role
+		ON 
+			role.`uuid` = userRole.`role_uuid`
+		LEFT JOIN 
+			t_role_platform_rel AS rolePlat
+		ON 
+			role.`uuid` = rolePlat.`role_uuid`
+		LEFT JOIN 
+			t_applicationdeviceb AS plat
+		ON 
+			rolePlat.`platform_uuid` = plat.`id`
+		LEFT JOIN t_role_permission_rel AS rpr
+		ON	rpr.`role_uuid` = userRole.`role_uuid`
+		LEFT JOIN t_permission AS tp
+		ON	tp.`uuid`=rpr.`permission_uuid`
+		<where>
+			<if test="uuid != null and uuid.length() > 0">
+				AND user.`uuid` = #{uuid}
+			</if>
+			<if test="name != null and name.length() > 0">
+				AND user.name LIKE CONCAT('%',#{name},'%')
+			</if>
+			<if test="loginName != null and loginName.length() > 0">
+				AND user.login_name = #{loginName}
+			</if>
+			<if test="platformId != null and platformId.length() > 0">
+				AND plat.id = #{platformId}
+			</if>
+			<if test="roleIds != null and roleIds.length() > 0">
+				AND userRole.role_uuid = #{roleIds}
+			</if>
+			<if test="startCreateTime != null and startCreateTime.length() > 0">
+				<![CDATA[ AND user.create_time >= #{startCreateTime} ]]>
+			</if>
+			<if test="endCreateTime != null and endCreateTime.length() > 0">
+				<![CDATA[ AND user.create_time <= #{endCreateTime} ]]>
+			</if>
+		</where>
+		GROUP BY user.`uuid`
+		ORDER BY user.create_time DESC
+	</select>
+	<!-- 根据条件查询用户信息，用于子平台同步用户信息 End -->
+
+	<!-- 通过用户名和手机号获取用户数据  Start-->
+	<select id="selectByLoginNamePhone" resultType="com.visionvera.bean.cms.UserVO" parameterType="map">
+		    SELECT DISTINCT(user.uuid) AS `uuid`,user.`name` AS `name`,	user.login_name AS loginName,
+			user.login_pwd AS loginPwd,	user.phone AS phone,user.area AS areaId,user.area_name AS areaName
+		    FROM t_user AS `user` where user.login_name = #{loginName} and  user.phone = #{phone}
+	</select>
+	<!-- 通过用户名和手机号获取用户数据 End -->
+	
+	<!-- 批量插入用户，如果用户存在则更新相应的字段 Start -->
+	<insert id="insertOrUpdateUserBatch" parameterType="com.visionvera.bean.cms.UserVO">
+		INSERT IGNORE INTO t_user
+			(uuid, name, login_name, login_pwd, phone, mail, grade, depart, status, description, isvalid, org_id, area, 
+			isWsLogin, img_url, dev_id, org_name, depart_name, post_name, rank_name, id_card, web_login, info_ok, 
+			create_time, area_name, svr_region_id, nick_name, address, max_dev_num, allow_hkzs, permission, source, md5_pwd, ext1)
+		VALUES
+		<foreach collection="list" item="user" separator=",">
+			(#{user.uuid}, #{user.name}, #{user.loginName}, #{user.loginPwd}, #{user.phone}, #{user.email}, 
+			#{user.gradeId}, #{user.departId}, #{user.status}, #{user.description}, #{user.isvalid}, #{user.orgId}, 
+			#{user.areaId}, #{user.isWsLogin}, #{user.imgUrl}, #{user.devId}, #{user.orgName}, #{user.departName}, 
+			#{user.postName}, #{user.rankName}, #{user.idCard}, #{user.webLogin}, #{user.infoOk}, #{user.createTime}, #{user.areaName}, 
+			#{user.svrRegionId}, #{user.nickName}, #{user.address}, #{user.maxDevNum}, #{user.allowHkzs}, #{user.permission}, #{user.source}, #{user.md5Pwd},#{user.ext1})
+		</foreach>
+		ON DUPLICATE KEY UPDATE
+		<trim suffixOverrides=",">
+			<if test="user.name != null and user.name.length() > 0">
+				name=VALUES(name),
+			</if>
+			<if test="user.loginPwd != null and user.loginPwd.length() > 0">
+				login_pwd=VALUES(login_pwd), 
+			</if>
+			<if test="user.email != null and user.email.length() > 0">
+				mail=VALUES(mail),
+			</if>
+			<if test="user.gradeId != null">
+				grade=VALUES(grade),
+			</if>
+			<if test="user.departId != null and  user.departId.length() > 0">
+				depart=VALUES(depart), 
+			</if>
+			<if test="user.status != null">
+				status=VALUES(status), 
+			</if>
+			<if test="user.description != null and user.description.length() > 0">
+				description=VALUES(description),
+			</if>
+			<if test="user.orgId != null and user.orgId.length() > 0">
+				org_id=VALUES(org_id),
+			</if>
+			<if test="user.areaId != null and user.areaId.length () > 0">
+				area=VALUES(area),
+			</if>
+			<if test="user.isWsLogin != null">
+				isWsLogin=VALUES(isWsLogin),
+			</if>
+			<if test="user.imgUrl != null and user.imgUrl.length() > 0">
+				img_url=VALUES(img_url),
+			</if>
+			<if test="user.devId != null and user.devId.length() > 0">
+				dev_id=VALUES(dev_id),
+			</if>
+			<if test="user.orgName != null and user.orgName.length() > 0">
+				org_name=VALUES(org_name),
+			</if>
+			<if test="user.departName != null and user.departName.length() > 0">
+				depart_name=VALUES(depart_name),
+			</if>
+			<if test="user.postName != null and user.postName.length() > 0">
+				post_name=VALUES(post_name),
+			</if>
+			<if test="user.rankName != null and user.rankName.length() > 0">
+				rank_name=VALUES(rank_name),
+			</if>
+			<if test="user.webLogin != null">
+				web_login=VALUES(web_login), 
+			</if>
+			<if test="user.infoOk != null">
+				info_ok=VALUES(info_ok),
+			</if>
+			<if test="user.createTime != null and user.createTime.length() > 0">
+				create_time=VALUES(create_time),
+			</if>
+			<if test="user.areaName != null and user.areaName.length() > 0">
+				area_name=VALUES(area_name),
+			</if>
+			<if test="user.svrRegionId != null and user.svrRegionId.length() > 0">
+				svr_region_id=VALUES(svr_region_id),
+			</if>
+			<if test="user.nickName != null and user.nickName.length() > 0">
+				nick_name=VALUES(nick_name),
+			</if>
+			<if test="user.address != null and user.address.length() > 0">
+				address=VALUES(address),
+			</if>
+			<if test="user.maxDevNum != null">
+				max_dev_num=VALUES(max_dev_num),
+			</if>
+			<if test="user.allowHkzs != null">
+				allow_hkzs=VALUES(allow_hkzs),
+			</if>
+			<if test="user.permission != null and user.permission.length() > 0">
+				permission=VALUES(permission),
+			</if>
+			<if test="user.source != null and user.source.length() > 0">
+				source=VALUES(source),
+			</if>
+			<if test="user.idCard != null and user.idCard.length() > 0">
+				id_card=VALUES(id_card),
+			</if>
+			<if test="user.ext1 != null and user.ext1.length() > 0">
+				ext1=VALUES(ext1),
+			</if>
+		</trim>
+	</insert>
+	<!-- 批量插入用户，如果用户存在则更新相应的字段 End -->
+	
+	<!-- 更新用户信息：全字段 Start -->
+	<update id="updateUserAllFieldById" parameterType="com.visionvera.bean.cms.UserVO">
+		UPDATE t_user 
+		<set>
+			<if test="name != null and name.length() > 0">
+				name = #{name},
+			</if>
+			<if test="loginPwd != null and loginPwd != '' ">
+				login_pwd = #{loginPwd},
+			</if>
+			<if test="phone != null and phone.length() > 0">
+				phone = #{phone},
+			</if>
+			<if test="email != null and email.length() > 0">
+				mail = #{email},
+			</if>
+			<if test="gradeId != null">
+				grade = #{gradeId},
+			</if>
+			<if test="departId != null and departId.length() > 0">
+				depart = #{departId},
+			</if>
+			<if test="status != null">
+				status = #{status},
+			</if>
+			<if test="description != null and description.length() > 0">
+				description = #{description},
+			</if>
+			<if test="isvalid != null">
+				isvalid = #{isvalid},
+			</if>
+			<if test="orgId != null and orgId.length() > 0">
+				org_id = #{orgId},
+			</if>
+			<if test="areaId != null and areaId.length() > 0">
+				area = #{areaId},
+			</if>
+			<if test="isWsLogin != null">
+				isWsLogin = #{isWsLogin},
+			</if>
+			<if test="imgUrl != null and imgUrl.length() > 0">
+				img_url = #{imgUrl},
+			</if>
+			<if test="devId != null and devId.length() > 0">
+				dev_id = #{devId},
+			</if>
+			<if test="orgName != null and orgName.length() > 0">
+				org_name = #{orgName},
+			</if>
+			<if test="departName != null and departName.length() > 0">
+				depart_name = #{departName},
+			</if>
+			<if test="postName != null and postName.length() > 0">
+				post_name = #{postName},
+			</if>
+			<if test="rankName != null and rankName.length() > 0">
+				rank_name = #{rankName},
+			</if>
+			<if test="idCard != null and idCard.length() > 0">
+				id_card = #{idCard},
+			</if>
+			<if test="webLogin != null">
+				web_login = #{webLogin},
+			</if>
+			<if test="infoOk != null">
+				info_ok = #{infoOk},
+			</if>
+			<if test="createTime != null and createTime.length() > 0">
+				create_time = #{createTime},
+			</if>
+			<if test="areaName != null and areaName.length() > 0">
+				area_name = #{areaName},
+			</if>
+			<if test="svrRegionId != null and svrRegionId.length() > 0">
+				svr_region_id = #{svrRegionId},
+			</if>
+			<if test="nickName != null and nickName.length() > 0">
+				nick_name = #{nickName},
+			</if>
+			<if test="address != null and address.length() > 0">
+				address = #{address},
+			</if>
+			<if test="maxDevNum != null">
+				max_dev_num = #{maxDevNum},
+			</if>
+			<if test="allowHkzs != null">
+				allow_hkzs = #{allowHkzs},
+			</if>
+			<if test="permission != null and permission.length() > 0">
+				permission = #{permission},
+			</if>
+			<if test="ext1 != null and ext1.length() > 0">
+				ext1 = #{ext1},
+			</if>
+		</set>
+		WHERE
+			`uuid` = #{uuid}
+	</update>
+	<!-- 更新用户信息：全字段 End -->
+	
+	<!-- 批量添加用户角色关系 Start -->
+	<insert id="insertUserRoleRelBatch" parameterType="java.util.List">
+		INSERT IGNORE INTO
+			t_user_role_rel (user_uuid, role_uuid)
+		VALUES
+		<foreach collection="list" item="userRole" separator=",">
+			(#{userRole.userId}, #{userRole.roleId})
+		</foreach>
+	</insert>
+	<!-- 批量添加用户角色关系 End -->
+	
+	<!-- 通过唯一键或主键查询用户数量，使用OR Start -->
+	<select id="selectUserByUniqueKeyWithOr" parameterType="com.visionvera.bean.cms.UserVO" resultType="com.visionvera.bean.cms.UserVO">
+		SELECT
+			uuid AS uuid,
+			login_name AS loginName,
+			phone AS phone,
+			DATE_FORMAT(create_time,'%Y-%m-%d %H:%i:%s') AS createTime,
+			permission AS permission
+		FROM 
+			t_user 
+		WHERE 
+			login_name = #{loginName} 
+		OR 
+			phone = #{phone}
+	</select>
+	<!-- 通过唯一键或主键查询用户数量，使用OR End -->
+	
+	<!-- 通过用户UUID和角色UUID删除用户与角色的关联关系 Start -->
+	<delete id="deleteUserRoleBatchByUserIdAndRoleIdList" parameterType="java.util.Map">
+		DELETE FROM t_user_role_rel WHERE user_uuid = #{userId} AND role_uuid IN
+		<foreach collection="roleIds" item="roleId" open="(" separator="," close=")">
+			#{roleId}
+		</foreach>
+	</delete>
+	<!-- 通过用户UUID和角色UUID删除用户与角色的关联关系 End -->
+	
+	<!-- 通过用户UUID和角色UUID查询用户与角色是否有关联关系 Start -->
+	<select id="selectCountByUserIdAndRoleId" resultType="int" parameterType="map">
+		select count(1) from t_user_role_rel urr where urr.user_uuid=#{userId} and urr.role_uuid=#{roleId}
+	</select>
+	<!-- 通过用户UUID和角色UUID查询用户与角色是否有关联关系 End -->
+	
+	<!-- 删除用户角色关联关系，通过用户ID和平台ID Start -->
+	<delete id="deleteUserRoleBatchByUserIdAndRoleId" parameterType="java.util.Map">
+		DELETE FROM 
+			t_user_role_rel 
+		WHERE 
+			user_uuid IN 
+		<foreach collection="userIdList" item="userId" open="(" separator="," close=")">
+			#{userId}
+		</foreach>
+		AND role_uuid IN
+		<foreach collection="roleIdList" item="roleId" open="(" separator="," close=")">
+			#{roleId}
+		</foreach>
+	</delete>
+	<!-- 删除用户角色关联关系，通过用户ID和平台ID End -->
+
+	<!-- 通过一组用户手机号查询用户信息，提供给P-Server(掌上通)业务使用 Start -->
+	<select id="selectUserByPhonesForPServer" resultType="com.visionvera.bean.cms.UserVO">
+		SELECT
+		user.uuid AS uuid,
+		user.name AS name,
+		user.login_name AS loginName,
+		user.login_pwd AS loginPwd,
+		user.phone AS phone,
+		user.area AS areaId,
+		user.area_name AS areaName
+		FROM
+		t_user AS user
+		<where>
+			<if test="array != null and array.length > 0">
+				user.phone IN
+				<foreach collection="array" index="i" item="phone" open="(" separator="," close=")">
+					#{phone}
+				</foreach>
+			</if>
+		</where>
+	</select>
+	<!-- 通过一组用户手机号查询用户信息，提供给P-Server(掌上通)业务使用 End -->
+
+	<!-- 通过手机号更新用户的登录密码 Start -->
+	<update id="updateUserPasswordByPhone" parameterType="com.visionvera.bean.cms.UserVO">
+		UPDATE
+		t_user
+		<set>
+			<if test="loginPwd != null and loginPwd.length() > 0">
+				login_pwd = #{loginPwd},
+			</if>
+			<if test="updateTime != null and updateTime.length() > 0">
+				update_time = #{updateTime},
+			</if>
+		</set>
+		WHERE phone = #{phone}
+	</update>
+	<!-- 通过手机号更新用户的登录密码 End -->
+	
+	<!-- 批量更新用户的基本信息: 用户密码、用户所在区域、用户所在区域名称 Start -->
+	<update id="updateUserBatch" parameterType="list">
+		<foreach collection="list" item="item" separator=";">  
+		update t_user
+	        <set>
+				login_pwd=#{item.loginPwd},
+				area=#{item.areaId},
+				area_name=#{item.areaName},
+				source=#{item.source},
+				ext1=#{item.ext1},
+				update_time=#{item.updateTime}
+	        </set>
+		where uuid = '${item.uuid}'
+        </foreach>  
+	</update>
+	<!-- 批量更新用户的基本信息: 用户密码、用户所在区域、用户所在区域名称 End -->
+
+	<!-- 批量插入用户的基本信息 Start -->
+	<insert id="insertUserBatch" parameterType="list">
+		INSERT INTO t_user
+		(uuid, name, login_name, login_pwd, phone, mail, grade, depart, status, description, isvalid, org_id, area,
+		isWsLogin, img_url, dev_id, org_name, depart_name, post_name, rank_name, id_card, web_login, info_ok,
+		create_time, area_name, svr_region_id, nick_name, address, max_dev_num, allow_hkzs, permission, source, ext1)
+		VALUES
+		<foreach collection="list" item="user" separator=",">
+			(#{user.uuid}, #{user.name}, #{user.loginName}, #{user.loginPwd}, #{user.phone}, #{user.email},
+			#{user.gradeId}, #{user.departId}, #{user.status}, #{user.description}, #{user.isvalid}, #{user.orgId},
+			#{user.areaId}, #{user.isWsLogin}, #{user.imgUrl}, #{user.devId}, #{user.orgName}, #{user.departName},
+			#{user.postName}, #{user.rankName}, #{user.idCard}, #{user.webLogin}, #{user.infoOk}, #{user.createTime}, #{user.areaName},
+			#{user.svrRegionId}, #{user.nickName}, #{user.address}, #{user.maxDevNum}, #{user.allowHkzs}, #{user.permission}, #{user.source}, #{user.ext1})
+		</foreach>
+	</insert>
+	<!-- 批量插入用户的基本信息 End -->
+
+	<!-- 通过用户ID查询用户的密码 Start -->
+	<select id="selectPwdById" resultType="java.lang.String" parameterType="java.lang.String">
+		SELECT
+			`user`.login_pwd
+		FROM
+			t_user AS `user`
+		WHERE
+			`user`.uuid = #{userId}
+	</select>
+	<!-- 通过用户ID查询用户的密码 End -->
+	
+	
+	<!-- 查询老用户数据 Start -->
+	<select id="selectOldUser" resultType="com.visionvera.bean.cms.UserVO" parameterType="java.util.Map">
+		SELECT DISTINCT(uuid) AS `uuid`,`name` AS `name`,login_name AS loginName,
+		login_pwd AS loginPwd,phone AS phone,area AS areaId,area_name AS areaName
+		FROM t_user
+		<where>
+			<if test="md5 != null and md5 != '' ">
+				length(login_pwd) = #{md5}
+			</if>
+		</where>
+	</select>
+	<!-- 查询老用户数据 End -->
+	
+	
+	<!-- 更新用户登录次数 超时时间 -->
+	<update id="updateUserLimitInfo" parameterType="com.visionvera.bean.cms.UserVO">
+		update vc_user set limit_login_time=#{limitLoginTime},login_num=#{loginNum}
+		where  
+		<choose>
+			<when test="loginName != null and loginName.length() > 0">
+				vc_user.login_name=#{loginName}
+			</when>
+			<when test="uuid != null and uuid.length() > 0">
+				vc_user.uuid=#{uuid}
+			</when>
+		</choose>
+	</update>
+	
+	
+	<!-- 批量添加用户角色关系 Start -->
+	<update id="updateBatchUser" parameterType="java.util.List">
+		<foreach collection="list" item="item" separator=";">
+			update t_user
+				<set>
+					login_pwd=#{item.loginPwd},
+					md5_pwd=#{item.md5Pwd},
+					update_time= NOW()
+                </set>
+			WHERE
+				`uuid` = #{item.uuid}
+		</foreach>
+	</update>
+	<!-- 批量添加用户角色关系 Start -->
+</mapper>

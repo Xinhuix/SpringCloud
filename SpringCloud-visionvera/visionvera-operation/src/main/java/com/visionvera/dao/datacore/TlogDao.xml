@@ -1,0 +1,67 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd" >
+<mapper namespace="com.visionvera.dao.datacore.TlogDao">
+	<resultMap id="BaseResultMap" type="com.visionvera.bean.datacore.TLog">
+		<id column="uuid" property="uuid" jdbcType="CHAR" />
+		<result column="login_type" property="loginType" jdbcType="INTEGER" />
+		<result column="description" property="description" jdbcType="VARCHAR" />
+		<result column="create_name" property="createName" jdbcType="VARCHAR" />
+		<result column="result" property="result" jdbcType="TINYINT" />
+		<result column="create_time" property="createTime" jdbcType="TIMESTAMP" />
+		<result column="platform_id" property="platformId" jdbcType="VARCHAR" />
+		<result column="err_msg" property="errMsg" jdbcType="VARCHAR" />
+	</resultMap>
+
+	<sql id="Base_Column_List">
+		uuid, login_type, description, create_name, result, create_time, platform_id, err_msg
+	</sql>
+	
+	<!-- 添加一条日志 Start -->
+	<insert id="insertLog" parameterType="com.visionvera.bean.datacore.TLog">
+		<selectKey resultType="java.lang.String" order="BEFORE" keyProperty="uuid">
+			SELECT REPLACE(UUID(), '-', '') FROM dual
+		</selectKey>
+		INSERT INTO 
+			t_log(uuid, log_type, description, create_name, result, create_time, platform_id, err_msg)
+		VALUES
+			(#{uuid}, #{logType}, #{description}, #{createName}, #{result}, NOW(), #{platformId}, #{errMsg}) 
+	</insert>
+	<!-- 添加一条日志 End -->
+	
+	<select id="getTlogListSelective" resultType="map" parameterType="map">
+	SELECT
+	log.uuid, log.log_type AS logType, log.description, log.create_name AS createName, log.result, DATE_FORMAT(log.create_time,'%Y-%m-%d %H:%i:%s') AS createTime, 
+	log.platform_id AS platformId , log.err_msg AS errMsg,IFNULL(ty.name,'') AS typeName,IFNULL(ap.devname,'') AS platformName 
+	FROM t_log log
+	LEFT JOIN t_log_type ty ON log.log_type = ty.id
+	LEFT JOIN t_applicationdeviceb ap ON log.platform_id = ap.id
+	<where>
+	<if test="null != createName and createName !=''">
+		and log.create_name = #{createName}
+	</if>
+	<if test="null != description and description !=''">
+		and log.description like CONCAT('%',#{description},'%')
+	</if>
+	<if test="null != platformId and platformId !=''">
+		and log.platform_id = #{platformId}
+	</if>
+	<if test="null != logType and logType !=''">
+		and log.log_type = #{logType}
+	</if>
+	<if test="null != logType and logType !=''">
+		and log.log_type = #{logType}
+	</if>
+	<if test="startTime != null and startTime != '' ">
+		<![CDATA[and UNIX_TIMESTAMP(log.create_time) >= UNIX_TIMESTAMP(#{startTime})]]>
+	</if>
+	<if test="endTime != null and endTime != '' ">
+		<![CDATA[and UNIX_TIMESTAMP(log.create_time) <= UNIX_TIMESTAMP(#{endTime})]]>
+	</if>
+	</where>
+	
+	</select>
+	
+	<select id="getTlogTypeList" resultType="map" parameterType="map">
+	   SELECT id,IFNULL(name,'') AS name,IFNULL(description,'') AS description FROM t_log_type
+	</select>
+</mapper>

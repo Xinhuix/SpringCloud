@@ -1,0 +1,153 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+        "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+
+<mapper namespace="com.visionvera.dao.operation.RegisterDao">
+	<!-- webservice获取多级系统服务器列表 -->
+	<select id="getSyncServers" parameterType="ServerSyncVO" resultType="ServerSyncVO">
+		select 
+		vss.uuid,
+		vss.name,
+		vss.type,
+		vss.ip,
+		vss.port,
+		vss.account,
+		vss.password,
+		vss.register_id as registerId,
+		vss.area_name as areaName,
+		vss.area_id as areaId,
+		date_format(vss.create_time,'%Y-%m-%d %H:%i:%s') AS createTime
+		from vc_server_sync vss
+		<where>
+			<if test="uuid != null and uuid != '' " >
+				and vss.uuid = #{uuid}
+			</if>
+			<if test="areaName != null and areaName != '' ">
+				and vss.area_name like CONCAT('%',#{areaName},'%')
+			</if>
+			<if test="ip != null and ip != '' ">
+				and vss.ip like CONCAT('%',#{ip},'%')
+			</if>
+			<if test="areaId != null and areaId != '' ">
+				and vss.area_id = #{areaId}
+			</if>
+			<if test="type != null and type != '' ">
+				and vss.type = #{type}
+			</if>
+		</where>
+	</select>
+
+	<!-- webservice获取多级系统服务器列表总数 -->
+	<select id="getSyncServersCount" parameterType="ServerSyncVO" resultType="int">
+		select count(vss.uuid)
+		from vc_server_sync vss
+		<where>
+			<if test="uuid != null and uuid != '' " >
+				and vss.uuid = #{uuid}
+			</if>
+			<if test="areaName != null and areaName != '' ">
+				and vss.area_name like CONCAT('%',#{areaName},'%')
+			</if>
+			<if test="ip != null and ip != '' ">
+				and vss.ip like CONCAT('%',#{ip},'%')
+			</if>
+			<if test="areaId != null and areaId != '' ">
+				and vss.area_id = #{areaId}
+			</if>
+			<if test="type != null and type != '' ">
+				and vss.type = #{type}
+			</if>
+		</where>
+	</select>
+
+	<!-- webservice系统注册（使自己成为目标系统的子系统） -->
+	<insert id="register" parameterType="ServerSyncVO" keyProperty="uuid">
+		<selectKey resultType="java.lang.String" order="BEFORE"
+			keyProperty="uuid">
+			select replace(uuid(), '-', '') from dual
+		</selectKey>
+		insert ignore into vc_server_sync(uuid,name,type,ip,port,account,password,register_id,area_id,area_name,create_time)
+		values
+		(#{uuid},#{name},#{type},#{ip},#{port},#{account},#{password},#{registerId},#{areaId},#{areaName},NOW())
+	</insert>
+
+	<!-- webservice系统解注册（使自己与上级系统解除父子关系） -->
+	<delete id="unregister" parameterType="ServerSyncVO">
+		delete from vc_server_sync
+		<where>
+			<choose>
+				<when test="registerId != '' and registerId != null">
+					register_id = #{registerId}
+				</when>
+				<otherwise>
+					uuid = #{uuid}
+				</otherwise>
+			</choose>
+		</where>
+	</delete>
+	
+	<!-- 编辑系统信息） -->
+	<update id="editRegister" parameterType="ServerSyncVO">
+		update vc_server_sync set ip=#{ip}
+		<if test="port != null and port != '' ">
+			,port=#{port}
+		</if>
+		<if test="account != null and account != '' ">
+			,account=#{account}
+		</if>
+		<if test="password != null and password != '' ">
+			,password=#{password}
+		</if>
+		<where>
+			uuid = #{uuid}
+		</where>
+	</update>
+	
+	<!-- 分级系统-获取调度路由启用状态 -->
+	<select id="getRouteFlag" resultType="String">
+		SELECT VALUE FROM vc_const_data WHERE const_id = 'cms_route_flag'
+	</select>
+	
+	<!-- 分级系统-更新调度路由启用状态 -->
+	<select id="updateRouteFlag"  parameterType="int">
+		update vc_const_data set value=#{status} WHERE const_id = 'cms_route_flag'
+	</select>
+
+	<!-- 分级系统-获取会议可用的服务器列表（根据主席所在区域查询） -->
+	<select id="getAvailableServers" parameterType="map" resultType="ServerSyncVO">
+		select 
+		vss.uuid,
+		vss.name,
+		vss.type,
+		vss.ip,
+		vss.port,
+		vss.account,
+		vss.password,
+		vss.register_id as registerId,
+		vss.area_name as areaName,
+		vss.area_id as areaId,
+		date_format(vss.create_time,'%Y-%m-%d %H:%i:%s') AS createTime
+		from vc_server_sync vss
+		<where>
+			<if test="uuid != null and uuid != '' " >
+				and vss.uuid = #{uuid}
+			</if>
+			<if test="areaName != null and areaName != '' ">
+				and vss.area_name like CONCAT('%',#{areaName},'%')
+			</if>
+			<if test="ip != null and ip != '' ">
+				and vss.ip like CONCAT('%',#{ip},'%')
+			</if>
+			<if test="areaIds != null">
+				and vss.area_id in
+		    	<foreach item="areaId" index="index" collection="areaIds" open="("
+					separator="," close=")">
+					#{areaId}
+				</foreach>
+			</if>
+			<if test="type != null and type != '' ">
+				and vss.type = #{type}
+			</if>
+		</where>
+	</select>
+</mapper>

@@ -1,0 +1,49 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd" >
+<mapper namespace="com.visionvera.dao.authentication.RegionDao">
+    <resultMap id="BaseResultMap" type="com.visionvera.bean.datacore.TRegionb">
+        <id column="id" property="id"/>
+        <result column="pid" property="pid"/>
+        <result column="name" property="name"/>
+        <result column="gradeid" property="gradeid"/>
+        <result column="isleaf" property="isleaf"/>
+        <result column="updatetime" property="updatetime"/>
+    </resultMap>
+    <sql id="ALL_FIELD_SQL">
+        id, pid, name, gradeid, isleaf, DATE_FORMAT(updatetime,'%Y-%m-%d %H:%i:%s') AS updatetime
+    </sql>
+
+    <!-- 通过主键ID批量查询区域信息 Start -->
+    <select id="selectRegionByIds" resultMap="BaseResultMap">
+        SELECT
+        <include refid="ALL_FIELD_SQL"></include>
+        FROM
+        t_regionb
+        <where>
+            <choose>
+                <when test="idArray != null and idArray.length > 0">
+                    id IN
+                    <foreach collection="idArray" index="i" item="id" open="(" separator="," close=")">
+                        #{id}
+                    </foreach>
+                </when>
+                <otherwise>
+                    AND id = 0
+                </otherwise>
+            </choose>
+        </where>
+    </select>
+    <!-- 通过主键ID批量查询区域信息 End -->
+
+    <!-- 通过主键ID查询行政区域信息 Start -->
+    <select id="selectRegionById" parameterType="java.lang.String" resultMap="BaseResultMap">
+        SELECT
+        <include refid="ALL_FIELD_SQL"></include>
+        FROM
+        t_regionb
+        WHERE
+        id = #{id}
+        LIMIT 1
+    </select>
+    <!-- 通过主键ID查询行政区域信息 End -->
+</mapper>

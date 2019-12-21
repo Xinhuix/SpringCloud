@@ -1,0 +1,3510 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+        "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+
+<mapper namespace="com.visionvera.dao.operation.ScheduleDao">
+	<!-- 查询预约列表 -->
+	<select id="getScheduleList" resultType="ScheduleVO"
+		parameterType="Map">
+		select s.* from 
+		(select
+		DISTINCT(vsbi.uuid),
+		vsbi.name,
+		vsbi.starttime,
+		vsbi.meettime,
+		vsbi.endtime,
+		vsbi.createtime,
+		vsbi.modifyStatus,
+		vsbi.groupid,
+		vsbi.groupname,
+		vsbi.creatorId,
+		vsbi.creatorName,
+		vsbi.accessor,
+		vsbi.accessorId,
+		vsbi.status,
+		vsbi.state,
+		vsbi.notice,
+		vsbi.key,
+		vsbi.pcmeetId,
+		vsbi.masterNo,
+		vsbi.planPersonNum,
+		vsbi.planDevNum,
+		vsbi.personNum,
+		vsbi.devNum,
+		vsbi.processId,
+		vsbi.svrRegionId,
+		vsbi.svrRegionName
+		from view_schedule_base_info vsbi
+		<if test="devId != null and devId != '' ">
+			LEFT JOIN vc_schedule_dev sd
+			ON sd.`schedule_id` = vsbi.`uuid`
+			LEFT JOIN vc_dev AS device
+			ON device.`id` = sd.`dev_id`
+		</if>
+		<where>
+			<if test="svrRegionId != null and svrRegionId !='' ">
+				and vsbi.svrRegionId = #{svrRegionId}
+			</if>
+			<if test="creatorId != null and creatorId !='' ">
+				and vsbi.creatorId = #{creatorId}
+			</if>
+			<if test="creatorName != null and creatorName !='' ">
+				and vsbi.creatorName like CONCAT('%',#{creatorName},'%')
+			</if>
+			<if test="groupid != null and groupid !='' ">
+				and vsbi.groupid = #{groupid}
+			</if>
+			<if test="start_time != null and start_time != '' ">
+				and UNIX_TIMESTAMP(vsbi.starttime) &gt;=
+				UNIX_TIMESTAMP(#{start_time})
+			</if>
+			<if test="end_time != null and end_time !='' ">
+				and UNIX_TIMESTAMP(vsbi.endtime) &lt;=
+				UNIX_TIMESTAMP(#{end_time})
+			</if>
+			<if test="status != null and status !='' ">
+				<choose>
+					<when test="status == 1">
+						and vsbi.status = #{status}
+					</when>
+					<when test="status == 2">
+						and (vsbi.status = 2 or vsbi.status = 4 or vsbi.status = 5)
+					</when>
+					<otherwise>
+						and vsbi.status = 3
+					</otherwise>
+				</choose>
+			</if>
+			<if test="name != null and name != '' ">
+				and vsbi.name like CONCAT('%',#{name},'%')
+			</if>
+			<if test="devId != null and devId != '' ">
+				and device.devno like CONCAT('%',#{devId},'%')
+			</if>
+		</where>
+		<if test="userName != null and userName != '' ">
+			UNION
+			select
+			DISTINCT(vsbi.uuid),
+			vsbi.name,
+			vsbi.starttime,
+			vsbi.meettime,
+			vsbi.endtime,
+			vsbi.createtime,
+			vsbi.modifyStatus,
+			vsbi.groupid,
+			vsbi.groupname,
+			vsbi.creatorId,
+			vsbi.creatorName,
+			vsbi.accessor,
+			vsbi.accessorId,
+			vsbi.status,
+			vsbi.state,
+			vsbi.notice,
+			vsbi.key,
+			vsbi.pcmeetId,
+			vsbi.masterNo,
+			vsbi.planPersonNum,
+			vsbi.planDevNum,
+			vsbi.personNum,
+			vsbi.devNum,
+			vsbi.processId,
+			vsbi.svrRegionId,
+			vsbi.svrRegionName
+			from view_schedule_base_info vsbi
+			<if test="devId != null and devId != '' ">
+				LEFT JOIN vc_schedule_dev sd
+				ON sd.`schedule_id` = vsbi.`uuid`
+				LEFT JOIN vc_dev AS device
+				ON device.`id` = sd.`dev_id`
+			</if>
+			<where>
+				<if test="svrRegionId != null and svrRegionId !='' ">
+					and vsbi.svrRegionId = #{svrRegionId}
+				</if>
+				<if test="creatorName != null and creatorName !='' ">
+					and vsbi.creatorName like CONCAT('%',#{creatorName},'%')
+				</if>
+				<if test="groupid != null and groupid !='' ">
+					and vsbi.groupid = #{groupid}
+				</if>
+				<if test="start_time != null and start_time != '' ">
+					and UNIX_TIMESTAMP(vsbi.starttime) &gt;=
+					UNIX_TIMESTAMP(#{start_time})
+				</if>
+				<if test="end_time != null and end_time !='' ">
+					and UNIX_TIMESTAMP(vsbi.endtime) &lt;=
+					UNIX_TIMESTAMP(#{end_time})
+				</if>
+				<if test="status != null and status !='' ">
+					<choose>
+						<when test="status == 1">
+							and vsbi.status = #{status}
+						</when>
+						<when test="status == 2">
+							and (vsbi.status = 2 or vsbi.status = 4 or vsbi.status = 5)
+						</when>
+						<otherwise>
+							and vsbi.status = 3
+						</otherwise>
+					</choose>
+				</if>
+				<if test="name != null and name != '' ">
+					and vsbi.name like CONCAT('%',#{name},'%')
+				</if>
+				<if test="devId != null and devId != '' ">
+					and device.devno like CONCAT('%',#{devId},'%')
+				</if>
+					and (vsbi.authMember like CONCAT('%',#{userName},'%') or vsbi.creatorName like CONCAT('%',#{userName},'%'))
+			</where>
+		</if>
+		<if test="processIds != null and processIds.size() > 0">
+			UNION
+			select
+			DISTINCT(vsbi.uuid),
+			vsbi.name,
+			vsbi.starttime,
+			vsbi.meettime,
+			vsbi.endtime,
+			vsbi.createtime,
+			vsbi.modifyStatus,
+			vsbi.groupid,
+			vsbi.groupname,
+			vsbi.creatorId,
+			vsbi.creatorName,
+			vsbi.accessor,
+			vsbi.accessorId,
+			vsbi.status,
+			vsbi.state,
+			vsbi.notice,
+			vsbi.key,
+			vsbi.pcmeetId,
+			vsbi.masterNo,
+			vsbi.planPersonNum,
+			vsbi.planDevNum,
+			vsbi.personNum,
+			vsbi.devNum,
+			vsbi.processId,
+			vsbi.svrRegionId,
+			vsbi.svrRegionName
+			from view_schedule_base_info vsbi
+			<if test="devId != null and devId != '' ">
+				LEFT JOIN vc_schedule_dev sd
+				ON sd.`schedule_id` = vsbi.`uuid`
+				LEFT JOIN vc_dev AS device
+				ON device.`id` = sd.`dev_id`
+			</if>
+			<where>
+				<if test="svrRegionId != null and svrRegionId !='' ">
+					and vsbi.svrRegionId = #{svrRegionId}
+				</if>
+				<if test="creatorName != null and creatorName !='' ">
+					and vsbi.creatorName like CONCAT('%',#{creatorName},'%')
+				</if>
+				<if test="groupid != null and groupid !='' ">
+					and vsbi.groupid = #{groupid}
+				</if>
+				<if test="start_time != null and start_time != '' ">
+					and UNIX_TIMESTAMP(vsbi.starttime) &gt;=
+					UNIX_TIMESTAMP(#{start_time})
+				</if>
+				<if test="end_time != null and end_time !='' ">
+					and UNIX_TIMESTAMP(vsbi.endtime) &lt;=
+					UNIX_TIMESTAMP(#{end_time})
+				</if>
+				<if test="status != null and status !='' ">
+					<choose>
+						<when test="status == 1">
+							and vsbi.status = #{status}
+						</when>
+						<when test="status == 2">
+							and (vsbi.status = 2 or vsbi.status = 4 or vsbi.status = 5)
+						</when>
+						<otherwise>
+							and vsbi.status = 3
+						</otherwise>
+					</choose>
+				</if>
+				<if test="name != null and name != '' ">
+					and vsbi.name like CONCAT('%',#{name},'%')
+				</if>
+				<if test="devId != null and devId != '' ">
+					and device.devno like CONCAT('%',#{devId},'%')
+				</if>
+					and vsbi.processId in 
+					<foreach item="processId" index="index" collection="processIds" open="("
+						separator="," close=")">
+						#{processId}
+					</foreach>
+			</where>
+		</if>
+		) as s order by s.starttime desc
+	</select>
+
+	<select id="getScheduleListCount" resultType="int"
+		parameterType="Map">
+		select count(DISTINCT(vsbi.`uuid`)) from view_schedule_base_info vsbi
+		<if test="devId != null and devId != '' ">
+			LEFT JOIN vc_schedule_dev sd
+			ON sd.`schedule_id` = vsbi.`uuid`
+			LEFT JOIN vc_dev AS device
+			ON device.`id` = sd.`dev_id`
+		</if>
+		<where>
+			<if test="svrRegionId != null and svrRegionId !='' ">
+				and vsbi.svrRegionId = #{svrRegionId}
+			</if>
+			<if test="creatorName != null and creatorName !='' ">
+				and vsbi.creatorName like CONCAT('%',#{creatorName},'%')
+			</if>
+			<if test="groupid != null and groupid !='' ">
+				and vsbi.groupid = #{groupid}
+			</if>
+			<if test="start_time != null and start_time != '' ">
+				and UNIX_TIMESTAMP(vsbi.starttime) &gt;=
+				UNIX_TIMESTAMP(#{start_time})
+			</if>
+			<if test="end_time != null and end_time !='' ">
+				and UNIX_TIMESTAMP(vsbi.endtime) &lt;=
+				UNIX_TIMESTAMP(#{end_time})
+			</if>
+			<if test="status != null and status !='' ">
+				<choose>
+					<when test="status == 1">
+						and vsbi.status = #{status}
+					</when>
+					<when test="status == 2">
+						and (vsbi.status = 2 or vsbi.status = 4 or vsbi.status = 5)
+					</when>
+					<otherwise>
+						and vsbi.status = 3
+					</otherwise>
+				</choose>
+			</if>
+			<if test="name != null and name != '' ">
+				and vsbi.name like CONCAT('%',#{name},'%')
+			</if>
+			<if test="devId != null and devId != '' ">
+				and device.devno like CONCAT('%',#{devId},'%')
+			</if>
+			<if test="creatorId != null and creatorId !='' ">
+				and (vsbi.creatorId = #{creatorId}
+					<if test="userName != null and userName != '' ">
+						or vsbi.authMember like CONCAT('%',#{userName},'%')
+						or vsbi.creatorName like CONCAT('%',#{userName},'%')
+					</if>
+					<if test="processIds != null and processIds.size() > 0">
+						or vsbi.processId in 
+						<foreach item="processId" index="index" collection="processIds" open="("
+							separator="," close=")">
+							#{processId}
+						</foreach>
+					</if>)
+			</if>
+		</where>
+	</select>
+
+	<!-- 获取某一用户已签到的会议列表(未过期的会议) -->
+	<select id="getUserSigns" resultType="ScheduleVO"
+		parameterType="Map">
+		select
+		distinct(vsbi.uuid),
+		vsbi.name,
+		vsbi.starttime,
+		vsbi.meettime,
+		vsbi.endtime,
+		vsbi.createtime,
+		vsbi.modifyStatus,
+		vsbi.groupid,
+		vsbi.ip,
+		vsbi.callmode,
+		vsbi.xmcu,
+		vsbi.dvrservernumber,
+		vsbi.notice,
+		vsbi.pcmeetId,
+		vsbi.key,
+		vsbi.fileurl,
+		vsbi.level,
+		vsbi.groupname,
+		vsbi.creatorId,
+		vsbi.creatorName,
+		vsbi.accessor,
+		vsbi.status,
+		vsbi.notice,
+		vsbi.key,
+		vsbi.pcmeetId,
+		vsbi.masterNo,
+		vsbi.planPersonNum,
+		vsbi.planDevNum,
+		vsbi.personNum,
+		vsbi.devNum
+		from view_schedule_base_info vsbi
+		LEFT JOIN vc_schedule_sign vss
+		ON vsbi.`uuid` = vss.`schedule_id`
+		<where>
+			vss.`user_id` = #{userId}
+			and UNIX_TIMESTAMP(vsbi.endtime) &gt;= UNIX_TIMESTAMP(NOW())
+		</where>
+		order by vsbi.starttime
+	</select>
+	
+	<!-- 获取某一用户已签到的会议列表的历史记录（已过期的会议） -->
+	<select id="getUserSignsHistory" resultType="ScheduleVO"
+		parameterType="Map">
+		select
+		distinct(vsbi.uuid),
+		vsbi.name,
+		vsbi.starttime,
+		vsbi.meettime,
+		vsbi.endtime,
+		vsbi.createtime,
+		vsbi.modifyStatus,
+		vsbi.groupid,
+		vsbi.ip,
+		vsbi.callmode,
+		vsbi.xmcu,
+		vsbi.dvrservernumber,
+		vsbi.notice,
+		vsbi.pcmeetId,
+		vsbi.key,
+		vsbi.fileurl,
+		vsbi.level,
+		vsbi.groupname,
+		vsbi.creatorId,
+		vsbi.creatorName,
+		vsbi.accessor,
+		vsbi.status,
+		vsbi.notice,
+		vsbi.key,
+		vsbi.pcmeetId,
+		vsbi.masterNo,
+		vsbi.planPersonNum,
+		vsbi.planDevNum,
+		vsbi.personNum,
+		vsbi.devNum
+		from view_schedule_base_info vsbi
+		LEFT JOIN vc_schedule_sign vss
+		ON vsbi.`uuid` = vss.`schedule_id`
+		<where>
+			vss.`user_id` = #{userId}
+			and UNIX_TIMESTAMP(vsbi.endtime) &lt; UNIX_TIMESTAMP(NOW())
+		</where>
+		order by vsbi.starttime
+	</select>
+
+	<!-- 查询会议列表（有效预约） -->
+	<select id="getValidSchedules" resultType="ScheduleVO"
+		parameterType="Map">
+		SELECT
+		DISTINCT(vsbi.uuid),
+		vsbi.name,
+		vsbi.starttime,
+		vsbi.meettime,
+		vsbi.endtime,
+		vsbi.createtime,
+		vsbi.groupid AS groupId,vsbi.groupname AS
+		groupName,vsbi.creatorId,vsbi.creatorName,vsbi.accessor,vsbi.status,
+		vsbi.key,
+		vsbi.level,
+		vsbi.pcmeetId,
+		vsbi.notice,
+		COUNT(DISTINCT(dgd.`devgroup_id`)) AS signTotal,
+		COUNT(DISTINCT(vss.`devgroup_id`)) AS SIGNED,
+		vsbi.masterNo,
+		vsbi.planPersonNum,
+		vsbi.planDevNum,
+		vsbi.personNum,
+		vsbi.devNum
+		FROM view_schedule_base_info vsbi
+		LEFT JOIN vc_schedule_dev sd
+		ON vsbi.`uuid` = sd.`schedule_id`
+		LEFT JOIN vc_dev AS device
+		ON device.`id` = sd.`dev_id`
+		LEFT JOIN vc_devgroup_dev dgd
+		ON sd.`dev_id` = dgd.`dev_id`
+		LEFT JOIN vc_schedule_sign vss
+		ON vsbi.`uuid` = vss.`schedule_id`
+		LEFT JOIN vc_usergroup_devgroup vud ON
+		vud.`devgroup_id`=dgd.`devgroup_id`
+		<where>
+			vsbi.status in (2,4,5)
+			and vsbi.groupId=vud.`usergroup_id`
+			and UNIX_TIMESTAMP(vsbi.endtime) &gt;= UNIX_TIMESTAMP(NOW())
+			<if test="creatorId != null and creatorId !='' ">
+				and vsbi.creatorId = #{creatorId}
+			</if>
+			<if test="groupid != null and groupid !='' ">
+				and vsbi.groupid = #{groupid}
+			</if>
+			<if test="start_time != null and start_time != '' ">
+				and UNIX_TIMESTAMP(vsbi.starttime) &gt;=
+				UNIX_TIMESTAMP(#{start_time})
+			</if>
+			<if test="end_time != null and end_time !='' ">
+				and UNIX_TIMESTAMP(vsbi.endtime) &lt;=
+				UNIX_TIMESTAMP(#{end_time})
+			</if>
+			<if test="name != null and name != '' ">
+				and vsbi.name like CONCAT('%',#{name},'%')
+			</if>
+			<if test="devId != null and devId != '' ">
+				and device.devno like CONCAT('%',#{devId},'%')
+			</if>
+		</where>
+		GROUP BY vsbi.`uuid`
+		order by vsbi.starttime
+	</select>
+	
+	<!-- 查询会议列表（所有由某个用户发起的且已通过审批的预约，包含过去和将来的） -->
+	<select id="getMySchedules" resultType="ScheduleVO"
+		parameterType="Map">
+		select
+		distinct(vsbi.uuid),
+		vsbi.name,
+		vsbi.starttime,
+		vsbi.meettime,
+		vsbi.endtime,
+		vsbi.createtime,
+		vsbi.modifyStatus,
+		vsbi.groupid,
+		vsbi.ip,
+		vsbi.callmode,
+		vsbi.xmcu,
+		vsbi.dvrservernumber,
+		vsbi.notice,
+		vsbi.pcmeetId,
+		vsbi.key,
+		vsbi.fileurl,
+		vsbi.level,
+		vsbi.groupname,
+		vsbi.creatorId,
+		vsbi.creatorName,
+		vsbi.accessor,
+		vsbi.status,
+		vsbi.notice,
+		vsbi.key,
+		vsbi.pcmeetId,
+		vsbi.masterNo,
+		vsbi.planPersonNum,
+		vsbi.planDevNum,
+		vsbi.personNum,
+		vsbi.devNum
+		from view_schedule_base_info vsbi
+		<if test="devId != null and devId != '' ">
+			LEFT JOIN vc_schedule_dev sd
+			ON sd.`schedule_id` = vsbi.`uuid`
+			LEFT JOIN vc_dev AS device
+			ON device.`id` = sd.`dev_id`
+		</if>
+		<where>
+			vsbi.status in (2,3,4,5)
+			<if test="creatorId != null and creatorId !='' ">
+				and vsbi.creatorId = #{creatorId}
+			</if>
+			<if test="groupid != null and groupid !='' ">
+				and vsbi.groupid = #{groupid}
+			</if>
+			<if test="start_time != null and start_time != '' ">
+				and UNIX_TIMESTAMP(vsbi.starttime) &gt;=
+				UNIX_TIMESTAMP(#{start_time})
+			</if>
+			<if test="end_time != null and end_time !='' ">
+				and UNIX_TIMESTAMP(vsbi.endtime) &lt;=
+				UNIX_TIMESTAMP(#{end_time})
+			</if>
+			<if test="name != null and name != '' ">
+				and vsbi.name like CONCAT('%',#{name},'%')
+			</if>
+			<if test="devId != null and devId != '' ">
+				and device.devno like CONCAT('%',#{devId},'%')
+			</if>
+		</where>
+		order by vsbi.starttime
+	</select>
+
+	<!-- 查询正在开会的会议列表 -->
+	<select id="schedulesInProcess" resultType="ScheduleVO"
+		parameterType="Map">
+		select
+		distinct(vsbi.uuid),
+		vsbi.name,
+		vsbi.starttime,
+		vsbi.meettime,
+		vsbi.endtime,
+		vsbi.createtime,
+		vsbi.modifyStatus,
+		vsbi.groupid,
+		vsbi.ip,
+		vsbi.callmode,
+		vsbi.xmcu,
+		vsbi.dvrservernumber,
+		vsbi.notice,
+		vsbi.pcmeetId,
+		vsbi.key,
+		vsbi.fileurl,
+		vsbi.level,
+		vsbi.groupname,
+		vsbi.creatorId,
+		vsbi.creatorName,
+		vsbi.accessor,
+		vsbi.status,
+		vsbi.notice,
+		vsbi.key,
+		vsbi.pcmeetId,
+		vsbi.masterNo,
+		vsbi.planPersonNum,
+		vsbi.planDevNum,
+		vsbi.personNum,
+		vsbi.devNum
+		from view_schedule_base_info vsbi
+		<if test="devId != null and devId != '' ">
+			LEFT JOIN vc_schedule_dev sd
+			ON sd.`schedule_id` = vsbi.`uuid`
+			LEFT JOIN vc_dev AS device
+			ON device.`id` = sd.`dev_id`
+		</if>
+		<where>
+			vsbi.status = 4
+			<if test="creatorId != null and creatorId !='' ">
+				and vsbi.creatorId = #{creatorId}
+			</if>
+			<if test="groupid != null and groupid !='' ">
+				and vsbi.groupid = #{groupid}
+			</if>
+			<if test="start_time != null and start_time != '' ">
+				and UNIX_TIMESTAMP(vsbi.starttime) &gt;=
+				UNIX_TIMESTAMP(#{start_time})
+			</if>
+			<if test="end_time != null and end_time !='' ">
+				and UNIX_TIMESTAMP(vsbi.endtime) &lt;=
+				UNIX_TIMESTAMP(#{end_time})
+			</if>
+			<if test="name != null and name != '' ">
+				and vsbi.name like CONCAT('%',#{name},'%')
+			</if>
+			<if test="devId != null and devId != '' ">
+				and device.devno like CONCAT('%',#{devId},'%')
+			</if>
+			<if test="type != null and type != '' ">
+				and vsbi.type = #{type}
+			</if>
+			<if test="createType != null and createType != '' ">
+				and vsbi.createType = #{createType}
+			</if>
+		</where>
+		order by vsbi.starttime
+	</select>
+
+	<!-- 查询会议列表（所有由某个用户发起的未过时的预约） -->
+	<select id="getMyScheduleHistory" resultType="ScheduleVO"
+		parameterType="Map">
+		select
+		DISTINCT(vsbi.uuid),vsbi.name,vsbi.starttime as startTime,vsbi.meettime,vsbi.endtime as endTime,vsbi.createtime
+		as createTime,
+		vsbi.groupid as groupId,vsbi.groupname as
+		groupName,vsbi.creatorId,vsbi.creatorName,vsbi.accessor,vsbi.status,vsbi.notice,vsbi.key,vsbi.pcmeetId,
+		vsbi.masterNo,
+		vsbi.planPersonNum,
+		vsbi.planDevNum,
+		vsbi.personNum,
+		vsbi.devNum
+		from view_schedule_base_info vsbi
+		<if test="devId != null and devId != '' ">
+			LEFT JOIN vc_schedule_dev sd
+			ON sd.`schedule_id` = vsbi.`uuid`
+			LEFT JOIN vc_dev AS device
+			ON device.`id` = sd.`dev_id`
+		</if>
+		<where>
+<!-- 			UNIX_TIMESTAMP(vsbi.endtime) &gt;=
+				UNIX_TIMESTAMP(NOW()) -->
+			<if test="creatorId != null and creatorId !='' ">
+				and vsbi.creatorId = #{creatorId}
+			</if>
+			<if test="groupid != null and groupid !='' ">
+				and vsbi.groupid = #{groupid}
+			</if>
+			<if test="start_time != null and start_time != '' ">
+				and UNIX_TIMESTAMP(vsbi.starttime) &gt;=
+				UNIX_TIMESTAMP(#{start_time})
+			</if>
+			<if test="end_time != null and end_time !='' ">
+				and UNIX_TIMESTAMP(vsbi.endtime) &lt;=
+				UNIX_TIMESTAMP(#{end_time})
+			</if>
+			<if test="name != null and name != '' ">
+				and vsbi.name like CONCAT('%',#{name},'%')
+			</if>
+			<if test="devId != null and devId != '' ">
+				and device.devno like CONCAT('%',#{devId},'%')
+			</if>
+		</where>
+		order by vsbi.starttime desc
+	</select>
+	
+	<!-- 查询待审批预约列表（开始时间大于当前时间） ..... 根据会易通需求，返回组内所有预约 2017.02.10-->
+	<select id="getApproveSchedules" resultType="ScheduleVO"
+		parameterType="Map">
+		(select
+		distinct(vsbi.uuid),
+		vsbi.name,
+		vsbi.starttime,
+		vsbi.meettime,
+		vsbi.endtime,
+		vsbi.createtime,
+		vsbi.modifyStatus,
+		vsbi.groupid,
+		vsbi.ip,
+		vsbi.callmode,
+		vsbi.xmcu,
+		vsbi.dvrservernumber,
+		vsbi.notice,
+		vsbi.pcmeetId,
+		vsbi.key,
+		vsbi.fileurl,
+		vsbi.level,
+		vsbi.groupname,
+		vsbi.creatorId,
+		vsbi.creatorName,
+		vsbi.accessor,
+		vsbi.status,
+		vsbi.notice,
+		vsbi.key,
+		vsbi.pcmeetId,
+		vsbi.masterNo,
+		vsbi.planPersonNum,
+		vsbi.planDevNum,
+		vsbi.personNum,
+		vsbi.devNum
+		from ( select * from view_schedule_base_info vsbi1
+		<if test="devId != null and devId != '' ">
+			LEFT JOIN vc_schedule_dev sd
+			ON sd.`schedule_id` = vsbi1.`uuid`
+			LEFT JOIN vc_dev AS device
+			ON device.`id` = sd.`dev_id`
+		</if>
+		<where>
+			vsbi1.status = 1
+			<!-- and UNIX_TIMESTAMP(vsbi1.starttime) &gt;= UNIX_TIMESTAMP(NOW()) -->
+			<if test="creatorId != null and creatorId !='' ">
+				and vsbi1.creatorId = #{creatorId}
+			</if>
+			<if test="groupid != null and groupid !='' ">
+				and vsbi1.groupid = #{groupid}
+			</if>
+			<if test="start_time != null and start_time != '' ">
+				and UNIX_TIMESTAMP(vsbi1.starttime) &gt;=
+				UNIX_TIMESTAMP(#{start_time})
+			</if>
+			<if test="end_time != null and end_time !='' ">
+				and UNIX_TIMESTAMP(vsbi1.endtime) &lt;=
+				UNIX_TIMESTAMP(#{end_time})
+			</if>
+			<if test="name != null and name != '' ">
+				and vsbi1.name like CONCAT('%',#{name},'%')
+			</if>
+			<if test="devId != null and devId != '' ">
+				and device.devno like CONCAT('%',#{devId},'%')
+			</if>
+		</where>
+		order by vsbi1.starttime desc) as vsbi)
+		union
+		(select
+		distinct(vsbi.uuid),
+		vsbi.name,
+		vsbi.starttime,
+		vsbi.meettime,
+		vsbi.endtime,
+		vsbi.createtime,
+		vsbi.modifyStatus,
+		vsbi.groupid,
+		vsbi.ip,
+		vsbi.callmode,
+		vsbi.xmcu,
+		vsbi.dvrservernumber,
+		vsbi.notice,
+		vsbi.pcmeetId,
+		vsbi.key,
+		vsbi.fileurl,
+		vsbi.level,
+		vsbi.groupname,
+		vsbi.creatorId,
+		vsbi.creatorName,
+		vsbi.accessor,
+		vsbi.status,
+		vsbi.notice,
+		vsbi.key,
+		vsbi.pcmeetId,
+		vsbi.masterNo,
+		vsbi.planPersonNum,
+		vsbi.planDevNum,
+		vsbi.personNum,
+		vsbi.devNum
+		from ( select * from view_schedule_base_info vsbi1
+		<if test="devId != null and devId != '' ">
+			LEFT JOIN vc_schedule_dev sd
+			ON sd.`schedule_id` = vsbi1.`uuid`
+			LEFT JOIN vc_dev AS device
+			ON device.`id` = sd.`dev_id`
+		</if>
+		<where>
+			vsbi1.status != 1
+			<!-- and UNIX_TIMESTAMP(vsbi1.starttime) &gt;= UNIX_TIMESTAMP(NOW()) -->
+			<if test="creatorId != null and creatorId !='' ">
+				and vsbi1.creatorId = #{creatorId}
+			</if>
+			<if test="groupid != null and groupid !='' ">
+				and vsbi1.groupid = #{groupid}
+			</if>
+			<if test="start_time != null and start_time != '' ">
+				and UNIX_TIMESTAMP(vsbi1.starttime) &gt;=
+				UNIX_TIMESTAMP(#{start_time})
+			</if>
+			<if test="end_time != null and end_time !='' ">
+				and UNIX_TIMESTAMP(vsbi1.endtime) &lt;=
+				UNIX_TIMESTAMP(#{end_time})
+			</if>
+			<if test="name != null and name != '' ">
+				and vsbi1.name like CONCAT('%',#{name},'%')
+			</if>
+			<if test="devId != null and devId != '' ">
+				and device.devno like CONCAT('%',#{devId},'%')
+			</if>
+		</where>
+		order by vsbi1.starttime desc) as vsbi)
+	</select>
+
+	<select id="getScheduleStatus" resultType="ScheduleSmsVO" parameterType="Map">
+		SELECT
+		vc_schedule.STATUS,
+		vc_user.phone,
+		vc_schedule.name as
+		scheduleName
+		FROM
+		vc_schedule
+		LEFT JOIN vc_user ON vc_user.uuid =
+		vc_schedule.creator_id
+		<where>
+			<if test="uuid != null and uuid != '' ">
+				vc_schedule.uuid = #{uuid}
+			</if>
+		</where>
+	</select>
+
+	<select id="getScheduleName" resultType="String" parameterType="Map">
+		SELECT vc_schedule.name as scheduleName FROM vc_schedule
+		<where>
+			<if test="uuid != null and uuid != '' ">
+				vc_schedule.uuid = #{uuid}
+			</if>
+		</where>
+	</select>
+	
+	<select id="getDoneList" resultType="TaskFormVO" parameterType="map">
+		select 
+		vs.uuid as uuid,		
+		vs.process_id as processId,
+		vs.form_no as formId,
+		vs.title as name,
+		vu.name as creatorName,
+		vs.description as comment,
+		vs.dept as name,
+		date_format(`vs`.`start_time`,'%Y-%m-%d %H:%i:%s') AS `startTime`,
+		date_format(`vs`.`end_time`,'%Y-%m-%d %H:%i:%s') AS `endTime`,
+		date_format(`vs`.`create_time`,'%Y-%m-%d %H:%i:%s') AS `createTime`,
+		vs.state as state,
+		vs.status as status
+		from 
+		vc_schedule vs 
+		LEFT JOIN vc_user vu 
+		ON vu.uuid = vs.creator_id  
+		where 
+		vs.accessor_id in (
+		select uuid from vc_user where name=#{userName}
+		)
+		and
+		vs.status in
+		<foreach item="status" index="index" collection="listInt" open="("
+					separator="," close=")">
+					#{status}
+				</foreach>
+		order by vs.create_time desc
+	</select>
+	
+	
+	<select id="getDoneListCount" resultType="int" parameterType="map">
+		select count(*)
+		from 
+		vc_schedule vs 
+		LEFT JOIN vc_user vu 
+		ON vu.uuid = vs.creator_id  
+		where 
+		vs.accessor_id in (
+		select uuid from vc_user where name=#{userName}
+		)
+		and
+		vs.status in
+		<foreach item="status" index="index" collection="listInt" open="("
+					separator="," close=")">
+					#{status}
+				</foreach>
+		order by vs.create_time desc
+	</select>
+	
+	
+	<select id="scheduleCount" resultType="int" parameterType="map">
+		select count(1) from
+		vc_schedule WHERE
+		STATUS NOT IN(4,5) AND end_time > NOW()
+		<if test="creatorId != null and creatorId !='' ">
+			and 
+			(vc_schedule.creator_id = #{creatorId}
+			or
+			vc_schedule.auth_member like CONCAT('%',#{userName},'%')
+			<if test="processIds != null and processIds.size() > 0 ">
+			or
+			vc_schedule.process_id in 
+				<foreach item="processId" index="index" collection="processIds" open="("
+					separator="," close=")">
+					#{processId}
+				</foreach>
+			</if>
+			)
+		</if>
+	</select>
+
+	<select id="scheduleAllCount" resultType="int" parameterType="map">
+		select count(1) from
+		vc_schedule where end_time > now()
+		<if test="creatorId != null and creatorId !='' ">
+			and 
+			(vc_schedule.creator_id = #{creatorId}
+			or
+			vc_schedule.auth_member like CONCAT('%',#{userName},'%')
+			<if test="processIds != null and processIds.size() > 0 ">
+			or
+			vc_schedule.process_id in 
+				<foreach item="processId" index="index" collection="processIds" open="("
+					separator="," close=")">
+					#{processId}
+				</foreach>
+			</if>
+			)
+		</if>
+	</select>
+
+
+	<select id="approveCount" resultType="int" parameterType="map">
+		select count(1) from
+		vc_schedule where
+		status = 1 and end_time > now()
+		<if test="creatorId != null and creatorId !='' ">
+			and 
+			(vc_schedule.creator_id = #{creatorId}
+			or
+			vc_schedule.auth_member like CONCAT('%',#{userName},'%')
+			<if test="processIds != null and processIds.size() > 0 ">
+			or
+			vc_schedule.process_id in 
+				<foreach item="processId" index="index" collection="processIds" open="("
+					separator="," close=")">
+					#{processId}
+				</foreach>
+			</if>
+			)
+		</if>
+	</select>
+
+	<!-- 获取对预约具有审批权限的用户，包括组内的审批员和未分组的审批员 -->
+	<select id="getAllAudits" resultType="string" parameterType="map">
+		SELECT DISTINCT
+		vc_user.phone from vc_user
+		INNER JOIN vc_user_role ON vc_user_role.user_id = vc_user.uuid
+		INNER JOIN vc_role ON vc_role.uuid = vc_user_role.role_id and vc_role.grade 
+		=1
+		where vc_user.phone is not null and vc_user.phone != ''
+		UNION
+		select DISTINCT vc_user.phone from vc_user
+		INNER JOIN vc_user_role ON vc_user_role.user_id = vc_user.uuid
+		INNER JOIN vc_role ON vc_role.uuid = vc_user_role.role_id and vc_role.grade
+		= 2
+		INNER JOIN vc_usergroup_user ON vc_usergroup_user.user_id = vc_user.uuid
+		INNER JOIN vc_schedule ON vc_schedule.usergroup_id =
+		vc_usergroup_user.usergroup_id
+		where vc_schedule.uuid = #{scheduleId} and vc_user.phone is not null and
+		vc_user.phone != ''
+		UNION
+		SELECT DISTINCT
+		vc_user.phone
+		FROM
+		vc_user
+		LEFT JOIN vc_usergroup_user ON vc_usergroup_user.user_id = vc_user.uuid
+		INNER JOIN vc_user_role ON vc_user_role.user_id = vc_user.uuid
+		INNER JOIN vc_role ON vc_role.uuid = vc_user_role.role_id and vc_role.grade
+		= 2
+		WHERE vc_user.uuid NOT IN (
+		SELECT
+		vc_usergroup_user.user_id
+		FROM
+		vc_usergroup_user
+		)
+		and vc_user.phone is not null and vc_user.phone != ''
+	</select>
+
+	<!-- 预约冲突检测（勾选会场） -->
+	<select id="chkConflictByDevGroups" resultType="int" parameterType="map">
+		SELECT DISTINCT(vc_schedule_dev.dev_id)  FROM vc_schedule_dev 
+		INNER JOIN vc_schedule
+		ON vc_schedule.uuid = vc_schedule_dev.schedule_id
+		LEFT JOIN vc_devgroup_dev
+		ON vc_devgroup_dev.dev_id = vc_schedule_dev.dev_id
+		<where>
+			vc_devgroup_dev.devgroup_id IN
+			<foreach item="groupId" index="index" collection="devGroups" open="("
+				separator="," close=")">
+				#{groupId}
+			</foreach>
+			AND (vc_schedule.status not in (1,3))  AND vc_schedule.`level` &lt;= #{level}
+			AND ((UNIX_TIMESTAMP(vc_schedule.end_time) BETWEEN UNIX_TIMESTAMP(#{startTime}) AND UNIX_TIMESTAMP(#{endTime})) 
+			    OR (UNIX_TIMESTAMP(vc_schedule.start_time) BETWEEN UNIX_TIMESTAMP(#{startTime}) AND UNIX_TIMESTAMP(#{endTime})) 
+			    OR (UNIX_TIMESTAMP(vc_schedule.start_time) &lt;= UNIX_TIMESTAMP(#{startTime}) AND UNIX_TIMESTAMP(vc_schedule.end_time) &gt;= UNIX_TIMESTAMP(#{endTime}))
+			)
+			<if test="scheduleId != null and scheduleId != '' ">
+				AND vc_schedule.uuid != #{scheduleId}
+			</if>
+		</where>
+	</select>
+	
+	<!-- 预约冲突检测（勾选终端） -->
+	<select id="chkConflictByDevices" resultType="int" parameterType="map">
+		SELECT DISTINCT(vc_schedule_dev.dev_id) FROM vc_schedule_dev 
+		INNER JOIN vc_schedule
+		ON vc_schedule.uuid = vc_schedule_dev.schedule_id
+		LEFT JOIN vc_dev AS device
+		ON device.`id` = vc_schedule_dev.`dev_id`
+		<where>
+			device.`devno` IN
+			<foreach item="devId" index="index" collection="devIds" open="("
+				separator="," close=")">
+				#{devId}
+			</foreach>
+			AND (vc_schedule.status not in(1,3)) AND vc_schedule.`level` &lt;= #{level}
+			AND ((UNIX_TIMESTAMP(vc_schedule.end_time) BETWEEN UNIX_TIMESTAMP(#{startTime}) AND UNIX_TIMESTAMP(#{endTime})) 
+			    OR (UNIX_TIMESTAMP(vc_schedule.start_time) BETWEEN UNIX_TIMESTAMP(#{startTime}) AND UNIX_TIMESTAMP(#{endTime})) 
+			    OR (UNIX_TIMESTAMP(vc_schedule.start_time) &lt;= UNIX_TIMESTAMP(#{startTime}) AND UNIX_TIMESTAMP(vc_schedule.end_time) &gt;= UNIX_TIMESTAMP(#{endTime}))
+			)
+			<if test="scheduleId != null and scheduleId != '' ">
+				AND vc_schedule.uuid != #{scheduleId}
+			</if>
+		</where>
+	</select>
+
+	<!-- 预约冲突检测（不包含会议等级校验；只检验主席点位） -->
+	<select id="chkConflictByMaster" resultType="int" parameterType="map">
+		SELECT count(DISTINCT(vc_schedule.master_no)) FROM vc_schedule
+		<where>
+			vc_schedule.master_no = #{masterNo}
+			AND (vc_schedule.status not in(1,3))
+			AND ((UNIX_TIMESTAMP(vc_schedule.end_time) BETWEEN UNIX_TIMESTAMP(#{startTime}) AND UNIX_TIMESTAMP(#{endTime})) 
+			    OR (UNIX_TIMESTAMP(vc_schedule.start_time) BETWEEN UNIX_TIMESTAMP(#{startTime}) AND UNIX_TIMESTAMP(#{endTime})) 
+			    OR (UNIX_TIMESTAMP(vc_schedule.start_time) &lt;= UNIX_TIMESTAMP(#{startTime}) AND UNIX_TIMESTAMP(vc_schedule.end_time) &gt;= UNIX_TIMESTAMP(#{endTime}))
+			)
+			<if test="scheduleId != null and scheduleId != '' ">
+				AND vc_schedule.uuid != #{scheduleId}
+			</if>
+		</where>
+	</select>
+
+	<!-- 新增预约（勾选会场或终端通用） -->
+	<insert id="addSchedule" parameterType="ScheduleVO" keyProperty="uuid">
+		<selectKey resultType="java.lang.String" order="BEFORE"
+			keyProperty="uuid">
+			select replace(uuid(), '-', '') from dual
+		</selectKey>
+		insert into vc_schedule(`uuid`,`name`,start_time,meet_time,end_time,create_time,creator_id,
+		usergroup_id,description,pcmeet_id,`key`,ip,call_mode,xmcu,dvr_server_number,notice,file_url,create_type,level,status,title)
+		VALUES(#{uuid},#{name},#{startTime},#{meetTime},#{endTime},NOW(),#{creatorId},
+		(select DISTINCT(usergroup_id) from vc_usergroup_user where user_id = #{creatorId}),
+		#{description},#{pcmeetId},#{key},#{ip},#{callMode},#{xmcu},#{dvrServerNumber},#{notice},
+		#{fileUrl},#{createType},#{level},#{status},#{title})
+	</insert>
+	
+	<!-- 设置pcmeet_id（ for pamir） -->
+	<update id="setPcmmetId" parameterType="ScheduleVO">
+		update vc_schedule set pcmeet_id = #{pcmeetId}
+		<where>
+			uuid = #{uuid}
+		</where>
+	</update>
+
+	<!-- 获取pcmeet_id（ for pamir） -->
+	<select id="getPcmmetId" resultType="int" parameterType="ScheduleVO">
+		select pcmeet_id from vc_schedule
+		<where>
+			uuid = #{uuid}
+		</where>
+	</select>
+	
+	<!-- 新增预约与设备关联 -->
+	<insert id="addDevice2Schedule" parameterType="map">
+		INSERT INTO vc_schedule_dev(`uuid`,schedule_id,dev_id)
+		VALUES
+    	<foreach collection="devIds" item="devId" index="index" separator="," > 
+        	(replace(uuid(), '-', ''), #{scheduleId}, #{devId})
+    	</foreach> 
+	</insert>
+	
+	<!-- 会场签到 -->
+	<insert id="sign" parameterType="map">
+		INSERT INTO vc_schedule_sign(`uuid`,schedule_id,devgroup_id,user_id,create_time)
+		VALUES
+		<foreach collection="devGroupIds" item="devGroupId" index="index" separator="," > 
+	        (replace(uuid(), '-', ''), #{scheduleId}, #{devGroupId}, #{userId}, NOW())
+    	</foreach>
+    	ON DUPLICATE KEY UPDATE create_time=NOW()
+	</insert>
+
+	<!-- 获取某一用户已签到会场列表 -->
+	<select id="getSigns" resultType="DeviceGroupVO" parameterType="map">
+		SELECT DISTINCT(vdg.uuid) AS UUID,
+		vdg.`name` AS NAME,
+		vdg.description AS description,
+		vss.user_id AS userId,
+		vu.name AS userName,
+		vu.img_url as imgUrl,
+		DATE_FORMAT(vss.create_time,'%Y-%m-%d %H:%i:%s') AS createTime
+		FROM vc_devgroup vdg
+		LEFT JOIN vc_schedule_sign vss
+		ON vdg.`uuid` = vss.`devgroup_id`
+		LEFT JOIN vc_user vu
+		ON vss.`user_id` = vu.`uuid`
+		<where>
+			vss.`schedule_id` = #{scheduleId}
+			AND vss.`user_id` = #{userId}
+		</where>
+		order by vss.create_time desc
+	</select>
+	
+	<!-- 获取某一会议已签到会场列表（拼接名字） -->
+	<select id="getAllSignsByGroup" resultType="DeviceGroupVO" parameterType="map">
+		SELECT DISTINCT(vdg.uuid) AS UUID,
+		vdg.`name` AS NAME,
+		vdg.description AS description,
+		vss.`schedule_id`,
+		GROUP_CONCAT(DISTINCT(vu.name) SEPARATOR ',') AS userName,
+		vu.img_url as imgUrl,
+		DATE_FORMAT(vss.create_time,'%Y-%m-%d %H:%i:%s') AS createTime
+		FROM vc_schedule_sign vss
+		JOIN vc_devgroup vdg
+		ON vdg.`uuid` = vss.`devgroup_id`
+		JOIN vc_user vu
+		ON vss.`user_id` = vu.`uuid`
+		<where>
+			vss.`schedule_id` = #{scheduleId}
+		</where>
+		GROUP BY vss.devgroup_id
+		order by vss.create_time desc
+	</select>
+
+	<!-- 获取某一会议已签到会场列表（逐条显示） -->
+	<select id="getAllSigns" resultType="DeviceGroupVO" parameterType="map">
+		SELECT DISTINCT(vdg.uuid) AS UUID,
+		vdg.`name` AS NAME,
+		vdg.description AS description,
+		vss.user_id AS userId,
+		vu.name AS userName,
+		vu.img_url as imgUrl,
+		DATE_FORMAT(vss.create_time,'%Y-%m-%d %H:%i:%s') AS createTime
+		FROM vc_devgroup vdg
+		LEFT JOIN vc_schedule_sign vss
+		ON vdg.`uuid` = vss.`devgroup_id`
+		LEFT JOIN vc_user vu
+		ON vss.`user_id` = vu.`uuid`
+		<where>
+			vss.`schedule_id` = #{scheduleId}
+		</where>
+		order by vss.create_time desc
+	</select>
+	
+	<!-- 获取某一会议已签到会场总数 -->
+	<select id="getAllSignsCount" resultType="int" parameterType="map">
+		SELECT COUNT(DISTINCT(vdg.uuid)) AS count
+		FROM vc_devgroup vdg
+		LEFT JOIN vc_schedule_sign vss
+		ON vdg.`uuid` = vss.`devgroup_id`
+		<where>
+			vss.`schedule_id` = #{scheduleId}
+		</where>
+	</select>
+	
+	<!-- 获取未签到会场列表 -->
+	<select id="getUnsigns" resultType="DeviceGroupVO" parameterType="map">
+		SELECT DISTINCT(dg.NAME),
+		dg.uuid
+		FROM vc_devgroup dg
+		LEFT JOIN vc_devgroup_dev dgd
+		ON dg.uuid = dgd.devgroup_id
+		LEFT JOIN vc_schedule_dev sd
+		ON dgd.dev_id = sd.dev_id
+		LEFT JOIN vc_schedule_sign ss
+		ON sd.`schedule_id` = ss.`schedule_id`
+		LEFT JOIN vc_schedule vs
+		ON ss.schedule_id = vs.uuid
+		LEFT JOIN vc_usergroup_devgroup vud
+		ON vs.usergroup_id = vud.`usergroup_id`
+		<where>
+			dgd.`devgroup_id`=vud.`devgroup_id`
+			AND sd.schedule_id = #{scheduleId}
+			AND dg.`uuid` NOT IN 
+				(SELECT DISTINCT(sg.`devgroup_id`) 
+				FROM vc_schedule_sign sg WHERE sg.schedule_id = #{scheduleId})
+		</where>
+		order by CONVERT(dg.name USING gbk)
+	</select>
+	
+	<!-- 获取未签到会场总数 -->
+	<select id="getUnsignsCount" resultType="int" parameterType="map">
+		SELECT COUNT(DISTINCT(dg.NAME)) as count
+		FROM vc_devgroup dg
+		LEFT JOIN vc_devgroup_dev dgd
+		ON dg.uuid = dgd.devgroup_id
+		LEFT JOIN vc_schedule_dev sd
+		ON dgd.dev_id = sd.dev_id
+		LEFT JOIN vc_schedule_sign ss
+		ON sd.`schedule_id` = ss.`schedule_id`
+		LEFT JOIN vc_schedule vs
+		ON ss.schedule_id = vs.uuid
+		LEFT JOIN vc_usergroup_devgroup vud
+		ON vs.usergroup_id = vud.`usergroup_id`
+		<where>
+			dgd.`devgroup_id`=vud.`devgroup_id`
+			AND sd.schedule_id = #{scheduleId}
+			AND dg.`uuid` NOT IN 
+				(SELECT DISTINCT(sg.`devgroup_id`) 
+				FROM vc_schedule_sign sg WHERE sg.schedule_id = #{scheduleId})
+		</where>
+	</select>
+	
+	<!-- 上报终端状态（重复则更新） -->
+	<insert id="report" parameterType="ScheduleReportVO">
+		INSERT INTO vc_schedule_report(UUID,schedule_id,devgroup_id,dev_id,res_url,STATUS,other,create_time,user_id)
+		VALUES
+		(replace(uuid(), '-', ''),#{scheduleId},#{devgroupId},#{devId},#{resUrl},#{status},#{other},NOW(),#{userId})
+		ON DUPLICATE KEY UPDATE res_url=#{resUrl},STATUS=#{status},other=#{other},create_time=NOW(),user_id=#{userId}
+	</insert>
+
+	<!-- 获取已上报的会场列表 -->
+	<select id="getReportDevGroups" resultType="DeviceGroupVO" parameterType="map">
+		SELECT DISTINCT(vdg.uuid),
+		vdg.name
+		FROM vc_schedule_report vsr
+		LEFT JOIN vc_devgroup vdg
+		ON vsr.`devgroup_id` = vdg.`uuid`
+		<where>
+			vsr.schedule_id = #{scheduleId}
+		</where>
+		order by vsr.create_time desc
+	</select>
+
+	<!-- 获取上报信息 -->
+	<select id="getReportsRecord" resultType="ScheduleReportVO" parameterType="map">
+		SELECT DISTINCT(vsr.uuid),
+		vsr.schedule_id AS scheduleId,
+		vsr.devgroup_id AS devgroupId,
+		vdg.`name` AS devgroupName,
+		vsr.dev_id AS devId,
+		vd.`name` AS devName,
+		vsr.res_url AS resUrl,
+		vsr.status,
+		vsr.other,
+		DATE_FORMAT(vsr.create_time,'%Y-%m-%d %H:%i:%s') as createTime,
+		vsr.user_id as userId,
+		vu.name as userName,
+		vu.img_url as imgUrl
+		FROM vc_schedule_report vsr
+		LEFT JOIN vc_devgroup vdg
+		ON vsr.`devgroup_id` = vdg.`uuid`
+		LEFT JOIN vc_dev vd
+		ON vsr.`dev_id` = vd.`id`
+		LEFT JOIN vc_user vu
+		ON vsr.user_id = vu.`uuid`
+		<where>
+			vsr.schedule_id = #{scheduleId}
+			<if test="devGroupId != null and devGroupId != '' ">
+				and vsr.devgroup_id = #{devGroupId}
+			</if>
+			<if test="devId != null and devId != '' ">
+				and vsr.dev_id = #{devId}
+			</if>
+			<if test="userId != null and userId != '' ">
+				and vsr.user_id = #{userId}
+			</if>
+		</where>
+		order by vsr.create_time desc
+	</select>
+	
+	<!-- 获取上报信息 -->
+	<select id="getReports" resultType="ScheduleReportVO" parameterType="map">
+		SELECT DISTINCT(vsr.uuid),
+		vsr.schedule_id AS scheduleId,
+		vsr.devgroup_id AS devgroupId,
+		vdg.`name` AS devgroupName,
+		vsr.dev_id AS devId,
+		vd.`name` AS devName,
+		vsr.res_url AS resUrl,
+		vsr.status,
+		vsr.other,
+		DATE_FORMAT(vsr.create_time,'%Y-%m-%d %H:%i:%s') AS createTime,
+		vsr.user_id AS userId,
+		vu.name AS userName,
+		vu.img_url AS imgUrl 
+		FROM vc_schedule_report vsr 
+		LEFT JOIN vc_devgroup vdg
+		ON vsr.`devgroup_id` = vdg.`uuid`
+		LEFT JOIN vc_dev vd
+		ON vsr.`dev_id` = vd.`id`
+		LEFT JOIN vc_user vu
+		ON vsr.user_id = vu.`uuid`
+		<where>
+			vsr.create_time IN (SELECT MAX(temp.create_time) FROM vc_schedule_report temp where temp.schedule_id = #{scheduleId} GROUP BY temp.`dev_id`)
+			and vsr.schedule_id = #{scheduleId}
+			<if test="devGroupId != null and devGroupId != '' ">
+				and vsr.devgroup_id = #{devGroupId}
+			</if>
+			<if test="devId != null and devId != '' ">
+				and vsr.dev_id = #{devId}
+			</if>
+			<if test="userId != null and userId != '' ">
+				and vsr.user_id = #{userId}
+			</if>
+			<if test="status != null and status != '' ">
+				and vsr.status like CONCAT('%',#{status},'%')
+			</if>
+		</where>
+		order by vsr.create_time desc
+	</select>
+
+	<!-- 获取某一会场已签到的用户列表 -->
+	<select id="getSignedUsers" resultType="UserVO" parameterType="map">
+		SELECT DISTINCT(vc_user.uuid) AS UUID,
+		vc_user.`name` AS NAME,
+		vc_user.phone AS phone
+		FROM vc_user
+		LEFT JOIN
+		vc_schedule_sign ON
+		vc_schedule_sign.`user_id` = vc_user.uuid
+		<where>
+			vc_schedule_sign.`schedule_id` = #{scheduleId}
+			AND vc_schedule_sign.devgroup_id = #{devGroupId}
+		</where>
+	</select>
+	
+	<!-- 获取已上终端总数 -->
+	<select id="getReportsCount" resultType="int" parameterType="map">
+		SELECT COUNT(DISTINCT(vsr.dev_id))
+		FROM vc_schedule_report vsr
+		LEFT JOIN vc_devgroup vdg
+		ON vsr.`devgroup_id` = vdg.`uuid`
+		<where>
+			vsr.schedule_id = #{scheduleId}
+			<if test="devGroupId != null and devGroupId != '' ">
+				and vsr.devgroup_id = #{devGroupId}
+			</if>
+		</where>
+	</select>
+
+	<!-- 获取个人已上报的次数 -->
+	<select id="getReportTimes" resultType="int" parameterType="ScheduleReportVO">
+		SELECT COUNT(DISTINCT(vsr.uuid))
+		FROM vc_schedule_report vsr
+		LEFT JOIN vc_devgroup vdg
+		ON vsr.`devgroup_id` = vdg.`uuid`
+		<where>
+			vsr.schedule_id = #{scheduleId}
+			<if test="devgroupId != null and devgroupId != '' ">
+				and vsr.devgroup_id = #{devGroupId}
+			</if>
+			<if test="devId != null and devId != '' ">
+				and vsr.dev_id = #{devId}
+			</if>
+			<if test="userId != null and userId != '' ">
+				and vsr.user_id = #{userId}
+			</if>
+		</where>
+	</select>
+
+	<!-- 保存留言 -->
+	<insert id="message" parameterType="ScheduleMsgVO">
+		INSERT INTO vc_schedule_msg(UUID,schedule_id,message,create_time,user_id,meetings)
+		VALUES
+		(replace(uuid(), '-', ''),#{scheduleId},#{message},NOW(),#{userId},#{meetings})
+	</insert>
+	
+	<!-- 审批留言 -->
+	<update id="permitMessage" parameterType="map">
+		update vc_schedule_msg set permitted = 1
+		where uuid in
+		<foreach item="uuid" index="index" collection="uuids" open="("
+			separator="," close=")">
+			#{uuid}
+		</foreach>
+	</update>
+	
+	<!--  获取留言（保存留言时就存入会场信息） 
+	<select id="getMessages" resultType="ScheduleMsgVO" parameterType="map">
+		SELECT vsm.uuid,
+		vsm.schedule_id AS scheduleId,
+		vsm.message AS message,
+		DATE_FORMAT(vsm.create_time,'%Y-%m-%d %H:%i:%s') AS createTime,
+		vsm.user_id as userId,
+		vu.`name` AS userName,
+		vu.img_url as imgUrl,
+		vsm.meetings as meetings,
+		vsm.permitted
+		FROM vc_schedule_msg vsm
+		LEFT JOIN vc_user vu
+		ON vsm.`user_id` = vu.`uuid`
+		<where>
+			vsm.schedule_id = #{scheduleId}
+			<if test="userId != null and userId !='' ">
+				and vsm.user_id = #{userId}
+			</if>
+		</where>
+		order by vsm.create_time desc
+	</select> -->
+
+	<!-- 获取留言（查询时通过关联拼接字符串获得会场信息） -->
+	<select id="getMessages" resultType="ScheduleMsgVO" parameterType="map">
+		SELECT DISTINCT(vsm.uuid),
+		vsm.schedule_id AS scheduleId,
+		vsm.message AS message,
+		DATE_FORMAT(vsm.create_time,'%Y-%m-%d %H:%i:%s') AS createTime,
+		vsm.user_id AS userId,
+		vu.`name` AS userName,
+		(SELECT GROUP_CONCAT(DISTINCT(vd.name) SEPARATOR ',') FROM vc_devgroup vd
+			LEFT JOIN vc_schedule_sign vss
+			ON vd.uuid = vss.`devgroup_id`
+			WHERE vss.`schedule_id` = #{scheduleId}) AS meetings,
+		vu.img_url AS imgUrl,
+		vsm.permitted
+		FROM vc_schedule_msg vsm
+		LEFT JOIN vc_user vu
+		ON vsm.`user_id` = vu.`uuid`
+		<where>
+			vsm.schedule_id = #{scheduleId}
+			<if test="userId != null and userId !='' ">
+				and vsm.user_id = #{userId}
+			</if>
+		</where>
+		order by vsm.create_time desc
+	</select>
+	
+	<!-- 更新通知 -->
+	<update id="notice" parameterType="ScheduleVO">
+		UPDATE vc_schedule SET notice = #{notice}
+		<where>
+			UUID=#{uuid}
+		</where>
+	</update>
+	
+	<!-- 获取会议详情 -->
+	<select id="getSchedule" resultType="ScheduleVO" parameterType="map">
+		select
+		DISTINCT(vsbi.uuid),
+		vsbi.name,
+		vsbi.starttime,
+		vsbi.meettime,
+		vsbi.endtime,
+		vsbi.createtime,
+		vsbi.groupid,
+		vsbi.groupname,
+		vsbi.creatorId,
+		vsbi.creatorName,
+		vsbi.accessor,
+		vsbi.status,
+		vsbi.key,
+		vsbi.pcmeetId,
+		vsbi.ip,
+		vsbi.callmode,
+		vsbi.xmcu,
+		vsbi.dvrservernumber,
+		vsbi.notice,
+		vsbi.devices,
+		vsbi.level,
+		vsbi.fileurl,
+		vsbi.modifyStatus,
+		vsbi.masterNo,
+		vsbi.planPersonNum,
+		vsbi.planDevNum,
+		vsbi.personNum,
+		vsbi.svrRegionId,
+		vsbi.devNum
+		from view_schedule_base_info vsbi
+		<where>
+			vsbi.uuid = #{scheduleId}
+		</where>
+	</select>
+	
+	<!-- 更新预约 -->
+	<update id="updateSchedule" parameterType="ScheduleVO">
+		update vc_schedule set status = 1
+		<if test="name != null and name !='' ">
+			,name=#{name}
+		</if>
+		<if test="startTime != null and startTime !='' ">
+			,start_time=#{startTime}
+		</if>
+		<if test="meetTime != null and meetTime !='' ">
+			,meet_time=#{meetTime}
+		</if>
+		<if test="endTime != null and endTime !='' ">
+			,end_time=#{endTime}
+		</if>
+		<if test="creatorId != null and creatorId !='' ">
+			,creator_id=#{creatorId}
+		</if>
+		<if test="description != null and description !='' ">
+			,description=#{description}
+		</if>
+		<if test="ip != null and ip !='' ">
+			,ip=#{ip}
+		</if>
+		<if test="callMode != null and callMode !='' ">
+			,call_mode=#{callMode}
+		</if>
+		<if test="xmcu != null and xmcu !='' ">
+			,xmcu=#{xmcu}
+		</if>
+		<if test="dvrServerNumber != null and dvrServerNumber !='' ">
+			,dvr_server_number=#{dvrServerNumber}
+		</if>
+		<if test="notice != null and notice !='' ">
+			,notice=#{notice}
+		</if>
+		<if test="fileUrl != null and fileUrl !='' ">
+			,file_url=#{fileUrl}
+		</if>
+		<if test="level != null and level !='' ">
+			,level=#{level}
+		</if>
+		<where>
+			uuid = #{uuid}
+		</where>
+	</update>
+
+	<!-- 判断预约是否可以删除 -->
+	<select id="isScheduleDeletable" parameterType="Map" resultType="int">
+		select count(*) from
+		vc_schedule
+		where vc_schedule.uuid in
+		<foreach item="uuid" index="index" collection="uuids" open="("
+			separator="," close=")">
+			#{uuid}
+		</foreach>
+		AND vc_schedule.end_time > NOW()
+		AND vc_schedule.status = 4
+	</select>
+	<!-- 删除预约 -->
+	<delete id="deleteSchedule" parameterType="java.util.Map">
+		DELETE FROM vc_schedule WHERE vc_schedule.`uuid` IN
+		<foreach collection="uuids" item="uuid" open="(" separator="," close=")">
+			#{uuid}
+		</foreach>
+		OR vc_schedule.`process_id` IN
+		<foreach collection="uuids" item="uuid" open="(" separator="," close=")">
+			#{uuid}
+		</foreach>
+	</delete>
+
+	<!-- 删除预约和设备的关联关系 -->
+	<delete id="delScheduleDev" parameterType="Map">
+		delete from
+		vc_schedule_dev
+		<where>
+			schedule_id = #{scheduleId}
+		</where>
+	</delete>
+
+	<!-- 删除会议保障总结表单 -->
+	<delete id="deleteSumForm" parameterType="SummaryFormVO">
+		DELETE FROM vc_summary_form
+		<where>
+			process_id in (
+				select process_id from vc_schedule where vc_schedule.uuid in
+				<foreach item="uuid" index="index" collection="uuids" open="("
+					separator="," close=")">
+					#{uuid}
+				</foreach>
+			)
+		</where>
+	</delete>
+
+	<!-- 审核预约 -->
+	<update id="auditSchedule" parameterType="map">
+		update vc_schedule set modify_status = 0
+		<if test="status != null and status != '' ">
+			, status = #{status}
+		</if>
+		<if test="pcmeetKey != null and pcmeetKey != '' ">
+			, vc_schedule.key = #{pcmeetKey}
+		</if>
+		<if test="accessor != null and accessor != '' ">
+			, accessor_id = #{accessor}
+		</if>
+		<if test="startTime != null and startTime != '' ">
+			, start_time = #{startTime}
+		</if>
+		<if test="endTime != null and endTime != '' ">
+			, end_time = #{endTime}
+		</if>
+		where 
+		<choose>
+			<when test="processId != null and processId != '' ">
+				vc_schedule.process_id = #{processId}
+			</when>
+			<otherwise>
+				vc_schedule.uuid = #{uuid}
+			</otherwise>
+		</choose>
+	</update>
+
+	<!-- 驳回预约 -->
+	<update id="rejectSchedule" parameterType="map">
+		update vc_schedule set modify_status = 0
+		<if test="status != null and status != '' ">
+			, status = #{status}
+		</if>
+		<if test="accessor != null and accessor != '' ">
+			, accessor_id = #{accessor}
+		</if>
+		where vc_schedule.uuid =#{scheduleId}
+	</update>
+
+	<!-- 获取预约关联设备 -->
+	<select id="getDevices" resultType="DeviceVO" parameterType="map">
+		SELECT DISTINCT(vc_schedule_dev.dev_id) AS id, 
+		(CASE WHEN (`vc_schedule_dev`.`dev_name` IS NULL OR `vc_schedule_dev`.`dev_name`='') 
+		THEN `vc_dev`.`name` ELSE `vc_schedule_dev`.`dev_name` END) AS NAME
+		<!-- vc_dev.mac as mac,
+		vc_dev.ip as ip,
+		vc_dev.description as description,
+		vc_dev.type as type,
+		vc_dev.p_x as pX,
+		vc_dev.p_y as pY,
+		vc_dev.p_z as pZ,
+		vc_dev.p_layer as pLayer
+		from vc_dev
+		LEFT JOIN -->
+		from vc_schedule_dev 
+		<!-- on vc_schedule_dev.`dev_id` = vc_dev.id -->
+		LEFT JOIN vc_dev on vc_schedule_dev.`dev_id` = vc_dev.id
+		<where>
+			<if test="scheduleId != '' and scheduleId != null">
+				and vc_schedule_dev.schedule_id = #{scheduleId}
+			</if>
+			<if test="devId != '' and devId != null">
+				and vc_dev.devno like CONCAT('%',#{devId},'%')
+			</if>
+			<if test="devName != '' and devName != null">
+				and (vc_schedule_dev.dev_name like CONCAT('%',#{devName},'%')
+				or vc_dev.name like CONCAT('%',#{devName},'%'))
+			</if>
+		</where>
+		order by vc_schedule_dev.dev_id
+	</select>
+	
+	<!-- 获取预约关联设备 -->
+	<select id="getDevicesPag" resultType="DeviceVO" parameterType="map">
+		SELECT DISTINCT(vc_schedule_dev.dev_id) AS id, 
+		(CASE WHEN (`vc_schedule_dev`.`dev_name` IS NULL OR `vc_schedule_dev`.`dev_name`='') 
+		THEN `vc_dev`.`name` ELSE `vc_schedule_dev`.`dev_name` END) AS NAME
+		<!-- vc_dev.mac as mac,
+		vc_dev.ip as ip,
+		vc_dev.description as description,
+		vc_dev.type as type,
+		vc_dev.p_x as pX,
+		vc_dev.p_y as pY,
+		vc_dev.p_z as pZ,
+		vc_dev.p_layer as pLayer
+		from vc_dev
+		LEFT JOIN -->
+		from vc_schedule_dev 
+		<!-- on vc_schedule_dev.`dev_id` = vc_dev.id -->
+		LEFT JOIN vc_dev on vc_schedule_dev.`dev_id` = vc_dev.id
+		<where>
+			<if test="scheduleId != '' and scheduleId != null">
+				and vc_schedule_dev.schedule_id = #{scheduleId}
+			</if>
+			<if test="devId != '' and devId != null">
+				and vc_dev.devno like CONCAT('%',#{devId},'%')
+			</if>
+			<if test="devName != '' and devName != null">
+				and (vc_schedule_dev.dev_name like CONCAT('%',#{devName},'%')
+				or vc_dev.name like CONCAT('%',#{devName},'%'))
+			</if>
+		</where>
+		order by vc_schedule_dev.dev_id
+	</select>
+	
+	
+	
+	
+	<select id="getDeviceCount" resultType="int" parameterType="map">
+		SELECT count(*)
+		from vc_schedule_dev 
+		<!-- on vc_schedule_dev.`dev_id` = vc_dev.id -->
+		LEFT JOIN vc_dev on vc_schedule_dev.`dev_id` = vc_dev.id
+		<where>
+			<if test="scheduleId != '' and scheduleId != null">
+				and vc_schedule_dev.schedule_id = #{scheduleId}
+			</if>
+			<if test="devId != '' and devId != null">
+				and vc_dev.devno like CONCAT('%',#{devId},'%')
+			</if>
+			<if test="devName != '' and devName != null">
+				and (vc_schedule_dev.dev_name like CONCAT('%',#{devName},'%')
+				or vc_dev.name like CONCAT('%',#{devName},'%'))
+			</if>
+		</where>
+		order by vc_schedule_dev.dev_id
+	</select>
+
+	<!-- 获取预约关联设备分组列表 -->
+	<select id="getDevGroups" resultType="DeviceGroupVO" parameterType="map">
+		SELECT DISTINCT(dg.NAME),dg.uuid
+		FROM vc_devgroup dg
+		inner JOIN vc_devgroup_dev dgd
+		ON dg.uuid = dgd.devgroup_id
+		inner JOIN vc_schedule_dev sd
+		ON dgd.dev_id = sd.dev_id
+		inner join vc_schedule vs
+		on sd.schedule_id = vs.uuid
+		inner join vc_usergroup_devgroup vud
+		on dgd.`devgroup_id`=vud.`devgroup_id`
+		<where>
+			sd.schedule_id = #{scheduleId}
+			AND vs.usergroup_id=vud.`usergroup_id`
+		</where>
+	</select>
+	
+	<!-- 获取预约关联设备分组总数 -->
+	<select id="getDevGroupCount" resultType="int" parameterType="map">
+		SELECT COUNT(DISTINCT(dg.NAME))
+		FROM vc_devgroup dg
+		inner JOIN vc_devgroup_dev dgd
+		ON dg.uuid = dgd.devgroup_id
+		inner JOIN vc_schedule_dev sd
+		ON dgd.dev_id = sd.dev_id
+		inner join vc_schedule vs
+		on sd.schedule_id = vs.uuid
+		inner join vc_usergroup_devgroup vud
+		on dgd.`devgroup_id`=vud.`devgroup_id`
+		<where>
+			sd.schedule_id = #{scheduleId}
+			AND vs.usergroup_id=vud.`usergroup_id`
+		</where>
+	</select>
+	
+	<!-- 获取预约关联用户 -->
+	<select id="getUsers" resultType="UserVO" parameterType="map">
+		SELECT DISTINCT(vc_user.uuid) AS UUID,
+		vc_user.`name` AS NAME,
+		vc_user.login_name AS loginName,
+		vc_user.phone AS phone,
+		vc_role.name AS role
+		FROM vc_user
+		LEFT JOIN
+		vc_usergroup_user ON
+		vc_usergroup_user.`user_id` = vc_user.uuid
+		LEFT JOIN 
+		vc_user_role ON vc_user_role.`user_id` = vc_user.uuid
+		LEFT JOIN
+		vc_role ON vc_role.uuid = vc_user_role.role_id
+		LEFT JOIN
+		vc_schedule ON
+		vc_usergroup_user.`usergroup_id` = vc_schedule.`usergroup_id`
+		<where>
+			<if test="scheduleId != '' and scheduleId != null">
+				vc_schedule.`uuid` = #{scheduleId}
+			</if>
+		</where>
+	</select>
+	
+	<select id="getSMSStatus" resultType="int">
+		select vc_sms.status from vc_sms limit 1
+	</select>
+	
+	<!-- 设置会议的群聊ID -->
+	<insert id="setScheduleChart" parameterType="map">
+		insert into vc_schedule_chart(schedule_id,chart_id,create_time)
+		values
+	    (#{scheduleId}, #{chartId}, NOW())
+    	<!-- ON DUPLICATE KEY UPDATE chart_id = #{chartId}, create_time=NOW() -->
+	</insert>
+	
+	<!-- 获取会议的群聊ID -->
+	<select id="getScheduleChart" parameterType="map" resultType="ScheduleChartVO">
+		select schedule_id as scheduleId,
+		chart_id as chartId,
+		DATE_FORMAT(create_time,'%Y-%m-%d %H:%i:%s') as createTime
+ 		from vc_schedule_chart
+ 		<where>
+ 			schedule_id = #{scheduleId}
+ 		</where>
+	</select>
+	<!-- 获取设备会议相关属性值 -->
+	<select id="getDevPropByIds" parameterType="map" resultType="MeetingDevVO">
+		select
+		vc_dev.id,
+		vc_dev.ip,
+		vc_dev.`name`,
+		vc_dev.type as devType,
+		vc_dev.role as
+		devRole,
+		vc_dev_prop.audioflux as audioFlux,
+		vc_dev_prop.audio_enc_mode
+		as autioEncMode,
+		vc_dev_prop.cifflux as cifFlux,
+		vc_dev_prop.default_vdec_mode as defaultVDecMode,
+		vc_dev_prop.hflux as
+		hFlux,
+		vc_dev_prop.video_dec_mode as videoDecMode,
+		vc_dev_prop.video_enc_mode as videoEncMode,
+		vc_dev_prop.wallNo as wallNo,
+		vc_dev_prop.sifflux as sifFlux
+		from vc_dev
+		LEFT JOIN vc_dev_prop on vc_dev_prop.dev_id = vc_dev.id
+		<where>
+		    vc_dev.id  = #{devId}
+		</where>
+	</select>
+	
+	<update id="updateMeetinfInfo" parameterType="map">
+		update vc_schedule set 
+		<if test="ip != null">
+			vc_schedule.ip = #{ip},
+		</if>
+		<if test="scheduleStatus != null">
+			vc_schedule.status = #{scheduleStatus}
+		</if>
+		<where>
+			vc_schedule.uuid =#{scheduleId}
+		</where>
+	</update>
+
+	<update id="updateScheduleStatus" parameterType="ScheduleVO">
+		update vc_schedule set `status` = #{status}, `stop_reason` = #{stopReason}
+		<where>
+			`uuid` =#{uuid}
+		</where>
+	</update>
+	
+	<delete id="deleteScheduleById" parameterType="map">
+		delete from vc_schedule where vc_schedule.uuid = #{scheduleId}
+	</delete>
+	
+	<!-- 从cmsweb数据库的vc_dev_prop表获取设备属性 -->
+	<select id="getDevProps" resultType="DevicePropVO" parameterType="list">
+		SELECT
+		vdp.`dev_id` AS devId,
+		vdp.`default_vdec_mode` AS defaultVdecMode,
+		vdp.`video_dec_mode` AS videoDecMode,
+		vdp.`video_enc_mode` AS videoEncMode,
+		vdp.`audio_enc_mode` AS audioEncMode,
+		vdp.`hflux` AS hflux,
+		vdp.`cifflux` AS cifflux,
+		vdp.`sifflux` AS sifflux,
+		vdp.`audioflux` AS audioflux,
+		vdp.`wallNo` AS wallNo
+		FROM vc_dev_prop vdp
+		LEFT JOIN vc_dev AS device
+		ON device.`id` = vdp.`dev_id`
+		<where>
+			device.`devno` in
+			<foreach item="num" index="index" collection="list" open="("
+				separator="," close=")">
+				#{num}
+			</foreach>
+		</where>
+	</select>
+
+	<!--获取GIS所开始的会议 -->
+	<select id="getGisMeetings" parameterType="map" resultType="ScheduleVO">
+		select
+		distinct(vsbi.uuid),
+		vsbi.name,
+		vsbi.starttime,
+		vsbi.meettime,
+		vsbi.endtime,
+		vsbi.createtime,
+		vsbi.modifyStatus,
+		vsbi.groupid,
+		vsbi.ip,
+		vsbi.callmode,
+		vsbi.xmcu,
+		vsbi.dvrservernumber,
+		vsbi.notice,
+		vsbi.pcmeetId,
+		vsbi.key,
+		vsbi.fileurl,
+		vsbi.level,
+		vsbi.groupname,
+		vsbi.creatorId,
+		vsbi.creatorName,
+		vsbi.accessor,
+		vsbi.status,
+		vsbi.notice,
+		vsbi.key,
+		vsbi.pcmeetId,
+		vsbi.masterNo,
+		vsbi.planPersonNum,
+		vsbi.planDevNum,
+		vsbi.personNum,
+		vsbi.devNum
+		from view_schedule_base_info vsbi
+		<where>
+			vsbi.createType = 3 and vsbi.creatorId = #{creatorId} and vsbi.status = 4
+		</where>
+	</select>
+
+	<!--WebService获取用户开会记录 -->
+	<select id="getMeetingList" parameterType="map" resultType="ScheduleVO">
+		select
+		distinct(vsbi.uuid),
+		vsbi.name,
+		vsbi.starttime,
+		vsbi.meettime,
+		vsbi.endtime,
+		vsbi.createtime,
+		vsbi.modifyStatus,
+		vsbi.groupid,
+		vsbi.ip,
+		vsbi.callmode,
+		vsbi.xmcu,
+		vsbi.dvrservernumber,
+		vsbi.notice,
+		vsbi.pcmeetId,
+		vsbi.key,
+		vsbi.fileurl,
+		vsbi.level,
+		vsbi.groupname,
+		vsbi.creatorId,
+		vsbi.creatorName,
+		vsbi.accessor,
+		vsbi.status,
+		vsbi.notice,
+		vsbi.key,
+		vsbi.pcmeetId,
+		vsbi.masterNo,
+		vsbi.planPersonNum,
+		vsbi.planDevNum,
+		vsbi.personNum,
+		vsbi.devNum
+		from view_schedule_base_info vsbi
+		<where>
+			vsbi.creatorId = #{creatorId}
+			<!-- and vsbi.createType = 2 -->
+		</where>
+		order by vsbi.createTime desc
+	</select>
+
+	<!--WebService获取用户开会记录总数 -->
+	<select id="getMeetingListCount" parameterType="map" resultType="int">
+		select
+		count(distinct(vsbi.uuid))
+		from view_schedule_base_info vsbi
+		<where>
+			vsbi.creatorId = #{creatorId}
+			and vsbi.createType = 2
+		</where>
+	</select>
+	
+	<!-- 添加Gis会议 -->
+	<insert id="addGisSchedule" parameterType="ScheduleVO" keyProperty="uuid">
+		<selectKey resultType="java.lang.String" order="BEFORE"
+			keyProperty="uuid">
+			select replace(uuid(), '-', '') from dual
+		</selectKey>
+		insert into vc_schedule(`uuid`,`name`,start_time,meet_time,end_time,create_time,creator_id,
+		usergroup_id,description,pcmeet_id,`key`,ip,call_mode,xmcu,dvr_server_number,notice,file_url,create_type,level)
+		VALUES(#{uuid},#{name},#{startTime},#{meetTime},#{endTime},NOW(),#{creatorId},
+		(select DISTINCT(usergroup_id) from vc_usergroup_user where user_id = #{creatorId}),#{description},
+		#{pcmeetId},#{key},#{ip},#{callMode},#{xmcu},#{dvrServerNumber},#{notice},#{fileUrl},#{createType},#{level})
+	</insert>
+	
+	<!-- 验证用户是否已经开会 -->
+	<select id="checkUserMeeting" parameterType="map" resultType="int">
+		select count(1) from vc_schedule
+		<where>
+			vc_schedule.creator_id = #{creatorId} and vc_schedule.status = 4 and vc_schedule.create_type = 3
+		</where>
+	</select>
+
+	<!-- 查询正在进行的会议通过设备 -->
+	<select id="getMeetingByDevice" parameterType="map" resultType="ScheduleVO">
+		select
+		DISTINCT(`vc_s`.`uuid`) AS `uuid`,
+		`vc_s`.`name` AS `name`,
+		date_format(`vc_s`.`start_time`,'%Y-%m-%d %H:%i') AS `startTime`,
+		date_format(`vc_s`.`meet_time`,'%Y-%m-%d %H:%i') AS `meetTime`,
+		date_format(`vc_s`.`end_time`,'%Y-%m-%d %H:%i') AS `endTime`,
+		date_format(`vc_s`.`create_time`,'%Y-%m-%d %H:%i') AS `createTime`,
+		`vc_s`.`status` AS `status`,
+		`vc_s`.`level` AS `level`,
+		`vc_s`.`ip` AS `ip`,
+		`vc_s`.`call_mode` AS `callmode`,
+		`vc_s`.`xmcu` AS `xmcu`,
+		`vc_s`.`dvr_server_number` AS `dvrservernumber`,
+		`vc_s`.`notice` AS `notice`,
+		`vc_s`.`pcmeet_id` AS `pcmeetId`,
+		`vc_s`.`key` AS `key`,
+		`vc_s`.`file_url` AS `fileurl`,
+		`vc_s`.`create_type` AS `createType`,
+		`vrg`.`uuid` AS `groupid`,
+		`vrg`.`name` AS `groupname`,
+		`vc_u1`.`uuid` AS `creatorId`,
+		`vc_u1`.`name` AS `creatorName`,
+		`vc_u2`.`uuid` AS `accessorid`,
+		`vc_u2`.`name` AS `accessor`
+		from ((((`vc_schedule` `vc_s`
+		join `vc_user` `vc_u1`
+		on ((`vc_u1`.`uuid` = `vc_s`.`creator_id`)))
+		join `vc_schedule_dev` `vc_sd`
+		on ((`vc_s`.`uuid` = `vc_sd`.`schedule_id`)))
+		left join `vc_user` `vc_u2`
+		on ((`vc_u2`.`uuid` = `vc_s`.`accessor_id`)))
+		left join `vc_usergroup` `vrg`
+		on ((`vrg`.`uuid` = `vc_s`.`usergroup_id`))
+		left join `vc_dev` AS device
+		on ((device.id = vc_sd.`dev_id`)))
+		<where>
+			device.devno = #{deviceid} and (vc_s.start_time &lt; now() or vc_s.end_time &gt; now()) and vc_s.`status` = 4
+		</where>
+	</select>
+
+	<!-- 获取会议详细信息 -->
+	<select id="getMeetingDetalInfo" parameterType="map" resultType="ScheduleVO">
+		select
+		DISTINCT(vsbi.uuid),
+		vsbi.name,
+		vsbi.starttime,
+		vsbi.meettime,
+		vsbi.endtime,
+		vsbi.createtime,
+		vsbi.modifyStatus,
+		vsbi.groupid,
+		vsbi.ip,
+		vsbi.callmode,
+		vsbi.xmcu,
+		vsbi.dvrservernumber,
+		vsbi.notice,
+		vsbi.pcmeetId,
+		vsbi.key,
+		vsbi.fileurl,
+		vsbi.level,
+		vsbi.groupname,
+		vsbi.creatorId,
+		vsbi.creatorName,
+		vsbi.operatorId,
+		vsbi.operatorName,
+		vsbi.accessor,
+		vsbi.status,
+		vsbi.notice,
+		vsbi.key,
+		vsbi.pcmeetId,
+		vsbi.masterNo,
+		vsbi.planPersonNum,
+		vsbi.planDevNum,
+		vsbi.personNum,
+		vsbi.devNum,
+		vsbi.masterName,
+		vsbi.speakerOne,
+		vsbi.speakerTwo,
+		vsbi.svrRegionId,
+		vsbi.svrRegionName,
+		vsbi.compere as host,
+		vsbi.staffLevel as memberLevel,
+		vsbi.stopReason,
+		vsbi.meetCount as meetCount,
+		vsbi.alostpacket as alostpacket,
+		vsbi.vlostpacket as vlostpacket
+		from view_schedule_base_info vsbi
+		<where>
+			vsbi.uuid=#{scheduleId}
+		</where>
+	</select>
+
+	<!-- 获取冲突的会议信息 -->
+	<select id="getConflictMeetings" parameterType="map" resultType="ScheduleVO">
+		select DISTINCT(vc_schedule.uuid), vc_schedule.`level`,
+		vc_schedule.`name` ,vc_schedule.start_time as startTime from vc_schedule
+		INNER JOIN vc_schedule_dev on vc_schedule_dev.schedule_id =
+		vc_schedule.uuid
+		LEFT JOIN vc_dev AS device
+		ON device.`id` = vc_schedule_dev.`dev_id`
+		where vc_schedule_dev.dev_id in(
+		SELECT vc_schedule_dev.dev_id FROM
+		vc_schedule_dev
+		INNER JOIN vc_schedule
+		ON vc_schedule.uuid = vc_schedule_dev.schedule_id
+		<where>
+			device.devno IN
+			<foreach item="devId" index="index" collection="devIds" open="("
+				separator="," close=")">
+				#{devId}
+			</foreach>
+			AND (vc_schedule.status not in(1,3)) AND vc_schedule.`level` &lt;=
+			#{level}
+			AND ((UNIX_TIMESTAMP(vc_schedule.end_time) BETWEEN
+			UNIX_TIMESTAMP(#{startTime}) AND UNIX_TIMESTAMP(#{endTime}))
+			OR (UNIX_TIMESTAMP(vc_schedule.start_time) BETWEEN
+			UNIX_TIMESTAMP(#{startTime}) AND UNIX_TIMESTAMP(#{endTime}))
+			OR (UNIX_TIMESTAMP(vc_schedule.start_time) &lt;=
+			UNIX_TIMESTAMP(#{startTime}) AND UNIX_TIMESTAMP(vc_schedule.end_time)
+			&gt;= UNIX_TIMESTAMP(#{endTime}))
+			)
+			<if test="scheduleId != null and scheduleId != '' ">
+				AND vc_schedule.uuid != #{scheduleId}
+			</if>
+		</where>
+		GROUP BY vc_schedule_dev.dev_id) GROUP BY vc_schedule.uuid
+	</select>
+	
+	<!-- 获取低于当前预约等级并且冲突的设备关联主键 -->
+	<select id="getLowLevelMeetingDevs" parameterType="map" resultType="String">
+	    SELECT vc_schedule_dev.uuid FROM
+		vc_schedule_dev
+		INNER JOIN vc_schedule
+		ON vc_schedule.uuid = vc_schedule_dev.schedule_id
+		LEFT JOIN vc_dev AS device
+		ON device.`id` = vc_schedule_dev.`dev_id`
+		<where>
+			device.`devno` IN
+			<foreach item="devId" index="index" collection="devIds" open="("
+				separator="," close=")">
+				#{devId}
+			</foreach>
+			AND (vc_schedule.status not in(1,3)) AND vc_schedule.`level` &gt;
+			#{level}
+			AND ((UNIX_TIMESTAMP(vc_schedule.end_time) BETWEEN
+			UNIX_TIMESTAMP(#{startTime}) AND UNIX_TIMESTAMP(#{endTime}))
+			OR (UNIX_TIMESTAMP(vc_schedule.start_time) BETWEEN
+			UNIX_TIMESTAMP(#{startTime}) AND UNIX_TIMESTAMP(#{endTime}))
+			OR (UNIX_TIMESTAMP(vc_schedule.start_time) &lt;=
+			UNIX_TIMESTAMP(#{startTime}) AND UNIX_TIMESTAMP(vc_schedule.end_time)
+			&gt;= UNIX_TIMESTAMP(#{endTime}))
+			)
+			<if test="scheduleId != null and scheduleId != '' ">
+				AND vc_schedule.uuid != #{scheduleId}
+			</if>
+		</where>
+		GROUP BY vc_schedule_dev.dev_id
+	</select>
+	
+	<delete id="delLowConflictMeetDevs"  parameterType="map" >
+		delete from vc_schedule_dev
+		<where>
+			vc_schedule_dev.uuid in
+			<foreach item="uuid" index="index" collection="devuuids" open="("
+				separator="," close=")">
+				#{uuid}
+			</foreach>
+		</where>
+	</delete>
+	
+	<!-- 获取会议预约的所有设备号码 -->
+	<select id="getMeetingDevs" parameterType="map" resultType="int" >
+		select  DISTINCT(vc_schedule_dev.dev_id) from vc_schedule_dev 
+		<where>
+			<if test="scheduleId != null and scheduleId != '' ">
+				vc_schedule_dev.schedule_id = #{scheduleId}
+			</if>
+		</where>
+	</select>
+	
+	<!-- 删除会议变更申请记录 -->
+	<delete id="delMeetModifyStatus" parameterType="map">
+		delete from vc_schedule_modify
+		<where>
+			vc_schedule_modify.schedule_id = #{scheduleId}
+		</where>
+	</delete>
+	
+	<!-- 查询审批详情 -->
+	<select id="getAccessorDetail" resultType="ScheduleVO"
+		parameterType="Map">
+		select
+		DISTINCT(vsbi.uuid),
+		vsbi.name,
+		vsbi.starttime,
+		vsbi.endtime,
+		vsbi.createtime,
+		vsbi.accessortime,
+		vsbi.creatorId,
+		vsbi.creatorName,
+		vsbi.accessor,
+		vsbi.accessorId,
+		vsbi.svrRegionId,
+		vsbi.svrRegionName
+		from view_schedule_base_info vsbi
+		<if test="devId != null and devId != '' ">
+			LEFT JOIN vc_schedule_dev sd
+			ON sd.`schedule_id` = vsbi.`uuid`
+			LEFT JOIN vc_dev AS device
+			ON device.`id` = sd.`dev_id`
+		</if>
+		<where>
+			vsbi.processId >= 0
+			<if test="svrRegionId != null and svrRegionId !='' ">
+				and vsbi.svrRegionId = #{svrRegionId}
+			</if>
+			<if test="creatorName != null and creatorName !='' ">
+				and vsbi.creatorName like CONCAT('%',#{creatorName},'%')
+			</if>
+			<if test="accessor != null and accessor !='' ">
+				and vsbi.accessor like CONCAT('%',#{accessor},'%')
+			</if>
+			<if test="groupid != null and groupid !='' ">
+				and vsbi.groupid = #{groupid}
+			</if>
+			<if test="createtimeStart != null and createtimeStart != '' ">
+				and UNIX_TIMESTAMP(vsbi.createtime) &gt;=
+				UNIX_TIMESTAMP(#{createtimeStart})
+			</if>
+			<if test="createtimeEnd != null and createtimeEnd !='' ">
+				and UNIX_TIMESTAMP(vsbi.createtime) &lt;=
+				UNIX_TIMESTAMP(#{createtimeEnd})
+			</if>
+			<if test="accessortimeStart != null and accessortimeStart != '' ">
+				and UNIX_TIMESTAMP(vsbi.accessortime) &gt;=
+				UNIX_TIMESTAMP(#{accessortimeStart})
+			</if>
+			<if test="accessortimeEnd != null and accessortimeEnd !='' ">
+				and UNIX_TIMESTAMP(vsbi.accessortime) &lt;=
+				UNIX_TIMESTAMP(#{accessortimeEnd})
+			</if>
+			<if test="name != null and name != '' ">
+				and vsbi.name like CONCAT('%',#{name},'%')
+			</if>
+			<if test="devId != null and devId != '' ">
+				and device.devno like CONCAT('%',#{devId},'%')
+			</if>
+			<if test="creatorId != null and creatorId !='' ">
+				and (vsbi.creatorId = #{creatorId}
+				<if test="userName != null and userName != '' ">
+					or vsbi.authMember like CONCAT('%',#{userName},'%')
+					or vsbi.creatorName like CONCAT('%',#{userName},'%')
+				</if>
+				<if test="processIds != null and processIds.size() > 0">
+					or vsbi.processId in 
+					<foreach item="processId" index="index" collection="processIds" open="("
+						separator="," close=")">
+						#{processId}
+					</foreach>
+				</if>)
+			</if>
+			<if test="status != null and status !='' ">
+				<if test="status == 1">
+				and (UNIX_TIMESTAMP(vsbi.accessortime)-UNIX_TIMESTAMP(vsbi.createtime))*1000 &lt;=
+				#{aprExc}
+				</if>
+				<if test="status == 2">
+				and (UNIX_TIMESTAMP(vsbi.accessortime)-UNIX_TIMESTAMP(vsbi.createtime))*1000  &gt;=
+				#{aprExc}
+				and (UNIX_TIMESTAMP(vsbi.accessortime)-UNIX_TIMESTAMP(vsbi.createtime))*1000  &lt;=
+				#{aprTime}
+				</if>
+				<if test="status == 3">
+				and (UNIX_TIMESTAMP(vsbi.accessortime)-UNIX_TIMESTAMP(vsbi.createtime))*1000  &gt;=
+				#{aprTime}
+				</if>
+			</if>
+		</where> order by vsbi.createtime desc
+	</select>
+
+	<select id="getAccessorDetailCount" resultType="int"
+		parameterType="Map">
+		select count(DISTINCT(vsbi.uuid)) from view_schedule_base_info vsbi
+		<if test="devId != null and devId != '' ">
+			LEFT JOIN vc_schedule_dev sd
+			ON sd.`schedule_id` = vsbi.`uuid`
+			LEFT JOIN vc_dev AS device
+			ON device.`id` = sd.`dev_id`
+		</if>
+		<where>
+			vsbi.processId >= 0
+			<if test="svrRegionId != null and svrRegionId !='' ">
+				and vsbi.svrRegionId = #{svrRegionId}
+			</if>
+			<if test="creatorName != null and creatorName !='' ">
+				and vsbi.creatorName like CONCAT('%',#{creatorName},'%')
+			</if>
+			<if test="accessor != null and accessor !='' ">
+				and vsbi.accessor like CONCAT('%',#{accessor},'%')
+			</if>
+			<if test="groupid != null and groupid !='' ">
+				and vsbi.groupid = #{groupid}
+			</if>
+			<if test="createtimeStart != null and createtimeStart != '' ">
+				and UNIX_TIMESTAMP(vsbi.createtime) &gt;=
+				UNIX_TIMESTAMP(#{createtimeStart})
+			</if>
+			<if test="createtimeEnd != null and createtimeEnd !='' ">
+				and UNIX_TIMESTAMP(vsbi.createtime) &lt;=
+				UNIX_TIMESTAMP(#{createtimeEnd})
+			</if>
+			<if test="accessortimeStart != null and accessortimeStart != '' ">
+				and UNIX_TIMESTAMP(vsbi.accessortime) &gt;=
+				UNIX_TIMESTAMP(#{accessortimeStart})
+			</if>
+			<if test="accessortimeEnd != null and accessortimeEnd !='' ">
+				and UNIX_TIMESTAMP(vsbi.accessortime) &lt;=
+				UNIX_TIMESTAMP(#{accessortimeEnd})
+			</if>
+			<if test="name != null and name != '' ">
+				and vsbi.name like CONCAT('%',#{name},'%')
+			</if>
+			<if test="devId != null and devId != '' ">
+				and device.devno like CONCAT('%',#{devId},'%')
+			</if>
+			<if test="creatorId != null and creatorId !='' ">
+				and (vsbi.creatorId = #{creatorId}
+					<if test="userName != null and userName != '' ">
+						or vsbi.authMember like CONCAT('%',#{userName},'%')
+						or vsbi.creatorName like CONCAT('%',#{userName},'%')
+					</if>
+					<if test="processIds != null and processIds.size() > 0">
+						or vsbi.processId in 
+						<foreach item="processId" index="index" collection="processIds" open="("
+							separator="," close=")">
+							#{processId}
+						</foreach>
+					</if>)
+			</if>
+		</where>
+	</select>
+	
+	<!-- 根据会议类型获取指定状态的会议数量 -->
+	<select id="getMeetingCount" resultType="int" parameterType="Map">
+		select count(1) from vc_schedule vs
+		<where>
+			<if test="status != null and status != '' ">
+				vs.status = #{status}
+			</if>
+			<if test="createType != null and createType != '' ">
+				and vs.create_type = #{createType}
+			</if>
+		</where>
+	</select>
+	
+	
+	 
+	
+	<!-- 获取所有正在开会，已审批未开会的的数据列表 -->
+	 <select id="getMeetingStopList" parameterType="map" resultType="ScheduleVO">
+		SELECT * FROM (SELECT * FROM
+			(SELECT vsri.* 
+			FROM view_schedule_realtime_info vsri
+			JOIN vc_dev vd
+			ON vsri.`masterNo`=vd.`id`
+			JOIN vc_region vr
+			ON vr.`id` = vd.`region_id`
+		<where>
+			vsri.status = 4
+			<if test="flag == 0">
+				and 
+				((UNIX_TIMESTAMP(NOW()) - UNIX_TIMESTAMP(vsri.endTime)) &lt; 3600
+				or vsri.operatorStatus=1
+				or vsri.endTime = '0000-00-00 00:00:00')
+			</if>
+			<if test="creatorName != null and creatorName !='' ">
+				and vsri.creatorName like CONCAT('%',#{creatorName},'%')
+			</if>
+			<if test="name != null and name != '' ">
+				and vsri.name like CONCAT('%',#{name},'%')
+			</if>
+			<if test="masterNo != null and masterNo != '' ">
+				and vsri.masterNo like CONCAT('%',#{masterNo},'%')
+			</if>
+			<if test="regionId != null and regionId !='' ">
+				and vr.`id` = #{regionId}
+			</if>
+		</where>
+		union
+		SELECT vsri.* 
+			FROM view_schedule_realtime_info vsri
+			JOIN vc_dev vd
+			ON vsri.`masterNo`=vd.`id`
+			JOIN vc_region vr
+			ON CONCAT(SUBSTR(vd.`region_id`, 1, #{subLen}), #{subStr})=vr.`id`
+		<where>
+			vsri.status = 4
+			<if test="flag == 0">
+				and 
+				((UNIX_TIMESTAMP(NOW()) - UNIX_TIMESTAMP(vsri.endTime)) &lt; 3600
+				or vsri.operatorStatus=1
+				or vsri.endTime = '0000-00-00 00:00:00')
+			</if>
+			<if test="creatorName != null and creatorName !='' ">
+				and vsri.creatorName like CONCAT('%',#{creatorName},'%')
+			</if>
+			<if test="name != null and name != '' ">
+				and vsri.name like CONCAT('%',#{name},'%')
+			</if>
+			<if test="masterNo != null and masterNo != '' ">
+				and vsri.masterNo like CONCAT('%',#{masterNo},'%')
+			</if>
+			<if test="regionId != null and regionId !='' ">
+				and vr.`pid` = #{regionId}
+			</if>
+		</where>) as vsri1
+		order by vsri1.starttime desc
+		) as vsb 
+		UNION
+		SELECT * FROM (SELECT * FROM
+			(SELECT vsri.* 
+			FROM view_schedule_realtime_info vsri
+			JOIN vc_dev vd
+			ON vsri.`masterNo`=vd.`id`
+			JOIN vc_region vr
+			ON vr.`id` = vd.`region_id`
+		<where>
+			vsri.status = 2
+			<if test="creatorName != null and creatorName !='' ">
+				and vsri.creatorName like CONCAT('%',#{creatorName},'%')
+			</if>
+			<if test="start_time != null and start_time != '' ">
+				AND ((UNIX_TIMESTAMP(vsri.endTime) BETWEEN
+				UNIX_TIMESTAMP(CONCAT(#{start_time},' 00:00:00')) AND UNIX_TIMESTAMP(CONCAT(#{start_time},' 23:59:59')))
+				OR (UNIX_TIMESTAMP(vsri.startTime) BETWEEN
+				UNIX_TIMESTAMP(CONCAT(#{start_time},' 00:00:00')) AND UNIX_TIMESTAMP(CONCAT(#{start_time},' 23:59:59')))
+				OR (UNIX_TIMESTAMP(vsri.startTime) &lt;=
+				UNIX_TIMESTAMP(CONCAT(#{start_time},' 00:00:00')) AND UNIX_TIMESTAMP(vsri.endTime)
+				&gt;= UNIX_TIMESTAMP(CONCAT(#{start_time},' 23:59:59')))
+				)
+			</if>
+			<if test="masterNo != null and masterNo != '' ">
+				and vsri.masterNo like CONCAT('%',#{masterNo},'%')
+			</if>
+			<if test="regionId != null and regionId !='' ">
+				and vr.`id` = #{regionId}
+			</if>
+		</where>
+		union
+		SELECT vsri.* 
+			FROM view_schedule_realtime_info vsri
+			JOIN vc_dev vd
+			ON vsri.`masterNo`=vd.`id`
+			JOIN vc_region vr
+			ON CONCAT(SUBSTR(vd.`region_id`, 1, #{subLen}), #{subStr})=vr.`id`
+		<where>
+			vsri.status = 2
+			<if test="creatorName != null and creatorName !='' ">
+				and vsri.creatorName like CONCAT('%',#{creatorName},'%')
+			</if>
+			<if test="start_time != null and start_time != '' ">
+				AND ((UNIX_TIMESTAMP(vsri.endTime) BETWEEN
+				UNIX_TIMESTAMP(CONCAT(#{start_time},' 00:00:00')) AND UNIX_TIMESTAMP(CONCAT(#{start_time},' 23:59:59')))
+				OR (UNIX_TIMESTAMP(vsri.startTime) BETWEEN
+				UNIX_TIMESTAMP(CONCAT(#{start_time},' 00:00:00')) AND UNIX_TIMESTAMP(CONCAT(#{start_time},' 23:59:59')))
+				OR (UNIX_TIMESTAMP(vsri.startTime) &lt;=
+				UNIX_TIMESTAMP(CONCAT(#{start_time},' 00:00:00')) AND UNIX_TIMESTAMP(vsri.endTime)
+				&gt;= UNIX_TIMESTAMP(CONCAT(#{start_time},' 23:59:59')))
+				)
+			</if>
+			<if test="masterNo != null and masterNo != '' ">
+				and vsri.masterNo like CONCAT('%',#{masterNo},'%')
+			</if>
+			<if test="regionId != null and regionId !='' ">
+				and vr.`pid` = #{regionId}
+			</if>
+		</where>) as vsri2
+		order by vsri2.starttime desc
+		) as vsb 
+	</select>
+	
+	
+	<!-- 获取所有正在开会，停会的数据列表总条数 -->
+	<select id="getMeetingStopListCount" parameterType="map" resultType="int">
+	SELECT count(*) FROM (SELECT * FROM
+			(SELECT vsri.* 
+			FROM view_schedule_realtime_info vsri
+			JOIN vc_dev vd
+			ON vsri.`masterNo`=vd.`id`
+			JOIN vc_region vr
+			ON vr.`id` = vd.`region_id`
+		<where>
+			vsri.status = 4
+			<if test="flag == 0">
+				and 
+				((UNIX_TIMESTAMP(NOW()) - UNIX_TIMESTAMP(vsri.endTime)) &lt; 3600
+				or vsri.operatorStatus=1
+				or vsri.endTime = '0000-00-00 00:00:00')
+			</if>
+			<if test="creatorName != null and creatorName !='' ">
+				and vsri.creatorName like CONCAT('%',#{creatorName},'%')
+			</if>
+			<if test="name != null and name != '' ">
+				and vsri.name like CONCAT('%',#{name},'%')
+			</if>
+			<if test="masterNo != null and masterNo != '' ">
+				and vsri.masterNo like CONCAT('%',#{masterNo},'%')
+			</if>
+			<if test="regionId != null and regionId !='' ">
+				and vr.`id` = #{regionId}
+			</if>
+		</where>
+		union
+		SELECT vsri.* 
+			FROM view_schedule_realtime_info vsri
+			JOIN vc_dev vd
+			ON vsri.`masterNo`=vd.`id`
+			JOIN vc_region vr
+			ON CONCAT(SUBSTR(vd.`region_id`, 1, #{subLen}), #{subStr})=vr.`id`
+		<where>
+			vsri.status = 4
+			<if test="flag == 0">
+				and 
+				((UNIX_TIMESTAMP(NOW()) - UNIX_TIMESTAMP(vsri.endTime)) &lt; 3600
+				or vsri.operatorStatus=1
+				or vsri.endTime = '0000-00-00 00:00:00')
+			</if>
+			<if test="creatorName != null and creatorName !='' ">
+				and vsri.creatorName like CONCAT('%',#{creatorName},'%')
+			</if>
+			<if test="name != null and name != '' ">
+				and vsri.name like CONCAT('%',#{name},'%')
+			</if>
+			<if test="masterNo != null and masterNo != '' ">
+				and vsri.masterNo like CONCAT('%',#{masterNo},'%')
+			</if>
+			<if test="regionId != null and regionId !='' ">
+				and vr.`pid` = #{regionId}
+			</if>
+		</where>) as vsri1
+		UNION
+		SELECT * FROM
+			(SELECT vsri.* 
+			FROM view_schedule_realtime_info vsri
+			JOIN vc_dev vd
+			ON vsri.`masterNo`=vd.`id`
+			JOIN vc_region vr
+			ON vr.`id` = vd.`region_id`
+		<where>
+			vsri.status = 2
+			<if test="creatorName != null and creatorName !='' ">
+				and vsri.creatorName like CONCAT('%',#{creatorName},'%')
+			</if>
+			<if test="start_time != null and start_time != '' ">
+				AND ((UNIX_TIMESTAMP(vsri.endTime) BETWEEN
+				UNIX_TIMESTAMP(CONCAT(#{start_time},' 00:00:00')) AND UNIX_TIMESTAMP(CONCAT(#{start_time},' 23:59:59')))
+				OR (UNIX_TIMESTAMP(vsri.startTime) BETWEEN
+				UNIX_TIMESTAMP(CONCAT(#{start_time},' 00:00:00')) AND UNIX_TIMESTAMP(CONCAT(#{start_time},' 23:59:59')))
+				OR (UNIX_TIMESTAMP(vsri.startTime) &lt;=
+				UNIX_TIMESTAMP(CONCAT(#{start_time},' 00:00:00')) AND UNIX_TIMESTAMP(vsri.endTime)
+				&gt;= UNIX_TIMESTAMP(CONCAT(#{start_time},' 23:59:59')))
+				)
+			</if>
+			<if test="masterNo != null and masterNo != '' ">
+				and vsri.masterNo like CONCAT('%',#{masterNo},'%')
+			</if>
+			<if test="regionId != null and regionId !='' ">
+				and vr.`id` = #{regionId}
+			</if>
+		</where>
+		union
+		SELECT vsri.* 
+			FROM view_schedule_realtime_info vsri
+			JOIN vc_dev vd
+			ON vsri.`masterNo`=vd.`id`
+			JOIN vc_region vr
+			ON CONCAT(SUBSTR(vd.`region_id`, 1, #{subLen}), #{subStr})=vr.`id`
+		<where>
+			vsri.status = 2
+			<if test="creatorName != null and creatorName !='' ">
+				and vsri.creatorName like CONCAT('%',#{creatorName},'%')
+			</if>
+			<if test="start_time != null and start_time != '' ">
+				AND ((UNIX_TIMESTAMP(vsri.endTime) BETWEEN
+				UNIX_TIMESTAMP(CONCAT(#{start_time},' 00:00:00')) AND UNIX_TIMESTAMP(CONCAT(#{start_time},' 23:59:59')))
+				OR (UNIX_TIMESTAMP(vsri.startTime) BETWEEN
+				UNIX_TIMESTAMP(CONCAT(#{start_time},' 00:00:00')) AND UNIX_TIMESTAMP(CONCAT(#{start_time},' 23:59:59')))
+				OR (UNIX_TIMESTAMP(vsri.startTime) &lt;=
+				UNIX_TIMESTAMP(CONCAT(#{start_time},' 00:00:00')) AND UNIX_TIMESTAMP(vsri.endTime)
+				&gt;= UNIX_TIMESTAMP(CONCAT(#{start_time},' 23:59:59')))
+				)
+			</if>
+			<if test="masterNo != null and masterNo != '' ">
+				and vsri.masterNo like CONCAT('%',#{masterNo},'%')
+			</if>
+			<if test="regionId != null and regionId !='' ">
+				and vr.`pid` = #{regionId}
+			</if>
+		</where>) as vsri2) as vsb 
+	</select>
+	
+	<!-- 获取系统消息 -->
+	<select id="getSysInfo" resultType="TaskVO"
+		parameterType="Map">
+		select s.* from
+		(select
+		vsbi.uuid,
+		vsbi.name as title,
+		vsbi.createtime as createTime,
+		vsbi.creatorName as startUser,
+		vsbi.processId,
+		vsbi.status
+		from view_schedule_base_info vsbi
+		<where>
+			vsbi.status = 4
+			<if test="creatorId != null and creatorId !='' ">
+				and vsbi.accessorid = #{creatorId}
+			</if>
+		</where>
+		<if test="processIds != null and processIds.size() > 0">
+			union
+			select
+			vsbi.uuid,
+			vsbi.name as title,
+			vsbi.createtime as createTime,
+			vsbi.creatorName as startUser,
+			vsbi.processId,
+			vsbi.status
+			from view_schedule_base_info vsbi
+			<where>
+				vsbi.processId in 
+				<foreach item="processId" index="index" collection="processIds" open="("
+					separator="," close=")">
+					#{processId}
+				</foreach>
+			</where>
+		</if>) as s order by s.createtime desc
+	</select>
+	
+	<!-- 记录会议的调度服务器url、账号、密码 -->
+	<insert id="updateScheduleRoute" parameterType="map">
+		insert into vc_schedule_state(schedule_id, svr_url, svr_account, svr_password, user_id)
+		values(#{scheduleId},#{svrUrl},#{svrAccount},#{svrPassword},#{userId})
+		ON DUPLICATE KEY UPDATE
+		svr_url=values(svr_url),svr_account=values(svr_account),svr_password=values(svr_password)
+	</insert>
+
+	<!-- 获取会议的调度服务器url、账号、密码 -->
+	<select id="getScheduleRoute" resultType="ScheduleStateVO" parameterType="map">
+		SELECT
+		svr_url AS svrUrl,
+		svr_account AS svrAccount,
+		svr_password AS svrPassword
+		FROM vc_schedule_state
+		<where>
+			<if test="scheduleId != '' and scheduleId != null">
+				and schedule_id = #{scheduleId}
+			</if>
+			<if test="userId != '' and userId != null">
+				and user_id = #{userId}
+			</if>
+		</where>
+	</select>
+	
+	<!-- 删除记录会议的调度服务器url、账号、密码 -->
+	<delete id="delScheduleRoute" parameterType="map">
+		DELETE FROM vc_schedule_state
+		<where>
+			schedule_id = #{scheduleId}
+			<if test="userId != '' and userId != null">
+				and user_id = #{userId}
+			</if>
+		</where>
+	</delete>
+	
+	<!-- 查询终端未入会的会议    轮询条件是五分钟之内的-->
+	<select id="getMeetingAlarm" resultType="ScheduleVO">
+		SELECT DISTINCT s.uuid as uuid,
+		sd.dev_id  as memberLevel,
+		vd.p_x as masterAddr,
+		vd.p_y as ip,	
+		s.name as name,
+		vr.id as notice,
+		vr.`name`as xmcu,
+		m.start_time as meetTime,
+		m.stop_time as stopTime
+		FROM vc_schedule as s
+		LEFT JOIN vc_meeting as m 
+		ON s.uuid=m.uuid
+		LEFT JOIN vc_schedule_dev as sd
+		ON s.uuid=sd.schedule_id
+		LEFT JOIN vc_dev as vd
+		ON vd.id=sd.dev_id
+		LEFT JOIN vc_region as vr
+		ON vr.id=vd.region_id
+		WHERE s.type=2
+		AND s.status&gt;3
+		AND sd.status=0
+		<if test="startTime != null and startTime != '' ">
+				and UNIX_TIMESTAMP(m.start_time) &gt;=
+				UNIX_TIMESTAMP(#{startTime})
+				and UNIX_TIMESTAMP(m.start_time) &lt; now()
+		</if>
+	</select>
+	
+	<!-- 获取数据所属平台列表 -->
+	<select id="getScheduleServers" resultType="RegionVO" parameterType="map">
+		SELECT 
+		DISTINCT(vs.svr_region_id) AS id, 
+		vr.`name` FROM vc_schedule vs
+		JOIN vc_region vr ON vs.`svr_region_id`=vr.id
+	</select>
+
+	<!-- 获取数据所属平台列表 -->
+	<select id="getDetailServers" resultType="RegionVO" parameterType="map">
+		SELECT 
+		DISTINCT(vs.svr_region_id) AS id, 
+		vr.`name` FROM vc_schedule vs
+		JOIN vc_region vr ON vs.`svr_region_id`=vr.id
+		<where>
+			vs.process_id >= 0
+		</where>
+	</select>
+		<!-- 获取数据所属平台ID-->
+	<select id="selectRegionId" resultType="RegionVO" parameterType="ScheduleVO">
+		SELECT svr_region_id as id 
+		FROM vc_schedule
+		<where>
+		 UUID = #{uuid}
+		</where>
+	</select>
+	
+	<!-- 获取未开始的有效预约（通过审批但是未开会） -->
+	<select id="getValidScheduleCount" resultType="int">
+		select count(1) from vc_schedule as vs WHERE
+		vs.status=2 AND
+		vs.end_time &gt;= NOW()
+	</select>
+	
+	<!-- 查询预约列表历史记录（状态异常和已结束的） -->
+	<select id="getScheduleHistory" parameterType="map" resultType="ScheduleVO">
+		SELECT * FROM (SELECT * FROM
+			(SELECT vsri.* 
+			FROM view_schedule_realtime_info vsri
+			JOIN vc_dev vd
+			ON vsri.`masterNo`=vd.`id`
+			JOIN vc_region vr
+			ON vr.`id` = vd.`region_id`
+		<where>
+			vsri.status = 4
+			and vsri.endTime != '0000-00-00 00:00:00' and (UNIX_TIMESTAMP(NOW()) - UNIX_TIMESTAMP(vsri.endTime)) &gt;= 3600 and vsri.operatorStatus=0
+			<if test="creatorName != null and creatorName !='' ">
+				and vsri.creatorName like CONCAT('%',#{creatorName},'%')
+			</if>
+			<if test="name != null and name != '' ">
+				and vsri.name like CONCAT('%',#{name},'%')
+			</if>
+			<if test="startTime != null and startTime != '' ">
+				AND UNIX_TIMESTAMP(vsri.startTime) BETWEEN UNIX_TIMESTAMP(#{startTime}) AND UNIX_TIMESTAMP(#{endTime})
+			</if>
+			<if test="masterNo != null and masterNo != '' ">
+				and vsri.masterNo like CONCAT('%',#{masterNo},'%')
+			</if>
+			<if test="host != null and host != '' ">
+				and vsri.host like CONCAT('%',#{host},'%')
+			</if>
+			<if test="regionId != null and regionId !='' ">
+				and vr.`id` = #{regionId}
+			</if>
+		</where>
+		union
+		SELECT vsri.* 
+			FROM view_schedule_realtime_info vsri
+			JOIN vc_dev vd
+			ON vsri.`masterNo`=vd.`id`
+			JOIN vc_region vr
+			ON CONCAT(SUBSTR(vd.`region_id`, 1, #{subLen}), #{subStr})=vr.`id`
+		<where>
+			vsri.status = 4
+			and vsri.endTime != '0000-00-00 00:00:00' and (UNIX_TIMESTAMP(NOW()) - UNIX_TIMESTAMP(vsri.endTime)) &gt;= 3600 and vsri.operatorStatus=0
+			<if test="creatorName != null and creatorName !='' ">
+				and vsri.creatorName like CONCAT('%',#{creatorName},'%')
+			</if>
+			<if test="name != null and name != '' ">
+				and vsri.name like CONCAT('%',#{name},'%')
+			</if>
+			<if test="startTime != null and startTime != '' ">
+				AND UNIX_TIMESTAMP(vsri.startTime) BETWEEN UNIX_TIMESTAMP(#{startTime}) AND UNIX_TIMESTAMP(#{endTime})
+			</if>
+			<if test="masterNo != null and masterNo != '' ">
+				and vsri.masterNo like CONCAT('%',#{masterNo},'%')
+			</if>
+			<if test="host != null and host != '' ">
+				and vsri.host like CONCAT('%',#{host},'%')
+			</if>
+			<if test="regionId != null and regionId !='' ">
+				and vr.`pid` = #{regionId}
+			</if>
+		</where>) as vsri1
+		order by vsri1.starttime desc
+		) as vsb 
+		<if test="flag==1">
+		UNION
+		SELECT * FROM (SELECT * FROM
+			(SELECT vsri.* 
+			FROM view_schedule_realtime_info vsri
+			JOIN vc_dev vd
+			ON vsri.`masterNo`=vd.`id`
+			JOIN vc_region vr
+			ON vr.`id` = vd.`region_id`
+		<where>
+			vsri.status = 5
+			<if test="creatorName != null and creatorName !='' ">
+				and vsri.creatorName like CONCAT('%',#{creatorName},'%')
+			</if>
+			<if test="name != null and name != '' ">
+				and vsri.name like CONCAT('%',#{name},'%')
+			</if>
+			<if test="startTime != null and startTime != '' ">
+				AND UNIX_TIMESTAMP(vsri.startTime) BETWEEN UNIX_TIMESTAMP(#{startTime}) AND UNIX_TIMESTAMP(#{endTime})
+			</if>
+			<if test="masterNo != null and masterNo != '' ">
+				and vsri.masterNo like CONCAT('%',#{masterNo},'%')
+			</if>
+			<if test="host != null and host != '' ">
+				and vsri.host like CONCAT('%',#{host},'%')
+			</if>
+			<if test="regionId != null and regionId !='' ">
+				and vr.`id` = #{regionId}
+			</if>
+		</where>
+		union
+		SELECT vsri.* 
+			FROM view_schedule_realtime_info vsri
+			JOIN vc_dev vd
+			ON vsri.`masterNo`=vd.`id`
+			JOIN vc_region vr
+			ON CONCAT(SUBSTR(vd.`region_id`, 1, #{subLen}), #{subStr})=vr.`id`
+		<where>
+			vsri.status = 5
+			<if test="creatorName != null and creatorName !='' ">
+				and vsri.creatorName like CONCAT('%',#{creatorName},'%')
+			</if>
+			<if test="name != null and name != '' ">
+				and vsri.name like CONCAT('%',#{name},'%')
+			</if>
+			<if test="startTime != null and startTime != '' ">
+				AND UNIX_TIMESTAMP(vsri.startTime) BETWEEN UNIX_TIMESTAMP(#{startTime}) AND UNIX_TIMESTAMP(#{endTime})
+			</if>
+			<if test="masterNo != null and masterNo != '' ">
+				and vsri.masterNo like CONCAT('%',#{masterNo},'%')
+			</if>
+			<if test="host != null and host != '' ">
+				and vsri.host like CONCAT('%',#{host},'%')
+			</if>
+			<if test="regionId != null and regionId !='' ">
+				and vr.`pid` = #{regionId}
+			</if>
+		</where>) as vsri2
+		order by vsri2.starttime desc
+		) as vsb 
+		</if>
+	</select>
+	
+	
+	<!-- 获取所有正在开会且状态异常+已停会的数据列表总条数 -->
+	<select id="getScheduleHistoryCount" parameterType="map" resultType="int">
+	SELECT count(*) FROM (SELECT * FROM
+		(SELECT vsri.* 
+		FROM view_schedule_realtime_info vsri
+		JOIN vc_dev vd
+		ON vsri.`masterNo`=vd.`id`
+		JOIN vc_region vr
+		ON vr.`id` = vd.`region_id`
+	<where>
+		vsri.status = 4
+		and vsri.endTime != '0000-00-00 00:00:00' and (UNIX_TIMESTAMP(NOW()) - UNIX_TIMESTAMP(vsri.endTime)) &gt;= 3600 and vsri.operatorStatus=0
+		<if test="creatorName != null and creatorName !='' ">
+			and vsri.creatorName like CONCAT('%',#{creatorName},'%')
+		</if>
+		<if test="name != null and name != '' ">
+			and vsri.name like CONCAT('%',#{name},'%')
+		</if>
+		<if test="startTime != null and startTime != '' ">
+			AND UNIX_TIMESTAMP(vsri.startTime) BETWEEN UNIX_TIMESTAMP(#{startTime}) AND UNIX_TIMESTAMP(#{endTime})
+		</if>
+		<if test="masterNo != null and masterNo != '' ">
+			and vsri.masterNo like CONCAT('%',#{masterNo},'%')
+		</if>
+		<if test="host != null and host != '' ">
+			and vsri.host like CONCAT('%',#{host},'%')
+		</if>
+		<if test="regionId != null and regionId !='' ">
+			and vr.`id` = #{regionId}
+		</if>
+	</where>
+	union
+	SELECT vsri.* 
+		FROM view_schedule_realtime_info vsri
+		JOIN vc_dev vd
+		ON vsri.`masterNo`=vd.`id`
+		JOIN vc_region vr
+		ON CONCAT(SUBSTR(vd.`region_id`, 1, #{subLen}), #{subStr})=vr.`id`
+	<where>
+		vsri.status = 4
+		and vsri.endTime != '0000-00-00 00:00:00' and (UNIX_TIMESTAMP(NOW()) - UNIX_TIMESTAMP(vsri.endTime)) &gt;= 3600 and vsri.operatorStatus=0
+		<if test="creatorName != null and creatorName !='' ">
+			and vsri.creatorName like CONCAT('%',#{creatorName},'%')
+		</if>
+		<if test="name != null and name != '' ">
+			and vsri.name like CONCAT('%',#{name},'%')
+		</if>
+		<if test="startTime != null and startTime != '' ">
+			AND UNIX_TIMESTAMP(vsri.startTime) BETWEEN UNIX_TIMESTAMP(#{startTime}) AND UNIX_TIMESTAMP(#{endTime})
+		</if>
+		<if test="masterNo != null and masterNo != '' ">
+			and vsri.masterNo like CONCAT('%',#{masterNo},'%')
+		</if>
+		<if test="host != null and host != '' ">
+			and vsri.host like CONCAT('%',#{host},'%')
+		</if>
+		<if test="regionId != null and regionId !='' ">
+			and vr.`pid` = #{regionId}
+		</if>
+	</where>) as vsri1
+	<if test="flag==1">
+	UNION
+	SELECT * FROM
+		(SELECT vsri.* 
+		FROM view_schedule_realtime_info vsri
+		JOIN vc_dev vd
+		ON vsri.`masterNo`=vd.`id`
+		JOIN vc_region vr
+		ON vr.`id` = vd.`region_id`
+	<where>
+		vsri.status = 5
+		<if test="creatorName != null and creatorName !='' ">
+			and vsri.creatorName like CONCAT('%',#{creatorName},'%')
+		</if>
+		<if test="name != null and name != '' ">
+			and vsri.name like CONCAT('%',#{name},'%')
+		</if>
+		<if test="startTime != null and startTime != '' ">
+			AND UNIX_TIMESTAMP(vsri.startTime) BETWEEN UNIX_TIMESTAMP(#{startTime}) AND UNIX_TIMESTAMP(#{endTime})
+		</if>
+		<if test="masterNo != null and masterNo != '' ">
+			and vsri.masterNo like CONCAT('%',#{masterNo},'%')
+		</if>
+		<if test="host != null and host != '' ">
+			and vsri.host like CONCAT('%',#{host},'%')
+		</if>
+		<if test="regionId != null and regionId !='' ">
+			and vr.`id` = #{regionId}
+		</if>
+	</where>
+	union
+	SELECT vsri.* 
+		FROM view_schedule_realtime_info vsri
+		JOIN vc_dev vd
+		ON vsri.`masterNo`=vd.`id`
+		JOIN vc_region vr
+		ON CONCAT(SUBSTR(vd.`region_id`, 1, #{subLen}), #{subStr})=vr.`id`
+	<where>
+		vsri.status = 5
+		<if test="creatorName != null and creatorName !='' ">
+			and vsri.creatorName like CONCAT('%',#{creatorName},'%')
+		</if>
+		<if test="name != null and name != '' ">
+			and vsri.name like CONCAT('%',#{name},'%')
+		</if>
+		<if test="startTime != null and startTime != '' ">
+			AND UNIX_TIMESTAMP(vsri.startTime) BETWEEN UNIX_TIMESTAMP(#{startTime}) AND UNIX_TIMESTAMP(#{endTime})
+		</if>
+		<if test="masterNo != null and masterNo != '' ">
+			and vsri.masterNo like CONCAT('%',#{masterNo},'%')
+		</if>
+		<if test="host != null and host != '' ">
+			and vsri.host like CONCAT('%',#{host},'%')
+		</if>
+		<if test="regionId != null and regionId !='' ">
+			and vr.`pid` = #{regionId}
+		</if>
+	</where>) as vsri2
+	</if>) as vsb 
+	</select>
+	
+	<!-- 获取会议列表，给大网提供数据 -->
+	<select id="getMeetingInfo" resultType="Map"
+		parameterType="Map">
+		SELECT * from view_meeting_info vmi
+		<where>
+		<if test="time != null and time != '' ">
+			AND (UNIX_TIMESTAMP(#{time}) BETWEEN UNIX_TIMESTAMP(vmi.start_time) AND UNIX_TIMESTAMP(vmi.end_time)
+			OR (UNIX_TIMESTAMP(vmi.start_time) &lt;= UNIX_TIMESTAMP(#{time}) and vmi.end_time = '0000-00-00 00:00:00'))
+		</if>
+		<if test="masterNo != null and masterNo != '' ">
+			and vmi.master_no = #{masterNo}
+		</if>
+		</where>
+	</select>
+
+	<!-- 获取会议列表总数，给大网提供数据 -->
+	<select id="getMeetingInfoCount" resultType="int"
+		parameterType="Map">
+		SELECT count(*) from view_meeting_info vmi
+		<where>
+		<if test="time != null and time != '' ">
+			AND (UNIX_TIMESTAMP(#{time}) BETWEEN UNIX_TIMESTAMP(vmi.start_time) AND UNIX_TIMESTAMP(vmi.end_time)
+			OR (UNIX_TIMESTAMP(vmi.start_time) &lt;= UNIX_TIMESTAMP(#{time}) and vmi.end_time = '0000-00-00 00:00:00'))
+		</if>
+		<if test="masterNo != null and masterNo != '' ">
+			and vmi.master_no = #{masterNo}
+		</if>
+		</where>
+	</select>
+		
+		<select id="getOperatingMeet" resultType="int">
+			select count(1) from vc_schedule 
+			where status=4
+		</select>
+		
+		<!-- 获取行政结构信息（获取所有字段） -->
+	<select id="getRegionInfo" parameterType="map" resultType="RegionVO">
+		select distinct(vr.id),
+		vr.pid,
+		vr.name,
+		vr.gradeid as gradeId,
+		vr.isleaf as isLeaf,
+		date_format(vr.updatetime,'%Y-%m-%d %H:%i:%s') AS updateTime
+		FROM vc_region vr
+		LEFT JOIN vc_dev vd
+		ON vr.`id` = vd.`region_id`
+		WHERE vd.id=#{devId}
+			
+	</select>
+	
+	<select id="getSchedulesInUUidList" resultType="ScheduleFormVO" parameterType="map">
+		select vc.title,
+		vu.name as creator,
+		vc.name as name,
+		vc.start_time as startTime,
+		vc.end_time as endTime,
+		vc.level as scheduleLevel,
+		vc.master_no as chairman
+		from vc_schedule as vc
+		LEFT JOIN vc_user as vu
+		ON vc.creator_id = vu.uuid
+		<where>
+			<if test="uuid != null and uuid != '' ">
+				 vc.uuid=#{uuid}
+			</if>
+			<if test="processId != null and processId != '' ">
+				 vc.process_id=#{processId}
+			</if>
+		</where>
+	</select>
+	
+	<!-- 获取会议主席发一发二 -->
+	<select id="getScheduleState" resultType="ScheduleStateVO" parameterType="map">
+		SELECT master_no masterNo,speaker_1 speaker1,speaker_2 speaker2 
+		FROM vc_schedule_dev
+		<where>
+			schedule_id = #{scheduleId}
+		</where>
+	</select>
+	
+	<!-- 获取所有正在开会的主席-->
+	<select id="getScheduleMaster" resultType="ScheduleVO" parameterType="map">
+		SELECT uuid,name,master_no as masterNo
+		FROM vc_schedule
+		<where>
+			status = 4
+			<if test="devno != null and devno != '' ">
+				 and master_no=#{devno}
+			</if>
+		</where>
+	</select>
+	
+	
+	<!-- 新增预约与设备关联 -->
+	<!-- <insert id="addScheduleDev" parameterType="map">
+		INSERT INTO vc_schedule_dev(`uuid`,schedule_id,dev_id,dev_name)
+		VALUES
+        (replace(uuid(), '-', ''), #{scheduleId},#{devId},#{devName})
+	</insert> -->
+	
+	<!-- 检查设备是否在会议中 -->
+	<!-- <select id="getDevStatus" resultType="ScheduleVO" parameterType="map">
+		SELECT uuid,name FROM vc_schedule_dev vd
+		LEFT JOIN vc_Schedule vs
+		ON vd.`schedule_id` = vs.`uuid`
+		<where>
+			vs.status = 4
+			<if test="devId != null and devId != '' ">
+				 and vd.dev_id=#{devno}
+			</if>
+		</where>
+	</select> -->
+	
+	<!-- 根据日期查询预约会议列表-->
+	<select id="getScheduleListByDate" resultType="ScheduleFormVO" parameterType="map">
+		SELECT
+		vs.uuid,
+		title,
+		vs.status as status,
+		form_no AS formNo,
+		vs.NAME,
+		DATE_FORMAT(schedule_time,'%Y-%m-%d') AS scheduleTime,
+		DATE_FORMAT(vs.create_time,'%Y-%m-%d') AS createTime,
+		vu.`name` as creator,
+		rank,
+		dept,
+		devices,
+		master_no as chairman,
+		HOST,
+		functions,
+		plan_dev_num AS deviceCount,
+		member_level AS memberLevel,
+		level AS scheduleLevel,
+		DATE_FORMAT(start_time,'%Y-%m-%d %H:%i:%s') AS startTime,
+		DATE_FORMAT(end_time,'%Y-%m-%d %H:%i:%s') AS endTime,
+		schedule_id AS scheduleId,
+		COMMENT,
+		customer_comment AS customerComment,
+		commander_hq AS commanderHq,
+		commander_out AS commanderOut,
+		switch_hq AS switchHq,
+		switch_out AS switchOut,
+		problem_hq AS problemHq,
+		problem_out AS problemOut,
+		feedback_hq AS feedbackHq,
+		feedback_out AS feedbackOut,
+		response_hq AS responseHq,
+		response_out AS responseOut,
+		assist_hq AS assistHq,
+		assist_out AS assistOut,
+		prepare_hq AS prepareHq,
+		prepare_out AS prepareOut,
+		process_id AS processId,
+		state,
+		region,
+		main_bw as mainBw,
+		auxiliary_bw as auxiliaryBw,
+		master_addr as masterAddr
+		FROM vc_schedule vs
+		left join vc_user vu
+		on vs.creator_id=vu.uuid
+		<where>
+			<if test="startTime != null and startTime != '' ">
+				<![CDATA[ and DATE_FORMAT(vs.start_time,'%Y-%m-%d') <= #{startTime}]]>
+			</if>
+			<if test="endTime != null and endTime != '' ">
+			    <![CDATA[ and DATE_FORMAT(vs.end_time,'%Y-%m-%d') >= #{endTime} ]]>
+			</if>
+			    and vs.status in (2,4,5)
+		</where>
+		order by vs.create_time desc
+	</select>
+	
+	
+	<!-- 获取所有进行中的会议以及未来指定时间内已通过审批的会议 Start -->
+	<select id="getAllMeetingList" parameterType="map" resultType="map">
+		SELECT 
+			t1.* 
+		FROM (
+			SELECT
+			vs.`uuid` AS scheduleId,
+			vs.`name`,
+			DATE_FORMAT(vs.`start_time`,'%Y-%m-%d %H:%i:%s') AS startTime,
+			DATE_FORMAT(vs.`end_time`,'%Y-%m-%d %H:%i:%s') AS endTime,
+			vd.`devNo` AS masterNo,
+			vs.`level`,
+			vs.`status`,
+			vs.`create_type` AS createType,
+			(case when (isnull(`vs`.`dev_num`) or (`vs`.`dev_num` = 0)) then `vs`.`plan_dev_num` else `vs`.`dev_num` end) AS `devNum`,
+			vr.`name` AS province,
+			vu.`name` AS userName,
+			vs.`customer_unit` AS customerUnit,
+			vs.`customer_name` AS customerName,
+			vs.`customer_position` AS customerPosition,
+			mmd.globle_id AS globleId
+		FROM  vc_schedule AS vs
+		LEFT JOIN vc_meeting_metadata AS mmd ON vs.uuid =mmd.meeting_id
+		LEFT JOIN  vc_dev AS vd ON  vs.`master_no`=vd.`id`
+		LEFT JOIN  vc_region AS vr ON  CONCAT(SUBSTRING(vd.`region_id`,1,2), '0000000000')=vr.`id`
+		LEFT JOIN  vc_user AS vu ON  vs.`creator_id`=vu.`uuid`
+		<where>
+			vs.`status` = 4
+			<if test="regionId != null and regionId != '' ">
+				and vd.`region_id` like CONCAT(#{regionId}, '%')
+			</if>
+			<if test="createType != null and createType != '' ">
+				and vs.`create_type` = #{createType}
+			</if>
+			<if test="name != null and name != '' ">
+				and vs.`name` = #{name}
+			</if>
+		</where>
+		ORDER BY vs.`start_time`) as t1
+		
+		UNION
+		
+		SELECT 
+			t2.* 
+		FROM (
+			SELECT
+				vs.`uuid` AS scheduleId,
+				vs.`name`,
+				DATE_FORMAT(vs.`start_time`,'%Y-%m-%d %H:%i:%s') AS startTime,
+				DATE_FORMAT(vs.`end_time`,'%Y-%m-%d %H:%i:%s') AS endTime,
+				vd.`devNo` AS masterNo,
+				vs.`level`,
+				vs.`status`,
+				vs.`create_type` AS createType,
+				(case when (isnull(`vs`.`dev_num`) or (`vs`.`dev_num` = 0)) then `vs`.`plan_dev_num` else `vs`.`dev_num` end) AS `devNum`,
+				vr.`name` AS province,
+				vu.`name` AS userName,
+				vs.`customer_unit` AS customerUnit,
+				vs.`customer_name` AS customerName,
+				vs.`customer_position` AS customerPosition,
+				mmd.globle_id AS globleId
+			FROM  vc_schedule AS vs
+			LEFT JOIN vc_meeting_metadata AS mmd ON vs.uuid =mmd.meeting_id
+			LEFT JOIN  vc_dev AS vd ON  vs.`master_no`=vd.`id`
+			LEFT JOIN  vc_region AS vr ON  CONCAT(SUBSTRING(vd.`region_id`,1,2), '0000000000')=vr.`id`
+			LEFT JOIN  vc_user AS vu ON  vs.`creator_id`=vu.`uuid`
+			<where>
+				vs.`status` = 2
+				<if test="regionId != null and regionId != '' ">
+					and vd.`region_id` like CONCAT(#{regionId}, '%')
+				</if>
+				<if test="createType != null and createType != '' ">
+					and vs.`create_type` = #{createType}
+				</if>
+				<if test="name != null and name != '' ">
+					and vs.`name` = #{name}
+				</if>
+				<if test="hours != null and hours != '' ">
+					AND (
+						(UNIX_TIMESTAMP(vs.start_time) BETWEEN UNIX_TIMESTAMP(NOW()) AND UNIX_TIMESTAMP(DATE_SUB(NOW(), INTERVAL -#{hours} HOUR)))
+						OR
+						(UNIX_TIMESTAMP(vs.end_time) BETWEEN UNIX_TIMESTAMP(NOW()) AND UNIX_TIMESTAMP(DATE_SUB(NOW(), INTERVAL -#{hours} HOUR)))
+						OR
+						(UNIX_TIMESTAMP(vs.start_time) &lt;= UNIX_TIMESTAMP(NOW()) AND UNIX_TIMESTAMP(vs.end_time) &gt;= UNIX_TIMESTAMP(DATE_SUB(NOW(), INTERVAL -#{hours} HOUR)))
+					)
+				</if>
+			</where>
+			ORDER BY vs.`start_time`) as t2
+	</select>
+	<!-- 获取所有进行中的会议以及未来指定时间内已通过审批的会议 End -->
+	
+	
+	
+	<select id="getAllMeetingCount" parameterType="map" resultType="int">
+	select count(1) from (
+		SELECT 
+			t1.* 
+		FROM (
+			SELECT
+			vs.`uuid` AS scheduleId,
+			vs.`name`,
+			DATE_FORMAT(vs.`start_time`,'%Y-%m-%d %H:%i:%s') AS startTime,
+			DATE_FORMAT(vs.`end_time`,'%Y-%m-%d %H:%i:%s') AS endTime,
+			vd.`devNo` AS masterNo,
+			vs.`level`,
+			vs.`status`,
+			vs.`create_type` AS createType,
+			(case when (isnull(`vs`.`dev_num`) or (`vs`.`dev_num` = 0)) then `vs`.`plan_dev_num` else `vs`.`dev_num` end) AS `devNum`,
+			vr.`name` AS province,
+			vu.`name` AS userName,
+			vs.`customer_unit` AS customerUnit,
+			vs.`customer_name` AS customerName,
+			vs.`customer_position` AS customerPosition
+			FROM vc_schedule AS vs
+			LEFT JOIN  vc_dev AS vd ON vs.`master_no`=vd.`id`
+			LEFT JOIN  vc_region AS vr ON  CONCAT(SUBSTRING(vd.`region_id`,1,2), '0000000000')=vr.`id`
+			LEFT JOIN  vc_user AS vu ON  vs.`creator_id`=vu.`uuid`
+			<where>
+				vs.`status` = 4
+				<if test="regionId != null and regionId != '' ">
+					and vd.`region_id` like CONCAT(#{regionId}, '%')
+				</if>
+				<if test="createType != null and createType != '' ">
+					and vs.`create_type` = #{createType}
+				</if>
+				<if test="name != null and name != '' ">
+					and vs.`name` = #{name}
+				</if>
+			</where>
+		ORDER BY vs.`start_time`) as t1
+			
+		UNION
+		
+		SELECT 
+			t2.* 
+		FROM (
+			SELECT
+			vs.`uuid` AS scheduleId,
+			vs.`name`,
+			DATE_FORMAT(vs.`start_time`,'%Y-%m-%d %H:%i:%s') AS startTime,
+			DATE_FORMAT(vs.`end_time`,'%Y-%m-%d %H:%i:%s') AS endTime,
+			vd.`devNo` AS masterNo,
+			vs.`level`,
+			vs.`status`,
+			vs.`create_type` AS createType,
+			(case when (isnull(`vs`.`dev_num`) or (`vs`.`dev_num` = 0)) then `vs`.`plan_dev_num` else `vs`.`dev_num` end) AS `devNum`,
+			vr.`name` AS province,
+			vu.`name` AS userName,
+			vs.`customer_unit` AS customerUnit,
+			vs.`customer_name` AS customerName,
+			vs.`customer_position` AS customerPosition
+			FROM  vc_schedule AS vs
+			LEFT JOIN  vc_dev AS vd ON  vs.`master_no`=vd.`id`
+			LEFT JOIN  vc_region AS vr ON  CONCAT(SUBSTRING(vd.`region_id`,1,2), '0000000000')=vr.`id`
+			LEFT JOIN  vc_user AS vu ON  vs.`creator_id`=vu.`uuid`
+			<where>
+				vs.`status` = 2
+				<if test="regionId != null and regionId != '' ">
+					and vd.`region_id` like CONCAT(#{regionId}, '%')
+				</if>
+				<if test="createType != null and createType != '' ">
+					and vs.`create_type` = #{createType}
+				</if>
+				<if test="name != null and name != '' ">
+					and vs.`name` = #{name}
+				</if>
+				<if test="hours != null and hours != '' ">
+					AND (
+						(UNIX_TIMESTAMP(vs.start_time) BETWEEN UNIX_TIMESTAMP(NOW()) AND UNIX_TIMESTAMP(DATE_SUB(NOW(), INTERVAL -#{hours} HOUR)))
+						OR
+						(UNIX_TIMESTAMP(vs.end_time) BETWEEN UNIX_TIMESTAMP(NOW()) AND UNIX_TIMESTAMP(DATE_SUB(NOW(), INTERVAL -#{hours} HOUR)))
+						OR
+						(UNIX_TIMESTAMP(vs.start_time) &lt;= UNIX_TIMESTAMP(NOW()) AND UNIX_TIMESTAMP(vs.end_time) &gt;= UNIX_TIMESTAMP(DATE_SUB(NOW(), INTERVAL -#{hours} HOUR)))
+					)
+				</if>
+			</where>
+		ORDER BY vs.`start_time`) as t2
+	)
+	</select>
+	
+	
+<!-- 通过businessType查询预约列表 Start -->
+	<select id="selectScheduleListByBusinessType" parameterType="java.util.Map" resultType="java.util.Map">
+		SELECT
+			vs.`uuid` AS scheduleId,
+			vs.`name`,
+			DATE_FORMAT((CASE WHEN (`vs`.`status` IN (4,5)) THEN `vmm`.`start_time` ELSE `vs`.`start_time` END),'%Y-%m-%d %H:%i:%s') AS `startTime`,
+			DATE_FORMAT((CASE WHEN (`vs`.`status` IN (5)) THEN `vmm`.`stop_time` ELSE `vs`.`end_time` END),'%Y-%m-%d %H:%i:%s') AS `endTime`,
+			vd.`devNo` AS masterNo,
+			vs.`level`,
+			vs.`status`,
+			vs.`create_type` AS createType,
+			(CASE WHEN (ISNULL(`vs`.`dev_num`) OR (`vs`.`dev_num` = 0)) THEN `vs`.`plan_dev_num` ELSE `vs`.`dev_num` END) AS `devNum`,
+			vr.`name` AS province,
+			vu.`name` AS userName,
+			(CASE WHEN ISNULL(`vu`.`status`) THEN 0 ELSE `vu`.`status` END) AS `operatorStatus`,
+			vs.`customer_unit` AS customerUnit,
+			vs.`customer_name` AS customerName,
+			vs.`customer_position` AS customerPosition,
+			vs.`svr_region_id` AS svrRegionId,
+			vr1.name AS svrRegionName,
+			mmd.globle_id AS globleId
+		FROM vc_schedule AS vs
+		LEFT JOIN vc_meeting_metadata AS mmd ON vs.uuid =mmd.meeting_id
+		LEFT JOIN vc_dev AS vd ON vs.`master_no` = vd.`id`
+		LEFT JOIN vc_region AS vr ON CONCAT(SUBSTRING(vd.`region_id`, 1, 2),'0000000000') = vr.`id`
+		LEFT JOIN vc_region AS vr1 ON vs.`svr_region_id` = vr1.`id`
+		LEFT JOIN `vc_meeting` AS `vmm` ON `vmm`.`uuid` = `vs`.`uuid`
+		LEFT JOIN vc_user AS vu ON vmm.operator_id = vu.`uuid`
+		<where>
+			<if test="businessType == 1">
+				AND vs.`status` = 4
+				AND ((UNIX_TIMESTAMP(NOW()) - UNIX_TIMESTAMP(vs.end_time)) &lt; 3600 OR vs.end_time = '0000-00-00 00:00:00')
+				AND ((vu.status = 1 AND vs.`create_type` IN ('1','7','8')) OR vs.create_type NOT IN ('1','7','8'))
+			</if>
+			<if test="businessType == 2">
+				AND vs.`status` = 2
+				AND vs.end_time &gt;= NOW()
+				<if test="hours != null and hours != '' ">
+					AND (
+						(UNIX_TIMESTAMP(vs.start_time) BETWEEN UNIX_TIMESTAMP(NOW()) AND UNIX_TIMESTAMP(DATE_SUB(NOW(), INTERVAL -#{hours} HOUR)))
+						OR
+						(UNIX_TIMESTAMP(vs.end_time) BETWEEN UNIX_TIMESTAMP(NOW()) AND UNIX_TIMESTAMP(DATE_SUB(NOW(), INTERVAL -#{hours} HOUR)))
+						OR
+						(UNIX_TIMESTAMP(vs.start_time) &lt;= UNIX_TIMESTAMP(NOW()) AND UNIX_TIMESTAMP(vs.end_time) &gt;= UNIX_TIMESTAMP(DATE_SUB(NOW(), INTERVAL -#{hours} HOUR)))
+					)
+				</if>
+				<if test="hours != null and hours != '' ">
+					AND (
+						(UNIX_TIMESTAMP(vs.start_time) BETWEEN UNIX_TIMESTAMP(NOW()) AND UNIX_TIMESTAMP(DATE_SUB(NOW(), INTERVAL -#{hours} HOUR)))
+						OR
+						(UNIX_TIMESTAMP(vs.end_time) BETWEEN UNIX_TIMESTAMP(NOW()) AND UNIX_TIMESTAMP(DATE_SUB(NOW(), INTERVAL -#{hours} HOUR)))
+						OR
+						(UNIX_TIMESTAMP(vs.start_time) &lt;= UNIX_TIMESTAMP(NOW()) AND UNIX_TIMESTAMP(vs.end_time) &gt;= UNIX_TIMESTAMP(DATE_SUB(NOW(), INTERVAL -#{hours} HOUR)))
+					)
+				</if>
+				<if test="calendarStartTime != null and calendarStartTime != '' and calendarEndTime != null and calendarEndTime != ''">
+					AND (
+						(vs.start_time BETWEEN #{calendarStartTime} AND #{calendarEndTime})
+						OR
+						(vs.end_time BETWEEN #{calendarStartTime} AND #{calendarEndTime})
+						OR
+						(vs.start_time &lt;= #{calendarStartTime} AND vs.end_time &gt;= #{calendarEndTime})
+					)
+				</if>
+			</if>
+			<if test="businessType == 3">
+				AND vs.`status` = 5
+				<if test="historyStartTime != null and historyStartTime != '' and historyEndTime != null and historyEndTime != ''">
+					AND (
+						(vmm.start_time BETWEEN #{historyStartTime} AND #{historyEndTime})
+						OR
+						(vmm.stop_time BETWEEN #{historyStartTime} AND #{historyEndTime})
+						OR
+						(vmm.start_time &lt;= #{historyStartTime} AND vmm.stop_time &gt;= #{historyEndTime})
+						OR (vmm.stop_time IS NULL OR vmm.stop_time = '' OR vmm.stop_time = '0000-00-00 00:00:00')
+					)
+				</if>
+				<if test="calendarStartTime != null and calendarStartTime != '' and calendarEndTime != null and calendarEndTime != ''">
+					AND (
+						(vs.start_time BETWEEN #{calendarStartTime} AND #{calendarEndTime})
+						OR
+						(vs.end_time BETWEEN #{calendarStartTime} AND #{calendarEndTime})
+						OR
+						(vmm.start_time &lt;= #{calendarStartTime} AND vmm.stop_time &gt;= #{calendarEndTime})
+						OR 
+						(
+						(vmm.stop_time IS NULL OR vmm.stop_time = '' OR vmm.stop_time = '0000-00-00 00:00:00')
+						AND DATE_FORMAT(`vmm`.`start_time`, '%Y-%m-%d') &lt;= DATE_FORMAT(#{calendarStartTime}, '%Y-%m-%d')
+						)
+					)
+				</if>
+			</if>
+			<if test="businessType == 4">
+				AND vs.`status` = 4
+				AND ((UNIX_TIMESTAMP(NOW()) - UNIX_TIMESTAMP(vs.end_time)) >= 3600 AND vs.end_time != '0000-00-00 00:00:00'
+					OR (((vu.status = 0 OR vu.status IS NULL OR vu.status = '') AND vs.`create_type` IN ('1', '7', '8'))))
+			</if>
+			<if test="regionId != null and regionId != '' ">
+				AND vd.`region_id` LIKE CONCAT(#{regionId}, '%')
+			</if>
+			<if test="createType != null and createType != '' ">
+				<choose>
+					<when test="createType == -1">
+						AND vs.`create_type` NOT IN ('1','2','3','4','5','6','7','8','9')
+					</when>
+					<otherwise>
+						AND vs.`create_type` = #{createType}
+					</otherwise>
+				</choose>
+			</if>
+			<if test="name != null and name != '' ">
+				AND vs.`name` = #{name}
+			</if>
+			<if test="level != null and level != ''">
+				AND vs.level = #{level}
+			</if>
+		</where>
+		ORDER BY 
+		<if test="businessType == 2">
+			startTime, level
+		</if>
+		<if test="businessType != 2">
+			startTime desc, level
+		</if>
+	</select>
+	<!-- 通过businessType查询预约列表 End -->
+	<select id="selectScheduleListByBusinessTypeCount" parameterType="map" resultType="int">
+		SELECT count(1)
+		FROM vc_schedule AS vs
+		LEFT JOIN vc_dev AS vd ON vs.`master_no` = vd.`id`
+		LEFT JOIN vc_region AS vr ON CONCAT(SUBSTRING(vd.`region_id`, 1, 2),'0000000000') = vr.`id`
+		LEFT JOIN vc_region AS vr1 ON vs.`svr_region_id` = vr1.`id`
+		LEFT JOIN `vc_meeting` AS `vmm` ON `vmm`.`uuid` = `vs`.`uuid`
+		LEFT JOIN vc_user AS vu ON vmm.operator_id = vu.`uuid`
+		<where>
+			<if test="businessType == 1">
+				AND vs.`status` = 4
+				AND ((UNIX_TIMESTAMP(NOW()) - UNIX_TIMESTAMP(vs.end_time)) &lt; 3600 OR vs.end_time = '0000-00-00 00:00:00')
+				AND ((vu.status = 1 AND vs.`create_type` IN ('1','7','8')) OR vs.create_type NOT IN ('1','7','8'))
+			</if>
+			<if test="businessType == 2">
+				AND vs.`status` = 2
+				AND vs.end_time &gt;= NOW()
+				<if test="hours != null and hours != '' ">
+					AND (
+						(UNIX_TIMESTAMP(vs.start_time) BETWEEN UNIX_TIMESTAMP(NOW()) AND UNIX_TIMESTAMP(DATE_SUB(NOW(), INTERVAL -#{hours} HOUR)))
+						OR
+						(UNIX_TIMESTAMP(vs.end_time) BETWEEN UNIX_TIMESTAMP(NOW()) AND UNIX_TIMESTAMP(DATE_SUB(NOW(), INTERVAL -#{hours} HOUR)))
+						OR
+						(UNIX_TIMESTAMP(vs.start_time) &lt;= UNIX_TIMESTAMP(NOW()) AND UNIX_TIMESTAMP(vs.end_time) &gt;= UNIX_TIMESTAMP(DATE_SUB(NOW(), INTERVAL -#{hours} HOUR)))
+					)
+				</if>
+				<if test="hours != null and hours != '' ">
+					AND (
+						(UNIX_TIMESTAMP(vs.start_time) BETWEEN UNIX_TIMESTAMP(NOW()) AND UNIX_TIMESTAMP(DATE_SUB(NOW(), INTERVAL -#{hours} HOUR)))
+						OR
+						(UNIX_TIMESTAMP(vs.end_time) BETWEEN UNIX_TIMESTAMP(NOW()) AND UNIX_TIMESTAMP(DATE_SUB(NOW(), INTERVAL -#{hours} HOUR)))
+						OR
+						(UNIX_TIMESTAMP(vs.start_time) &lt;= UNIX_TIMESTAMP(NOW()) AND UNIX_TIMESTAMP(vs.end_time) &gt;= UNIX_TIMESTAMP(DATE_SUB(NOW(), INTERVAL -#{hours} HOUR)))
+					)
+				</if>
+				<if test="calendarStartTime != null and calendarStartTime != '' and calendarEndTime != null and calendarEndTime != ''">
+					AND (
+						(vs.start_time BETWEEN #{calendarStartTime} AND #{calendarEndTime})
+						OR
+						(vs.end_time BETWEEN #{calendarStartTime} AND #{calendarEndTime})
+						OR
+						(vs.start_time &lt;= #{calendarStartTime} AND vs.end_time &gt;= #{calendarEndTime})
+					)
+				</if>
+			</if>
+			<if test="businessType == 3">
+				AND vs.`status` = 5
+				<if test="historyStartTime != null and historyStartTime != '' and historyEndTime != null and historyEndTime != ''">
+					AND (
+						(vmm.start_time BETWEEN #{historyStartTime} AND #{historyEndTime})
+						OR
+						(vmm.stop_time BETWEEN #{historyStartTime} AND #{historyEndTime})
+						OR
+						(vmm.start_time &lt;= #{historyStartTime} AND vmm.stop_time &gt;= #{historyEndTime})
+						OR (vmm.stop_time IS NULL OR vmm.stop_time = '' OR vmm.stop_time = '0000-00-00 00:00:00')
+					)
+				</if>
+				<if test="calendarStartTime != null and calendarStartTime != '' and calendarEndTime != null and calendarEndTime != ''">
+					AND (
+						(vs.start_time BETWEEN #{calendarStartTime} AND #{calendarEndTime})
+						OR
+						(vs.end_time BETWEEN #{calendarStartTime} AND #{calendarEndTime})
+						OR
+						(vmm.start_time &lt;= #{calendarStartTime} AND vmm.stop_time &gt;= #{calendarEndTime})
+						OR 
+						(
+						(vmm.stop_time IS NULL OR vmm.stop_time = '' OR vmm.stop_time = '0000-00-00 00:00:00')
+						AND DATE_FORMAT(`vmm`.`start_time`, '%Y-%m-%d') &lt;= DATE_FORMAT(#{calendarStartTime}, '%Y-%m-%d')
+						)
+					)
+				</if>
+			</if>
+			<if test="businessType == 4">
+				AND vs.`status` = 4
+				AND ((UNIX_TIMESTAMP(NOW()) - UNIX_TIMESTAMP(vs.end_time)) >= 3600 AND vs.end_time != '0000-00-00 00:00:00'
+					OR (((vu.status = 0 OR vu.status IS NULL OR vu.status = '') AND vs.`create_type` IN ('1', '7', '8'))))
+			</if>
+			<if test="regionId != null and regionId != '' ">
+				AND vd.`region_id` LIKE CONCAT(#{regionId}, '%')
+			</if>
+			<if test="createType != null and createType != '' ">
+				<choose>
+					<when test="createType == -1">
+						AND vs.`create_type` NOT IN ('1','2','3','4','5','6','7','8','9')
+					</when>
+					<otherwise>
+						AND vs.`create_type` = #{createType}
+					</otherwise>
+				</choose>
+			</if>
+			<if test="name != null and name != '' ">
+				AND vs.`name` = #{name}
+			</if>
+			<if test="level != null and level != ''">
+				AND vs.level = #{level}
+			</if>
+		</where>
+	</select>
+</mapper>

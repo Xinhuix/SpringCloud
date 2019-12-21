@@ -1,0 +1,81 @@
+#开发环境的配置文件
+#会管数据源
+cmsdb:
+  datasource:
+    url: jdbc:mysql://10.1.24.234:3306/cmsdb2.16.0?useUnicode=true&characterEncoding=UTF-8&allowMultiQueries=true&zeroDateTimeBehavior=convertToNull
+    username: root
+    password: 123456
+    driverClassName: com.mysql.jdbc.Driver
+
+#业务中心数据源
+ywcore:
+  datasource:
+    url: jdbc:mysql://10.1.24.45:3306/v2vywcore?useUnicode=true&characterEncoding=UTF-8&allowMultiQueries=true&zeroDateTimeBehavior=convertToNull
+    username: dcadmin
+    password: 123456
+    driverClassName: com.mysql.jdbc.Driver
+
+#数据中心数据源
+datacore:
+  datasource:
+    url: jdbc:mysql://10.1.24.45:3306/v2vdatacore?useUnicode=true&characterEncoding=UTF-8&allowMultiQueries=true&zeroDateTimeBehavior=convertToNull
+    username: dcadmin
+    password: 123456
+    driverClassName: com.mysql.jdbc.Driver
+#日志配置
+#logging:
+#  level:
+#    com.visionvera.dao : debug
+logging:
+  config: classpath:logback-development.xml
+
+eureka:
+  instance:
+    #Eureka Client向Eureka Server使用真实的IP地址，而不是计算机名
+    prefer-ip-address: true
+    #Eureka Client向Eureka Server使用真实IP后，显示真实的IP地址和端口号
+    instance-id: ${spring.cloud.client.ipAddress}:${server.port}
+  client:
+    service-url:
+      defaultZone: http://10.1.24.45:8761/eureka
+    #从Eureka服务端获取注册信息的时间间隔
+    registry-fetch-interval-seconds: 5
+    #初始化实例信息到Eureka服务端的时间间隔
+    initial-instance-info-replication-interval-seconds: 10
+    register-with-eureka: false
+#连接池的配置信息
+datasource:
+  druid:
+    #配置初始化大小、最小、最大
+    initial-size: 1
+    min-idle: 1
+    max-active: 20
+    #配置获取连接等待超时的时间
+    max-wait: 60000
+    #配置间隔多久才进行一次检测，检测需要关闭的空闲连接，单位是毫秒
+    time-between-eviction-runs-millis: 60000
+    #配置一个连接在池中最小生存的时间，单位是毫秒
+    min-evictable-idle-time-millis: 300000
+    validation-query: SELECT 'x'
+    test-while-idle: true
+    test-on-borrow: false
+    test-on-return: false
+    #打开PSCache，并且指定每个连接上PSCache的大小
+    pool-prepared-statements: true
+    max-pool-prepared-statement-per-connection-size: 20
+    #配置监控统计拦截的filters
+    filters: stat
+
+hg:
+  protocol: https
+  ip: 192.168.108.126
+  port: 8080
+tgl_rest:
+  ip: 58.30.9.142
+  port: 8893
+tgl_ws:
+  ip: 192.168.108.68
+  port: 8866
+content:
+  ip: 192.168.95.248
+  port: 8080

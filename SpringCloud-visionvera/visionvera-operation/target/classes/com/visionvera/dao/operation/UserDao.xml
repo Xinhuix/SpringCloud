@@ -1,0 +1,1793 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+        "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+
+<mapper namespace="com.visionvera.dao.operation.UserDao">
+	<!-- 获取用户列表 查询条件为登录名、状态、手机号码、部门id、角色id、用户分组id -->
+	<select id="getUserList" resultType="UserVO" parameterType="map">
+		select DISTINCT(vc_user.uuid) AS uuid,
+		vc_user.`name` as name,
+		vc_user.login_name as loginName,
+		vc_user.login_pwd as loginPwd,
+		vc_user.phone as phone,
+		vc_user.telPhone as telPhone,
+		vc_user.mail as mail,
+		vc_user.grade as grade,
+		vc_user.area_name as areaName,
+		vc_user.org_name as orgName,
+		vc_user.post_name as postName,
+		vc_user.rank_name as rankName,
+		vc_user.dev_id as devId,
+		vc_user.web_login as webLogin,
+		vc_user.allow_hkzs as allowHkzs,
+		vc_user.id_card as idCard,
+		vc_user.grade as grade,
+		vc_user.isvalid as isvalid,
+		vc_user.create_time as createTime,
+		vc_role.name as role,
+		vc_role.uuid as roleId,
+		vc_user.status as status,
+		vc_user.description as description,
+		vc_usergroup.uuid as groupId,
+		vc_usergroup.name as groupName,
+		vc_user.info_ok as infoOk,
+		(CASE WHEN (ISNULL(vc_region.id) OR (vc_region.id = '')) THEN 'local' ELSE vc_region.id END) AS `svrRegionId`,
+  		(CASE WHEN (ISNULL(vc_region.id) OR (vc_region.id = '')) THEN '本平台' ELSE `vc_region`.`name` END) AS `svrRegionName`
+		from vc_user
+		LEFT JOIN
+		vc_usergroup_user on
+		vc_usergroup_user.`user_id` =
+		vc_user.uuid
+		LEFT JOIN
+		vc_usergroup on
+		vc_usergroup_user.`usergroup_id` =
+		vc_usergroup.uuid
+		LEFT JOIN
+		vc_user_role on vc_user_role.`user_id` =
+		vc_user.uuid
+		LEFT JOIN
+		vc_role on
+		vc_role.uuid = vc_user_role.role_id
+		LEFT JOIN vc_region ON vc_user.`svr_region_id`= 
+		vc_region.id
+		<where>
+			<if test="isvalid != '' and isvalid != null">
+				and vc_user.isvalid = #{isvalid}
+			</if>
+			<if test="loginName != '' and loginName != null">
+				and vc_user.login_name = #{loginName}
+			</if>
+			<if test="userName != '' and userName != null">
+				and vc_user.name like CONCAT('%',#{userName},'%')
+			</if>
+			<if test="status != '' and status != null">
+				and vc_user.status = #{status}
+			</if>
+			<if test="phone !='' and phone != null">
+				and vc_user.phone = #{phone}
+			</if>
+			<if test="depart !='' and depart != null">
+				and vc_user.depart = #{depart}
+			</if>
+			<if test="role != '' and role != null">
+				and vc_user_role.role_id = #{role}
+			</if>
+			<if test="groupId != '' and groupId != null">
+				and vc_usergroup_user.usergroup_id = #{groupId}
+			</if>
+			<if test="groupName != '' and groupName != null">
+				and vc_usergroup.name like CONCAT('%',#{groupName},'%')
+			</if>
+			<if test="devId != '' and devId != null">
+				and vc_user.dev_id like CONCAT('%',#{devId},'%')
+			</if>
+			<if test="isvalid != null">
+				and isvalid = #{isvalid}
+			</if>
+			<if test="svrRegionId != '' and svrRegionId != null">
+				<choose>
+					<when test="svrRegionId == 'local'">
+						and (vc_region.id = '' OR vc_region.id IS NULL)
+					</when>
+					<otherwise>
+						and vc_region.id = #{svrRegionId}
+					</otherwise>
+				</choose>
+			</if>
+		</where>
+		order by vc_user.login_name
+	</select>
+
+	<!-- 统计条目数 -->
+	<select id="getUserListCount" resultType="int" parameterType="Map">
+		select count(DISTINCT(vc_user.uuid))
+		from vc_user
+		LEFT JOIN
+		vc_usergroup_user on
+		vc_usergroup_user.`user_id` = vc_user.uuid
+		LEFT JOIN
+		vc_usergroup on
+		vc_usergroup_user.`usergroup_id` = vc_usergroup.uuid
+		LEFT JOIN
+		vc_user_role on vc_user_role.`user_id` = vc_user.uuid
+		LEFT JOIN
+		vc_role
+		on vc_role.uuid = vc_user_role.role_id
+		LEFT JOIN vc_region
+		ON vc_user.`svr_region_id`= vc_region.id
+		<where>
+			<if test="loginName != '' and loginName != null">
+				and vc_user.login_name = #{loginName}
+			</if>
+			<if test="userName != '' and userName != null">
+				and vc_user.name like CONCAT('%',#{userName},'%')
+			</if>
+			<if test="status != '' and status != null">
+				and vc_user.status = #{status}
+			</if>
+			<if test="phone !='' and phone != null">
+				and vc_user.phone = #{phone}
+			</if>
+			<if test="depart !='' and depart != null">
+				and vc_user.depart = #{depart}
+			</if>
+			<if test="role != '' and role != null">
+				and vc_user_role.role_id = #{role}
+			</if>
+			<if test="groupId != '' and groupId != null">
+				and vc_usergroup_user.usergroup_id = #{groupId}
+			</if>
+			<if test="groupName != '' and groupName != null">
+				and vc_usergroup.name like CONCAT('%',#{groupName},'%')
+			</if>
+			<if test="devId != '' and devId != null">
+				and vc_user.dev_id like CONCAT('%',#{devId},'%')
+			</if>
+			<if test="isvalid != null">
+				and vc_user.isvalid = #{isvalid}
+			</if>
+			<if test="svrRegionId != '' and svrRegionId != null">
+				<choose>
+					<when test="svrRegionId == 'local'">
+						and (vc_region.id = '' OR vc_region.id IS NULL)
+					</when>
+					<otherwise>
+						and vc_region.id = #{svrRegionId}
+					</otherwise>
+				</choose>
+			</if>
+		</where>
+	</select>
+
+	<!-- 编辑页面（新增、修改），获取用户列表，查询条件为用户分组id -->
+	<select id="getEditUserList" resultType="UserVO" parameterType="map">
+		select DISTINCT(vc_user.uuid) AS uuid,
+		vc_user.`name` as name,
+		vc_user.login_name as loginName
+		from vc_user
+		<choose>
+			<when test="groupId != '' and groupId != null">
+				LEFT JOIN
+				vc_usergroup_user on
+				vc_usergroup_user.`user_id` =
+				vc_user.uuid
+				LEFT JOIN
+				vc_usergroup on
+				vc_usergroup_user.`usergroup_id` = vc_usergroup.uuid
+				<where>
+					vc_usergroup_user.usergroup_id = #{groupId}
+				</where>
+			</when>
+			<otherwise>
+				<where>
+					vc_user.uuid not in (select vc_usergroup_user.`user_id` FROM
+					vc_usergroup_user)
+				</where>
+			</otherwise>
+		</choose>
+		order by CONVERT(vc_user.name USING gbk)
+	</select>
+	<select id="getUserbyLoginName" resultType="UserVO" parameterType="map">
+		select DISTINCT(vc_user.uuid) as uuid,
+		vc_user.`name` as name,
+		vc_user.login_name
+		as loginName,
+		vc_user.login_pwd as loginPwd,
+		vc_user.phone as phone,
+		vc_department.`name` as
+		department,
+		vc_role.`name` as role,
+		vc_role.`uuid` as roleId,
+		vc_user.isvalid as isvalid,
+		vc_user.web_login as webLogin,
+		vc_user.area as areaId,
+		vc_user.area_name as areaName,
+		vc_user.allow_hkzs as allowHkzs
+		from vc_user
+		LEFT JOIN vc_department
+		on vc_department.uuid
+		= vc_user.depart
+		LEFT JOIN
+		vc_user_role on
+		vc_user_role.user_id =
+		vc_user.uuid
+		LEFT JOIN vc_role on
+		vc_role.uuid =
+		vc_user_role.role_id
+		where vc_user.login_name =
+		#{loginName}
+	</select>
+
+	<!-- webservice用户的登录 -->
+	<select id="webserviceLogin" resultType="UserVO" parameterType="map">
+		select DISTINCT(vc_user.uuid) as uuid,
+		vc_user.`name` as name,
+		vc_user.`isvalid`
+		as isvalid,
+		vc_user.login_name
+		as loginName,
+		vc_user.login_pwd as
+		loginPwd,
+		vc_user.phone as phone,
+		vc_user.permission as permission,
+		vc_department.`name` as
+		departName,
+		vc_role.`name` as role,
+		vc_role.`uuid` as roleId,
+		orgInfo.`name` as orgName,
+		orgArea.`name` as areaName,
+		vc_usergroup.uuid as
+		groupId,
+		vc_usergroup.name as groupName,
+		vc_user.isWsLogin,
+		vc_user.max_dev_num as maxDevNum,
+		vc_user.allow_hkzs as allowHkzs,
+		vc_user.img_url as imgUrl
+		from
+		vc_user
+		LEFT JOIN
+		vc_usergroup_user on
+		vc_usergroup_user.`user_id` =
+		vc_user.uuid
+		LEFT JOIN
+		vc_usergroup on
+		vc_usergroup_user.`usergroup_id` = vc_usergroup.uuid
+		LEFT JOIN vc_department
+		on vc_department.uuid = vc_user.depart
+		LEFT JOIN
+		vc_user_role on
+		vc_user_role.user_id = vc_user.uuid
+		LEFT JOIN vc_role on
+		vc_role.uuid = vc_user_role.role_id
+		LEFT JOIN vc_organization as orgInfo on
+		vc_user.org_id = orgInfo.uuid
+		LEFT JOIN vc_organization as orgArea on
+		vc_user.area = orgArea.uuid
+		where vc_user.login_name = #{loginName}
+	</select>
+
+	<!-- 更新用户状态-是否从webservice登录过（0表示没有，1表示有） -->
+	<update id="setWsLoginState" parameterType="UserVO">
+		update vc_user set isWsLogin=1
+		<where>
+			vc_user.login_name=#{loginName}
+		</where>
+	</update>
+
+	<select id="getUserbyUuid" resultType="UserVO" parameterType="map">
+		select DISTINCT(vc_user.uuid) as uuid,
+		vc_user.`name` as name,
+		vc_user.login_name
+		as loginName,
+		vc_user.img_url as imgUrl,
+		vc_user.login_pwd as loginPwd,
+		vc_user.phone as phone,
+		vc_department.`uuid` as
+		departId,
+		vc_department.`name` as
+		departName,
+		vc_role.`name` as role,
+		orgInfo.`uuid` as orgId,
+		orgInfo.`name` as
+		orgName,
+		orgArea.`uuid` as areaId,
+		orgArea.`name` as areaName
+		from vc_user
+		LEFT JOIN vc_department
+		on vc_department.uuid
+		=
+		vc_user.depart
+		LEFT JOIN
+		vc_user_role on
+		vc_user_role.user_id =
+		vc_user.uuid
+		LEFT JOIN vc_role on
+		vc_role.uuid =
+		vc_user_role.role_id
+		LEFT JOIN vc_organization as orgInfo on
+		vc_user.org_id = orgInfo.uuid
+		LEFT JOIN vc_organization as orgArea on
+		vc_user.area = orgArea.uuid
+		where vc_user.uuid = #{uuid} or vc_user.login_name = #{uuid}
+	</select>
+
+	<!-- 根据用户ID检查是否是admin -->
+	<select id="isAdmin" resultType="int" parameterType="map">
+		select count(uuid)
+		from vc_user
+		where
+		login_name = #{adminName}
+		and uuid in
+		<foreach item="uuid" index="index" collection="uuids" open="("
+			separator="," close=")">
+			#{uuid}
+		</foreach>
+	</select>
+	<!-- 根据用户账号获取用户组ID -->
+	<select id="getUserGroupByLoginName" resultType="String"
+		parameterType="map">
+		select vc_usergroup_user.usergroup_id as usergroupId
+		from vc_usergroup_user
+		LEFT JOIN vc_user
+		on vc_usergroup_user.user_id =
+		vc_user.uuid
+		where vc_user.login_name = #{loginName}
+	</select>
+
+	<select id="getUserGroupByUserId" resultType="String"
+		parameterType="map">
+		select vc_usergroup_user.usergroup_id as usergroupId
+		from vc_usergroup_user
+		where vc_usergroup_user.user_id = #{uuid}
+	</select>
+
+	<!-- 查询用户权限 -->
+	<select id="getUserFunctions" resultType="Function"
+		parameterType="String">
+		SELECT
+		DISTINCT(vc_function.uuid),
+		vc_function.`name`,
+		vc_function.url,
+		vc_function.`code`
+		FROM
+		vc_user
+		INNER
+		JOIN vc_user_role on
+		vc_user_role.user_id = vc_user.uuid
+		INNER join
+		vc_role_function on
+		vc_role_function.role_id = vc_user_role.role_id
+		INNER JOIN vc_function
+		on vc_function.uuid =
+		vc_role_function.function_id
+		where vc_user.uuid =
+		#{userid} order by vc_function.code
+	</select>
+
+	<!-- 查询用户关联的角色信息 -->
+	<select id="getUserRoles" resultType="Role" parameterType="String">
+		select role.uuid, role.`name`, role.grade, role.description from
+		vc_role role
+		INNER JOIN vc_user_role on vc_user_role.role_id =
+		role.uuid
+		inner
+		join vc_user on vc_user.uuid = vc_user_role.user_id
+		where vc_user.uuid
+		=#{userid}
+	</select>
+
+	<!-- 获取所有角色列表 -->
+	<select id="getAllRoles" resultType="RoleVO">
+		select uuid, name, grade
+		from vc_role
+	</select>
+
+	<!--获取所有用户 -->
+	<select id="getAllUsers" resultType="UserVO" parameterType="map">
+		select DISTINCT(vc_user.uuid) AS uuid,
+		vc_user.`name` as name,
+		vc_user.login_name as loginName
+		from vc_user
+		LEFT JOIN
+		vc_usergroup_user
+		on
+		vc_usergroup_user.`user_id` = vc_user.uuid
+		LEFT JOIN
+		vc_usergroup on
+		vc_usergroup_user.`usergroup_id` = vc_usergroup.uuid
+		<where>
+			<if test="name != '' and name != null">
+				and vc_user.name like CONCAT('%',#{name},'%')
+			</if>
+			<if test="groupId != '' and groupId != null">
+				and vc_usergroup_user.usergroup_id = #{groupId}
+			</if>
+			<if test="groupName != '' and groupName != null">
+				and vc_usergroup.name like CONCAT('%',#{groupName},'%')
+			</if>
+		</where>
+		order by
+		<choose>
+			<when test="orderType != '' and orderType != null">
+				CONVERT(vc_user.name USING gbk)
+			</when>
+			<otherwise>
+				vc_user.login_name
+			</otherwise>
+		</choose>
+	</select>
+
+	<!-- 获取组内已添加设备（一个用户组可含多个会场） -->
+	<select id="devicesInGroup" resultType="DeviceVO" parameterType="map">
+		SELECT DISTINCT(vc_dev.id) AS id,
+		vc_dev.`name` AS NAME,
+		vc_dev.mac AS mac,
+		vc_dev.ip AS ip,
+		vc_dev.description AS description,
+		vc_dev.type AS TYPE,
+		vc_dev.role AS role,
+		vc_devgroup.uuid AS groupId,
+		vr.`id` AS regionId,
+		vc_devgroup.name AS groupName
+		FROM vc_dev
+		LEFT JOIN
+		vc_devgroup_dev ON
+		vc_devgroup_dev.`dev_id` = vc_dev.id
+		LEFT
+		JOIN
+		vc_devgroup ON
+		vc_devgroup_dev.`devgroup_id` = vc_devgroup.uuid
+		LEFT JOIN
+		vc_usergroup_devgroup ON
+		vc_usergroup_devgroup.`devgroup_id` = vc_devgroup.uuid
+		LEFT JOIN vc_region vr
+		ON vr.`id`=vc_dev.`region_id`
+		<where>
+			<if test="groupId != '' and groupId != null">
+				and vc_usergroup_devgroup.usergroup_id = #{groupId}
+			</if>
+		</where>
+		order by vc_dev.id
+	</select>
+
+	<!-- 获取组内已添加设备 -->
+	<select id="devicesInGroup4Pamir" resultType="DeviceVO" parameterType="map">
+		select DISTINCT(vc_dev.id) AS id,
+		vc_dev.`name` as name,
+		vc_dev.mac as mac,
+		vc_dev.ip as ip,
+		vc_dev.description as description,
+		vc_dev.type as type,
+		vc_dev.role as role,
+		vc_devgroup.uuid as groupId,
+		vc_devgroup.name as groupName
+		from vc_dev
+		LEFT JOIN
+		vc_devgroup_dev on
+		vc_devgroup_dev.`dev_id` = vc_dev.id
+		LEFT
+		JOIN
+		vc_devgroup on
+		vc_devgroup_dev.`devgroup_id` = vc_devgroup.uuid
+		LEFT JOIN
+		vc_usergroup_devgroup on
+		vc_usergroup_devgroup.`devgroup_id` = vc_devgroup.uuid
+		<where>
+			<if test="groupId != '' and groupId != null">
+				and vc_usergroup_devgroup.usergroup_id = #{groupId}
+			</if>
+		</where>
+		order by vc_dev.id
+	</select>
+
+	<!-- 获取组内已添加会场（一个用户组可含多个会场） -->
+	<select id="devGroupsInGroup" resultType="DeviceGroupVO"
+		parameterType="map">
+		SELECT DISTINCT(vc_devgroup.uuid) AS UUID,
+		vc_devgroup.`name` AS NAME,
+		vc_devgroup.description AS description,
+		COUNT(vc_devgroup_dev.`dev_id`) AS devCount
+		FROM vc_devgroup
+		LEFT JOIN
+		vc_usergroup_devgroup ON
+		vc_usergroup_devgroup.`devgroup_id` =
+		vc_devgroup.uuid
+		LEFT JOIN vc_devgroup_dev
+		ON vc_devgroup.`uuid` =
+		vc_devgroup_dev.`devgroup_id`
+		<where>
+			<if test="groupId != '' and groupId != null">
+				vc_usergroup_devgroup.usergroup_id = #{groupId}
+			</if>
+		</where>
+		GROUP BY vc_devgroup.`uuid`
+		order by CONVERT(vc_devgroup.name USING gbk)
+	</select>
+
+	<!-- 获取组内已被占用的会场 -->
+	<select id="devGroupsInUse" resultType="String"
+		parameterType="map">
+		SELECT DISTINCT(vud.`devgroup_id`) AS UUID
+		FROM vc_usergroup_devgroup vud
+		LEFT JOIN vc_devgroup_dev vdd
+		ON vud.`devgroup_id`=vdd.`devgroup_id`
+		LEFT JOIN vc_schedule_dev vsd
+		ON vsd.`dev_id`=vdd.`dev_id`
+		LEFT JOIN vc_schedule vs
+		ON vsd.`schedule_id`=vs.`uuid`
+		<where>
+			vud.`usergroup_id`=#{groupId}
+			AND
+			(vs.status NOT IN(1,3)) 
+			AND vs.`level` &lt;= #{level}
+			AND ((UNIX_TIMESTAMP(vs.end_time) BETWEEN UNIX_TIMESTAMP(#{startTime}) AND UNIX_TIMESTAMP(#{endTime})) 
+			    OR (UNIX_TIMESTAMP(vs.start_time) BETWEEN UNIX_TIMESTAMP(#{startTime}) AND UNIX_TIMESTAMP(#{endTime})) 
+			    OR (UNIX_TIMESTAMP(vs.start_time) &lt;= UNIX_TIMESTAMP(#{startTime}) AND UNIX_TIMESTAMP(vs.end_time) &gt;= UNIX_TIMESTAMP(#{endTime}))
+			)
+		</where>
+	</select>
+
+	<!--获取所有未分组的用户 -->
+	<select id="avaliableUsers" resultType="UserVO" parameterType="map">
+		select DISTINCT(vc_user.uuid) AS uuid,
+		vc_user.`name` as name,
+		vc_user.login_name as loginName,
+		vc_user.phone as phone,
+		vc_role.name as
+		role
+		from vc_user
+		LEFT JOIN
+		vc_usergroup_user on
+		vc_usergroup_user.`user_id` = vc_user.uuid
+		LEFT JOIN
+		vc_usergroup on
+		vc_usergroup_user.`usergroup_id` = vc_usergroup.uuid
+		LEFT JOIN
+		vc_user_role on vc_user_role.`user_id` = vc_user.uuid
+		LEFT JOIN
+		vc_role
+		on vc_role.uuid = vc_user_role.role_id
+		<where>
+			<choose>
+				<when test="groupId != '' and groupId != null">
+					(vc_user.uuid not in (select
+					vc_usergroup_user.`user_id` FROM vc_usergroup_user)
+					or
+					vc_usergroup.uuid = #{groupId})
+				</when>
+				<otherwise>
+					vc_user.uuid not in (select vc_usergroup_user.`user_id`
+					FROM vc_usergroup_user)
+				</otherwise>
+			</choose>
+			<if test="name != '' and name != null">
+				and vc_user.name like CONCAT('%',#{name},'%')
+			</if>
+		</where>
+		order by vc_user.login_name
+	</select>
+
+
+	<!-- 验证登录名是否重复 -->
+	<select id="checkLoginName" resultType="int" parameterType="map">
+		select count(1) from vc_user
+		<where>
+			<if test="loginName != null and loginName != '' ">
+				vc_user.login_name =#{loginName}
+			</if>
+		</where>
+	</select>
+
+	<!-- 验证用户名称是否重复 -->
+	<select id="checkName" resultType="int" parameterType="map">
+		select count(1) from vc_user
+		<where>
+			<if test="name != null and name != '' ">
+				vc_user.name =#{name}
+			</if>
+			<if test="loginName != null and loginName != '' ">
+				and vc_user.login_name != #{loginName}
+			</if>
+		</where>
+	</select>
+
+	<!-- 验证用户组名称是否重复 -->
+	<select id="checkRepeatGroup" resultType="int" parameterType="map">
+		select count(1) from vc_usergroup
+		<where>
+			<if test="name != null and name != '' ">
+				vc_usergroup.name = #{name}
+			</if>
+			<if test="groupId != null and groupId != '' ">
+				and vc_usergroup.uuid != #{groupId}
+			</if>
+		</where>
+	</select>
+
+
+	<!-- 统计在线用户个数 -->
+	<select id="onlineUserCount" resultType="int">
+		select count(1) from
+		vc_user where vc_user.status = 1
+	</select>
+
+	<!-- 插入用户基本信息 -->
+	<insert id="addUser" parameterType="UserVO" keyProperty="uuid">
+		<selectKey resultType="java.lang.String" order="BEFORE"
+			keyProperty="uuid">
+			select replace(uuid(), '-', '') from dual
+		</selectKey>
+		insert into vc_user(uuid, name, login_pwd, login_name, phone, description,
+		depart,org_id, area, isvalid, img_url, dev_id, org_name, depart_name, post_name, rank_name,
+		id_card, info_ok, area_name, web_login, allow_hkzs, create_time)
+		values(#{uuid},#{name},#{loginPwd},#{loginName}, #{phone},
+		#{description}, #{departId},#{orgId},#{areaId},#{isvalid},#{imgUrl},
+		#{devId},#{orgName},#{departName},#{postName},#{rankName},#{idCard},#{infoOk},#{areaName},#{webLogin},#{allowHkzs},NOW())
+	</insert>
+
+	<!-- 查询OA通讯录中是否有指定用户 -->
+	<select id="getOAUser" parameterType="UserVO" resultType="UserVO">
+		select id as uuid from org_member where name = #{name}
+	</select>
+
+	<!-- 将新增的用户信息插入OA通讯录中 -->
+	<insert id="addOAUser" parameterType="UserVO">
+		insert ignore into org_member(id, name, ext_attr_1) values (#{uuid}, #{name}, #{phone})
+	</insert>
+
+	<!-- 更新OA通讯录用户基本信息 -->
+	<update id="updateOAUser" parameterType="UserVO">
+		update org_member set EXT_ATTR_1 = #{phone}
+		<where>
+		name = #{name}
+		</where>
+	</update>
+
+	<!-- 插入用户角色关联 -->
+	<insert id="addUserRole" parameterType="map">
+		insert ignore into vc_user_role
+		values(#{userid}, #{roleid})
+	</insert>
+
+	<!-- 更新用户基本信息 -->
+	<update id="updateUser" parameterType="UserVO">
+		update vc_user set name=#{name},
+		<if test="loginPwd != null and loginPwd != '' ">
+			login_pwd=#{loginPwd},
+		</if>
+		<if test="phone != null and phone != '' ">
+			phone=#{phone}, 
+		</if>
+		<if test="devId != null and devId != '' ">
+			dev_id=#{devId}, 
+		</if>
+		<if test="orgName != null and orgName != '' ">
+			org_name=#{orgName}, 
+		</if>
+		<if test="departName != null and departName != '' ">
+			depart_name=#{departName}, 
+		</if>
+		<if test="postName != null and postName != '' ">
+			post_name=#{postName}, 
+		</if>
+		<if test="rankName != null and rankName != '' ">
+			rank_name=#{rankName}, 
+		</if>
+		<if test="idCard != null and idCard != '' ">
+			id_card=#{idCard}, 
+		</if>
+		<if test="areaName != null and areaName != '' ">
+			area_name=#{areaName}, 
+		</if>
+		<if test="areaId != null and areaId != '' ">
+			area=#{areaId}, 
+		</if>
+		<if test="webLogin != null">
+			web_login=#{webLogin}, 
+		</if>
+		<if test="allowHkzs != null">
+			allow_hkzs=#{allowHkzs}, 
+		</if>
+		<if test="permission != null and permission != '' ">
+			permission=#{permission}, 
+		</if>
+		description=#{description} where
+		vc_user.login_name=#{loginName}
+	</update>
+
+	<update id="updateUserRole" parameterType="map">
+		update vc_user_role set vc_user_role.role_id = #{roleid}
+		<where>
+			<if test="userid != null and userid != '' ">
+				and vc_user_role.user_id = #{userid}
+			</if>
+		</where>
+	</update>
+
+	<!-- 删除用户 -->
+	<delete id="deleteUser" parameterType="map">
+		delete from vc_user
+		<where>
+			vc_user.uuid in
+			<foreach item="uuid" index="index" collection="uuids" open="("
+				separator="," close=")">
+				#{uuid}
+			</foreach>
+			and vc_user.login_name != 'admin'
+		</where>
+	</delete>
+
+	<!-- 删除用户角色关联 -->
+	<delete id="deleteUserRole" parameterType="map">
+		delete from vc_user_role
+		<where>
+			vc_user_role.user_id=#{userid}
+		</where>
+	</delete>
+
+	<!-- 删除用户角色list参数集合之外的所有角色关联 -->
+	<delete id="deleteNoExistUserRole" parameterType="map">
+		DELETE
+		FROM
+		vc_user_role
+		<where>
+			vc_user_role.role_id IN (
+			select a.role_id from(
+			SELECT
+			vc_user_role.role_id
+			FROM
+			vc_user_role
+			<where>
+				vc_user_role.role_id not in
+				<foreach item="roles" index="index" collection="fileUrls"
+					open="(" separator="," close=")">
+					#{item}
+				</foreach>
+				<if test="user != null and user != ''">
+					and vc_user_role.user_id = #{user}
+				</if>
+			</where>
+			)a)
+		</where>
+	</delete>
+
+	<!-- 重置超级管理员密码为 -->
+	<update id="resetAdmPwd" parameterType="map">
+		update vc_user set
+		login_pwd=#{loginPwd} where login_name=#{loginName}
+	</update>
+
+	<!-- 用户操作结束 -->
+
+	<!-- 用户分组操作开始 -->
+
+	<!-- 获取用户分组列表 查询条件为用户分组描述、用户分组名 -->
+	<select id="getUserGroupList" resultType="UserGroupVO"
+		parameterType="map">
+		select (vc_usergroup.uuid) AS uuid,
+		vc_usergroup.`name` as name,
+		vc_usergroup.temporarily as temporarily,
+		vc_usergroup.description as
+		description
+		from vc_usergroup
+		<where>
+			<if test="name != '' and name != null">
+				vc_usergroup.name like CONCAT('%',#{name},'%')
+			</if>
+			<if test="temporarily != '' and temporarily != null">
+				and vc_usergroup.temporarily = #{temporarily}
+			</if>
+			<if test="description != '' and description != null">
+				and vc_usergroup.description like
+				CONCAT('%',#{description},'%')
+			</if>
+		</where>
+		order by CONVERT(vc_usergroup.name USING gbk)
+	</select>
+
+	<!-- 统计条目数 -->
+	<select id="getUserGroupListCount" resultType="int"
+		parameterType="Map">
+		select count(1)
+		from vc_usergroup
+		<where>
+			<if test="name != '' and name != null">
+				vc_usergroup.name like CONCAT('%',#{name},'%')
+			</if>
+			<if test="temporarily != '' and temporarily != null">
+				and vc_usergroup.temporarily = #{temporarily}
+			</if>
+			<if test="description != '' and description != null">
+				and vc_usergroup.description like
+				CONCAT('%',#{description},'%')
+			</if>
+		</where>
+	</select>
+
+	<!-- 获取所有用户分组 -->
+	<select id="getAllGroups" resultType="UserGroupVO"
+		parameterType="Map">
+		select * from vc_usergroup
+		<where>
+			<if test="name != '' and name != null">
+				vc_usergroup.name like CONCAT('%',#{name},'%')
+			</if>
+		</where>
+		order by CONVERT(vc_usergroup.name USING gbk)
+	</select>
+
+	<!-- 插入用户分组基本信息 -->
+	<insert id="addUserGroup" parameterType="UserGroupVO"
+		keyProperty="uuid">
+		<selectKey resultType="java.lang.String" order="BEFORE"
+			keyProperty="uuid">
+			select replace(uuid(), '-', '') from dual
+		</selectKey>
+		insert into vc_usergroup(vc_usergroup.uuid, vc_usergroup.name,
+		vc_usergroup.temporarily,
+		vc_usergroup.description)
+		values(#{uuid},#{name},#{temporarily},#{description})
+	</insert>
+
+	<!-- 插入用户组和用户的关联 -->
+	<insert id="addUser2Group" parameterType="map">
+		insert ignore into vc_usergroup_user(usergroup_id, user_id)
+		values
+		<foreach collection="useruuids" item="useruuid" index="index"
+			separator=",">
+			(#{groupuuid}, #{useruuid})
+		</foreach>
+	</insert>
+
+	<!-- 删除用户组和用户的关联（根据传入的用户ID删除） -->
+	<delete id="deleteUser2GroupByUser" parameterType="map">
+		delete from vc_usergroup_user
+		<where>
+			vc_usergroup_user.user_id in
+			<foreach item="useruuid" index="index" collection="uuids"
+				open="(" separator="," close=")">
+				#{useruuid}
+			</foreach>
+		</where>
+	</delete>
+
+	<!-- 删除用户组和用户的关联（根据传入的用户组ID删除，即全部删除） -->
+	<delete id="deleteUser2Group" parameterType="map">
+		delete from vc_usergroup_user
+		<where>
+			vc_usergroup_user.usergroup_id = #{groupuuid}
+		</where>
+	</delete>
+
+	<!-- 插入用户组和设备组的关联 -->
+	<insert id="addDeviceGroup2Group" parameterType="map">
+		insert ignore into vc_usergroup_devgroup(usergroup_id, devgroup_id)
+		values
+		<foreach collection="devicegroupids" item="devicegroupid"
+			index="index" separator=",">
+			(#{groupuuid},#{devicegroupid})
+		</foreach>
+	</insert>
+
+	<!-- 删除用户组和设备组的关联（根据传入的设备组ID删除，暂未使用） -->
+	<delete id="deleteDeviceGroup2GroupByUser" parameterType="map">
+		delete from vc_usergroup_devgroup
+		<where>
+			vc_usergroup_devgroup.usergroup_id = #{groupuuid}
+			and
+			vc_usergroup_devgroup.devgroup_id in
+			<foreach item="devicegroupid" index="index" collection="devicegroupids"
+				open="(" separator="," close=")">
+				#{devicegroupid}
+			</foreach>
+		</where>
+	</delete>
+
+	<!-- 删除用户组和设备组的关联（根据用户组ID删除，即全部删除） -->
+	<delete id="deleteDeviceGroup2Group" parameterType="map">
+		delete from vc_usergroup_devgroup
+		<where>
+			vc_usergroup_devgroup.usergroup_id = #{groupuuid}
+		</where>
+	</delete>
+
+	<!-- 判断用户组内是否有用户正处于登录状态 -->
+	<select id="isUserInGroupOnline" resultType="UserVO" parameterType="map">
+		SELECT DISTINCT(u.login_name) as loginName, u.uuid as uuid 
+		FROM vc_usergroup_user ug
+		LEFT JOIN vc_user u
+		ON ug.user_id = u.uuid
+		WHERE ug.usergroup_id in
+		<foreach item="uuid" index="index" collection="uuids"
+			open="(" separator="," close=")">
+			#{uuid}
+		</foreach>
+		AND u.status = 1
+	</select>
+
+	<!-- 判断用户用户是否处于登录状态 -->
+	<select id="isUserOnline" resultType="UserVO" parameterType="map">
+		SELECT DISTINCT(u.login_name) as loginName, u.uuid as uuid
+		FROM vc_user u
+		WHERE u.uuid in
+		<foreach item="uuid" index="index" collection="uuids"
+			open="(" separator="," close=")">
+			#{uuid}
+		</foreach>
+		AND u.status = 1
+	</select>
+
+	<!-- 判断用户组是否有有效预约 -->
+	<select id="isScheduleValid" resultType="ScheduleVO"
+		parameterType="map">
+		SELECT vc_schedule.name FROM vc_schedule
+		<where>
+			vc_schedule.`usergroup_id` in
+			<foreach item="uuid" index="index" collection="uuids"
+				open="(" separator="," close=")">
+				#{uuid}
+			</foreach>
+			AND vc_schedule.`status` != 3
+			AND vc_schedule.end_time > NOW()
+		</where>
+	</select>
+
+	<!-- 更新用户分组基本信息 -->
+	<update id="updateUserGroup" parameterType="UserGroupVO">
+		update vc_usergroup
+		set name=#{name},
+		temporarily=#{temporarily},
+		description=#{description} where
+		vc_usergroup.uuid=#{uuid}
+	</update>
+
+	<!-- 删除用户分组 -->
+	<delete id="deleteUserGroup" parameterType="map">
+		delete from vc_usergroup
+		<where>
+			vc_usergroup.uuid in
+			<foreach item="uuid" index="index" collection="uuids" open="("
+				separator="," close=")">
+				#{uuid}
+			</foreach>
+		</where>
+	</delete>
+
+	<!-- 审批webService用户 -->
+	<update id="approveUser" parameterType="map">
+		update vc_user set
+		vc_user.isvalid = 1 where vc_user.uuid =#{userid}
+	</update>
+
+	<!-- 更新webService注册用户信息 -->
+	<update id="updateUserInfo" parameterType="UserApproveVO">
+		update vc_user set vc_user.isvalid = #{isvalid}
+		<if test="name != null and name !='' ">
+			, vc_user.name=#{name}
+		</if>
+		<if test="areaId != null and areaId != '' ">
+			,vc_user.area = #{areaId}
+		</if>
+		<if test="orgId != null and orgId != '' ">
+			,vc_user.org_id = #{orgId}
+		</if>
+		<if test="departId != null and departId != '' ">
+			,vc_user.depart = #{departId}
+		</if>
+		<where>
+			vc_user.uuid =#{uuid}
+		</where>
+	</update>
+
+	<!-- 检验用户是否具有超级管理员权限 -->
+	<select id="checkSuperAuthorById" resultType="int"
+		parameterType="map">
+		SELECT COUNT(1) FROM vc_role
+		INNER JOIN vc_user_role ON
+		vc_user_role.`role_id` = vc_role.uuid
+		<where>
+			vc_role.`grade` = 1
+			AND vc_user_role.`user_id` =#{superid}
+		</where>
+	</select>
+	
+	<!-- 检验用户是否具有管理员权限 -->
+	<select id="checkAdminAuthorById" resultType="int"
+		parameterType="map">
+		SELECT COUNT(1) FROM vc_role
+		INNER JOIN vc_user_role ON
+		vc_user_role.`role_id` = vc_role.uuid
+		<where>
+			vc_role.`grade` in (1,4)
+			AND vc_user_role.`user_id` =#{superid}
+		</where>
+	</select>
+	
+	<!-- 改变普通用户成为管理员角色 -->
+	<update id="changeUserToManager" parameterType="map">
+		insert ignore into vc_user_role(user_id, role_id)
+		values
+		<foreach collection="uuids" item="userid" index="index"
+			separator=",">
+			(#{userid},'005020d2abc511e6802eb82a72db6d4d')
+		</foreach>
+	</update>
+
+	<!-- 批量删除用户和角色关联信息 -->
+	<delete id="delUserWithRoleMany" parameterType="map">
+		delete from vc_user_role where vc_user_role.user_id in
+		<foreach item="uuid" index="index" collection="uuids" open="("
+			separator="," close=")">
+			#{uuid}
+		</foreach>
+	</delete>
+
+	<!-- 删除指定用户和角色关联信息 -->
+	<delete id="delUserWithRoleSingle" parameterType="map">
+		delete from
+		vc_user_role where vc_user_role.user_id = #{userid}
+	</delete>
+
+	<!-- 检验用户是否有效 -->
+	<select id="checkUserisValid" parameterType="String" resultType="int">
+		select count(1) from vc_user
+		where vc_user.isvalid = 1
+		and vc_user.uuid
+		=#{userid}
+	</select>
+
+	<!-- 获取待审批用户列表 -->
+	<select id="getApproveUsers" parameterType="map" resultType="UserApproveVO">
+		SELECT
+		vc_user_approve.user_id AS uuid,
+		vc_user.`name` AS 'name',
+		vc_user.`img_url` AS 'imgUrl',
+		vc_user_approve.target_name AS newName,
+		org.`uuid` as orgId,
+		org.`name` as orgName,
+		orgB.`uuid` as newOrgId,
+		orgB.`name` as newOrgName,
+		orgArea.`uuid` as areaId,
+		orgArea.`name` as areaName,
+		orgBArea.`uuid` as newAreaId,
+		orgBArea.`name` as newAreaName,
+		depA.`uuid` as departId,
+		depA.`name` as departName,
+		depB.`uuid` as newDepartId,
+		depB.`name` as newDepartName,
+		roleA.`uuid` AS roleId,
+		roleA.`name` AS roleName,
+		roleB.`uuid` AS newRoleId,
+		roleB.`name` AS newRoleName,
+		vc_user_approve.edit_type as editType
+		FROM
+		vc_user_approve
+		INNER JOIN vc_user ON
+		vc_user_approve.`user_id` = vc_user.uuid
+		LEFT JOIN vc_role AS roleA ON
+		roleA.uuid = vc_user_approve.curr_role
+		LEFT JOIN vc_role AS roleB ON
+		roleB.uuid = vc_user_approve.target_role
+		LEFT JOIN vc_organization as
+		org ON org.uuid = vc_user.org_id
+		LEFT JOIN vc_organization as orgArea
+		ON orgArea.uuid = vc_user.area
+		LEFT JOIN vc_department as depA ON
+		depA.uuid = vc_user.depart
+		LEFT JOIN vc_organization as orgB on
+		orgB.uuid =
+		vc_user_approve.target_orgName
+		LEFT JOIN vc_organization as
+		orgBArea on orgBArea.uuid =
+		vc_user_approve.target_areaName
+		LEFT JOIN
+		vc_department depB on depB.uuid =
+		vc_user_approve.target_departName
+		<if test="userId != '' and userId != null">
+			vc_user_approve.user_id = #{userId}
+		</if>
+	</select>
+
+	<insert id="addUserToGroupSingle" parameterType="UserVO">
+		insert ignore into
+		vc_usergroup_user(usergroup_id, user_id)
+		values(#{groupid}, #{userid})
+	</insert>
+
+	<insert id="addToUserApprove" parameterType="map">
+		insert into
+		vc_user_approve(user_id, curr_role, target_role, opt_time, edit_type)
+		values( #{userid}, (SELECT DISTINCT(role_id) FROM vc_user_role WHERE
+		user_id = #{userid}), #{roleid}, NOW(),#{editType})
+		ON DUPLICATE KEY UPDATE target_role = #{roleid}
+	</insert>
+
+	<!-- 从待审核用户列表中清除审核用户信息 -->
+	<delete id="delUserFromApproves" parameterType="map">
+		delete from
+		vc_user_approve
+		<where>
+			vc_user_approve.user_id = #{userid}
+			and vc_user_approve.edit_type = #{editType}
+		</where>
+	</delete>
+
+	<update id="resetUserPwd" parameterType="map">
+		update vc_user set login_pwd = #{loginPwd}
+		<where>
+			<choose>
+				<when test="phone != null and phone != '' ">
+					vc_user.phone = #{phone}
+				</when>
+				<when test="loginName != null and loginName != '' ">
+					vc_user.login_name = #{loginName}
+				</when>
+				<when test="userid != null and userid !='' ">
+					vc_user.uuid=#{userid}
+				</when>
+				<otherwise>
+					vc_user.uuid = ''
+				</otherwise>
+			</choose>
+		</where>
+	</update>
+
+	<!-- 获取所有工作单位 -->
+	<select id="getAllUnits" resultType="WorkUnitVO">
+		select uuid as id, pid as
+		pId, vc_organization.name, vc_organization.desc as description from
+		vc_organization where pid = '' or pid is
+		null
+		ORDER BY `order`
+	</select>
+
+	<!-- 获取工作单位包含的工作区域 -->
+	<select id="getUnitAreaByUnitId" parameterType="map" resultType="WorkAreaVO">
+		select uuid as id, pid as pId, vc_organization.name,
+		vc_organization.desc as description from vc_organization
+		where
+		vc_organization.pid = #{unitid}
+		ORDER BY `order`
+	</select>
+
+	<!-- 获取工作单位包含的工作部门 -->
+	<select id="getUnitDepartByUnitId" parameterType="map"
+		resultType="WorkDepartVO">
+		select uuid as id, p_id as pId, vc_department.name,
+		vc_department.description from
+		vc_department where p_id = #{unitid}
+		ORDER BY `order`
+	</select>
+
+	<!-- 删除用户与用户分组关联通过用户id -->
+	<delete id="delUserWithUserGroupByUserId" parameterType="map">
+		delete
+		from vc_usergroup_user where user_id = #{userid}
+	</delete>
+
+	<!-- 驳回用户申请 -->
+	<update id="rejectUserApproved" parameterType="map">
+		UPDATE vc_user set
+		vc_user.isvalid = 0 where vc_user.uuid = #{userid}
+	</update>
+
+	<!-- 检验用户是否存在 -->
+	<select id="checkUserExist" parameterType="map" resultType="int">
+		select count(1) from vc_user
+		<where>
+			<choose>
+				<when test="phone != null and phone != '' ">
+					vc_user.phone = #{phone}
+				</when>
+				<when test="userid != null and userid != '' ">
+					vc_user.uuid = #{userid}
+				</when>
+				<when test="loginName != null and loginName != '' ">
+					vc_user.login_name = #{loginName}
+				</when>
+				<when test="name != null and name != '' ">
+					vc_user.name = #{name}
+				</when>
+				<otherwise>
+					vc_user.uuid = ''
+				</otherwise>
+			</choose>
+		</where>
+	</select>
+
+	<!-- 根据手机号保存验证码 -->
+	<insert id="setVerifiCode" parameterType="map">
+		insert into
+		vc_phone(phone, verifi_code, create_time)
+		values
+		(#{phone},#{verifiCode},NOW())
+		ON DUPLICATE KEY UPDATE verifi_code =
+		#{verifiCode}, create_time = NOW()
+	</insert>
+
+	<!-- 根据手机号判断验证码是否正确 -->
+	<select id="chkVerifiCode" parameterType="map" resultType="PhoneVO">
+		select phone,
+		verifi_code as verifiCode,
+		create_time as createTime
+		from vc_phone
+		<where>
+			vc_phone.phone = #{phone}
+			and vc_phone.verifi_code = #{verifiCode}
+		</where>
+	</select>
+
+	<update id="addApprovesWhenUpdateInfo" parameterType="map">
+		insert into vc_user_approve(user_id
+		,curr_role
+		<if test="tarName != null">, target_name</if>
+		<if test="tarOrg != null">, target_orgName</if>
+		<if test="tarOrgArea != null">, target_areaName</if>
+		<if test="tarDepart != null">, target_departName</if>
+		, opt_time, edit_type)
+		values(#{userid}
+		,(SELECT role_id FROM vc_user_role WHERE user_id = #{userid})
+		<if test="tarName != null">, #{tarName}</if>
+		<if test="tarOrg != null">, #{tarOrg}</if>
+		<if test="tarOrgArea != null">, #{tarOrgArea}</if>
+		<if test="tarDepart != null">, #{tarDepart}</if>
+		, NOW(),#{editType})
+		ON DUPLICATE KEY UPDATE user_id = #{userid}
+	</update>
+
+	<update id="updateUserIsValid" parameterType="map">
+		update vc_user set
+		vc_user.isvalid = #{isvalid}
+		where vc_user.uuid = #{userid}
+	</update>
+	<!-- 删除手机号对应的数据 -->
+	<delete id="delPhone" parameterType="map">
+		delete from vc_phone where
+		phone = #{phone}
+	</delete>
+
+	<!-- 验证用户是否登录 -->
+	<select id="checkUserLogin" parameterType="map" resultType="int">
+		select count(1) from vc_user where vc_user.status = 1 and vc_user.uuid
+		= #{userid}
+	</select>
+	
+	<!-- 设置头像url -->
+	<update id="setImg" parameterType="map">
+		update vc_user set
+		vc_user.img_url = #{imgUrl}
+		where vc_user.uuid = #{userid}
+	</update>
+	
+	<!-- 生成access_token -->
+	<insert id="createAccessToken" parameterType="UserAccessTokenVO">
+		<selectKey resultType="java.lang.String" order="BEFORE"
+			keyProperty="accessToken">
+			select replace(uuid(), '-', '') from dual
+		</selectKey>
+		insert into vc_user_access_token(user_id
+		, access_token, client_type, create_time)
+		values(#{userId},#{accessToken},
+		#{clientType},NOW())
+		ON DUPLICATE KEY UPDATE access_token = #{accessToken},create_time = NOW()
+	</insert>
+	
+	<!-- 保存access_token -->
+	<insert id="setAccessToken" parameterType="UserAccessTokenVO">
+		insert into vc_user_access_token(user_id
+		, access_token, client_type, create_time)
+		values(#{userId},#{accessToken},
+		#{clientType},NOW())
+		ON DUPLICATE KEY UPDATE create_time = NOW()
+	</insert>
+
+	<!-- 保存access_token -->
+	<insert id="delAccessToken" parameterType="map">
+		delete from vc_user_access_token
+		<where>
+			user_id = #{userId}
+			and client_type = #{clientType}
+		</where>
+	</insert>
+	
+	<!-- 获取access_token -->
+	<select id="getAccessToken" parameterType="map" resultType="int">
+		select count(1) from vc_user_access_token
+		<where>
+			access_token = #{accessToken}
+		</where>
+	</select>
+	<!-- 根据手机号查询用户信息 -->
+	<select id="getUserByPhone" parameterType="map" resultType="UserVO">
+		select * from vc_user where vc_user.login_name = #{phone}
+	</select>
+	
+	
+	<!-- 根据手机号查询用户信息 -->
+	<select id="selSession"  resultType="String">
+		select value from vc_const_data where display = 'session失效时间'
+	</select>
+	<!-- 根据uuid获取单个用户详情 -->
+	<select id="getUserById" parameterType="map" resultType="UserVO">
+	    select  vc_user.uuid,
+	    vc_user.name,
+	    vc_user.login_pwd as loginPwd,
+	    vc_user.login_name as loginName,
+	    vc_user.phone as phone,
+	    vc_user.mail as mail,
+	    vc_user.depart as departId,
+	    vc_user.status as status,
+	    vc_user.description as description,
+	    vc_user.isvalid as isvalid,
+	    vc_user.org_id as orgId,
+	    vc_user.area as areaId,
+	    vc_user.area_name as areaName,
+	    vc_user.isWsLogin as isWsLogin,
+	    vc_user.img_url as imgUrl,
+	    vc_user.dev_id as devId,
+	    vc_user.org_name as orgName,
+	    vc_user.depart_name as departName,
+	    vc_user.post_name as postName,
+	    vc_user.rank_name as rankName,
+	    vc_user.id_card as idCard,
+	    vc_user.web_login as webLogin,
+	    vc_user.allow_hkzs as allowHkzs,
+	    vc_user.info_ok as infoOk,
+	    vc_user.max_dev_num as maxDevNum,
+	    vc_user.permission as permission,
+	    vc_usergroup.uuid as groupId,
+		vc_role.name as role,
+		vc_role.uuid as roleId,
+		vc_usergroup.name as groupName
+	    from vc_user 
+	    LEFT JOIN
+		vc_usergroup_user on
+		vc_usergroup_user.`user_id` =
+		vc_user.uuid
+		LEFT JOIN
+		vc_usergroup on
+		vc_usergroup_user.`usergroup_id` =
+		vc_usergroup.uuid
+		LEFT JOIN
+		vc_user_role on vc_user_role.`user_id` =
+		vc_user.uuid
+		LEFT JOIN
+		vc_role on
+		vc_role.uuid = vc_user_role.role_id
+	    <where>
+			<if test="uuid != '' and uuid != null">
+				vc_user.uuid = #{uuid}
+			</if>
+		</where>
+	</select>
+	
+	
+	<!-- 设置为有效用户 -->
+	<update id="setIsvalid" parameterType="int" >
+	update vc_user set isvalid=1 where uuid=#{uuid}
+	</update>
+	
+	
+	<!-- 设置是否允许登录会管 -->
+	<update id="setWebLogin" parameterType="int" >
+	update vc_user set web_login=#{webLogin} where uuid=#{uuid}
+	</update>
+	<!-- 删除用户 -->
+	<delete id="deleteUserById" parameterType="map">
+		delete from vc_user
+		<where>
+			vc_user.uuid =#{uuid}
+			and vc_user.login_name != 'admin'
+		</where>
+	</delete>
+	
+	<!-- 插入用户与设备关联 -->
+	<insert id="addUserDevice" parameterType="map">
+		insert ignore into vc_user_dev(user_id,dev_id,data_type) 
+		values
+		<foreach collection="devIds" item="devId" index="index"
+			separator=",">
+			(#{uuid},#{devId},#{type})
+		</foreach>
+	</insert>
+	
+		<!-- 插入用户与群组关联 -->
+	<insert id="addUserDeviceGroup" parameterType="map">
+		insert into vc_user_devgroup(user_id,devgroup_id)
+		values
+		<foreach collection="devGroupIds" item="devGroupId" index="index"
+			separator=",">
+			(#{uuid},#{devGroupId})
+		</foreach>
+	</insert>
+	
+	
+	<!-- 插入用户基本信息 -->
+	<insert id="addUserBooks" parameterType="UserVO" keyProperty="uuid">
+		<selectKey resultType="java.lang.String" order="BEFORE"
+			keyProperty="uuid">
+			select replace(uuid(), '-', '') from dual
+		</selectKey>
+		insert into vc_user(uuid, name, login_pwd, login_name, phone, description,
+		depart,org_id, area, isvalid, img_url, dev_id, org_name, depart_name, post_name, rank_name,
+		id_card, info_ok, area_name, web_login, create_time,nick_name,address,max_dev_num,allow_hkzs)
+		values(#{uuid},#{name},#{loginPwd},#{loginName}, #{phone},
+		#{description}, #{departId},#{orgId},#{areaId},#{isvalid},#{imgUrl},
+		#{devId},#{orgName},#{departName},#{postName},#{rankName},#{idCard},#{infoOk},#{areaName},
+		#{webLogin},NOW(),#{nickName},#{address},#{maxDevNum},#{allowHkzs})
+	</insert>
+	
+	
+	<!-- 获取通讯录用户管理用户信息 -->
+	<select id="getUserInfo" parameterType="map" resultType="UserVO">
+		select vu.uuid AS uuid,vu.name name,vu.login_name loginName,vu.nick_name nickName,
+		GROUP_CONCAT(DISTINCT((CASE WHEN (vd.data_type = 1) THEN `vd`.`name` ELSE NULL END)) SEPARATOR ',') AS devGroupIds,
+		vu.dev_id devId,vu.address address,vu.max_dev_num as maxDevNum,allow_hkzs as allowHkzs,web_login as webLogin
+		from vc_user vu 
+		left join vc_user_devgroup vg
+		on vu.uuid=vg.user_id
+		left join vc_devgroup vd
+		on vg.devgroup_id = vd.uuid
+		left join vc_user_dev ve
+		on ve.user_id = vu.uuid
+		<where>
+			<if test="loginName != '' and loginName != null">
+				and vu.login_name = #{loginName}
+			</if>
+			<if test="name != '' and name != null">
+				and vu.name like CONCAT('%',#{name},'%')
+			</if>
+			<if test="devId != '' and devId != null">
+				and vu.dev_id like CONCAT('%',#{devId},'%')
+			</if>
+		</where>
+		GROUP BY vu.uuid
+		order by CONVERT(vu.name USING gbk)
+	</select>
+	
+	
+	<!--获取通讯录用户管理用户信息总条数 -->
+	<select id="getUserInfoCount" parameterType="map" resultType="int">
+		SELECT COUNT(*)
+		FROM (select vu.uuid
+		from vc_user vu 
+		left join vc_user_devgroup vg
+		on vu.uuid=vg.user_id
+		left join vc_devgroup vd
+		on vg.devgroup_id = vd.uuid
+		left join vc_user_dev ve
+		on ve.user_id = vu.uuid
+		<where>
+			<if test="loginName != '' and loginName != null">
+				and vu.login_name = #{loginName}
+			</if>
+			<if test="name != '' and name != null">
+				and vu.name like CONCAT('%',#{name},'%')
+			</if>
+			<if test="devId != '' and devId != null">
+				and vu.dev_id like CONCAT('%',#{devId},'%')
+			</if>
+		</where> GROUP BY vu.uuid) as temp
+	</select>
+	
+	<!--通讯录 用户管理 更新用户基本信息 -->
+	<update id="updateUserBooks" parameterType="map">
+		update vc_user set 
+		<if test="loginPwd != null and loginPwd != '' ">
+			login_pwd=#{loginPwd},
+		</if>
+		<if test="devId != null and devId != '' ">
+			dev_id=#{devId}, 
+		</if>
+		<if test="address != null and address != '' ">
+			address=#{address},
+		</if>
+		<if test="maxDevNum != null ">
+			max_dev_num=#{maxDevNum},
+		</if>
+		<if test="allowHkzs != null ">
+			allow_hkzs=#{allowHkzs},
+		</if>
+		<if test="webLogin != null ">
+			web_login=#{webLogin},
+		</if>
+		nick_name=#{nickName}
+		where
+		vc_user.login_name=#{loginName}
+	</update>
+	
+	<!-- 删除用户与设备关联关系-->
+	<delete id="deleteUserDevice" parameterType="map">
+		delete from vc_user_dev
+		<where>
+			user_id =#{uuid}
+			AND 
+			(data_type = 1 OR data_type IS NULL)
+		</where>
+	</delete>
+	
+	<!-- 删除getUserList用户与设备群组关联关系-->
+	<delete id="deleteUserDeviceGroup" parameterType="map">
+		delete from vc_user_devgroup
+		<where>
+			user_id =#{uuid}
+			and devgroup_id in (select uuid from vc_devgroup where data_type = 1)
+		</where>
+	</delete>
+	
+	<!--获取用户定制列表 -->
+	<select id="getCustomizedUserList" parameterType="map" resultType="UserVO">
+		SELECT vu.uuid AS UUID,
+		vu.`login_name` AS loginName,
+		vu.`name` AS NAME,
+		GROUP_CONCAT(DISTINCT((CASE WHEN (vd.data_type = 2) THEN `vd`.`name` ELSE NULL END)) SEPARATOR ',') AS devGroupIds,
+		GROUP_CONCAT(DISTINCT((CASE WHEN (vud.data_type = 2) THEN `vud`.`dev_id` ELSE NULL END)) SEPARATOR ',') AS deviceIds
+		FROM vc_user vu 
+		LEFT JOIN vc_user_devgroup vg
+		ON vu.uuid=vg.user_id
+		LEFT JOIN vc_devgroup vd
+		ON vg.devgroup_id = vd.uuid
+		LEFT JOIN vc_user_dev vud
+		ON vu.`uuid`=vud.`user_id`
+		<where>
+			<if test="uuid != '' and uuid != null">
+				and vu.uuid = #{uuid}
+			</if>
+			<if test="loginName != '' and loginName != null">
+				and vu.login_name = #{loginName}
+			</if>
+			<if test="name != '' and name != null">
+				and vu.name like CONCAT('%',#{name},'%')
+			</if>
+		</where>
+		GROUP BY vu.uuid
+		order by CONVERT(vu.name USING gbk)
+	</select>
+
+	<!--获取用户定制列表总数 -->
+	<select id="getCustomizedUserCount" parameterType="map" resultType="int">
+		SELECT COUNT(*) 
+		FROM (select vu.uuid
+		FROM vc_user vu 
+		LEFT JOIN vc_user_devgroup vg
+		ON vu.uuid=vg.user_id
+		LEFT JOIN vc_devgroup vd
+		ON vg.devgroup_id = vd.uuid
+		LEFT JOIN vc_user_dev vud
+		ON vu.`uuid`=vud.`user_id`
+		<where>
+			<if test="loginName != '' and loginName != null">
+				and vu.login_name = #{loginName}
+			</if>
+			<if test="name != '' and name != null">
+				and vu.name like CONCAT('%',#{name},'%')
+			</if>
+		</where> GROUP BY vu.uuid ) as temp
+	</select>
+	
+	<!--获取用户定制私有联系人列表 -->
+	<select id="getCustomizedDevList" parameterType="map" resultType="DeviceVO">
+		SELECT vd.`id`,
+		vd.`name`,
+		vd.`alias`,
+		vd.`type` AS typeId,
+		vd.`ip`,
+		vdt.`name` AS TYPE,
+		vd.`role` AS roleId,
+		vdr.`name` AS role,
+		vud.`data_type` AS dataType
+		FROM vc_user_dev vud 
+		JOIN vc_dev vd ON vud.`dev_id`=vd.`id`
+		JOIN vc_dev_type vdt ON vd.`type`=vdt.`id`
+		JOIN vc_dev_role vdr ON vd.`role`=vdr.`id`
+		<where>
+			vud.`data_type` = 2
+			<if test="userId != '' and userId != null">
+				and vud.user_id = #{userId}
+			</if>
+			<if test="dataType != '' and dataType != null">
+				and vud.data_type = #{dataType}
+			</if>
+			<if test="id != '' and id != null">
+				and vd.id like CONCAT('%',#{id},'%')
+			</if>
+			<if test="name != '' and name != null">
+				and vd.name like CONCAT('%',#{name},'%')
+			</if>
+			<if test="typeId != '' and typeId != null">
+				and vd.type = #{typeId}
+			</if>
+		</where>
+		order by CONVERT(vd.name USING gbk)
+	</select>
+
+	<!--获取用户定制私有联系人列表总数 -->
+	<select id="getCustomizedDevCount" parameterType="map" resultType="int">
+		SELECT count(vd.`id`)
+		FROM vc_user_dev vud 
+		JOIN vc_dev vd ON vud.`dev_id`=vd.`id`
+		JOIN vc_dev_type vdt ON vd.`type`=vdt.`id`
+		<where>
+			vud.`data_type` = 2
+			<if test="userId != '' and userId != null">
+				and vud.user_id = #{userId}
+			</if>
+			<if test="dataType != '' and dataType != null">
+				and vud.data_type = #{dataType}
+			</if>
+			<if test="id != '' and id != null">
+				and vd.id like CONCAT('%',#{id},'%')
+			</if>
+			<if test="name != '' and name != null">
+				and vd.name like CONCAT('%',#{name},'%')
+			</if>
+			<if test="typeId != '' and typeId != null">
+				and vd.type = #{typeId}
+			</if>
+		</where>
+	</select>
+	<!--获取用户定制私有群列表 -->
+	<select id="getCustomizedDevGroupList" parameterType="map" resultType="DeviceGroupVO">
+		SELECT vdg.`uuid`,
+		vdg.`name`,
+		vdg.`data_type` AS dataType
+		FROM vc_user_devgroup vud
+		JOIN vc_devgroup vdg
+		ON vud.`devgroup_id`=vdg.`uuid`
+		<where>
+			vdg.data_type = 2
+			<if test="userId != '' and userId != null">
+				and vud.user_id = #{userId}
+			</if>
+			<if test="name != '' and name != null">
+				and vdg.name like CONCAT('%',#{name},'%')
+			</if>
+		</where>
+		order by CONVERT(vdg.name USING gbk)
+	</select>
+
+	<!--获取用户定制私有群列表总数 -->
+	<select id="getCustomizedDevGroupCount" parameterType="map" resultType="int">
+		SELECT count(vdg.`uuid`)
+		FROM vc_user_devgroup vud
+		JOIN vc_devgroup vdg
+		ON vud.`devgroup_id`=vdg.`uuid`
+		<where>
+			vdg.data_type = 2
+			<if test="userId != '' and userId != null">
+				and vud.user_id = #{userId}
+			</if>
+			<if test="name != '' and name != null">
+				and vdg.name like CONCAT('%',#{name},'%')
+			</if>
+		</where>
+	</select>
+	<!--获取用户定制私有群成员列表 -->
+	<select id="getCustomizedGroupMembers" parameterType="map" resultType="DeviceVO">
+		SELECT vd.`id`,
+		vd.`name`,
+		vd.`alias`,
+		vd.`type` AS typeId,
+		vd.`ip`,
+		vdt.`name` AS TYPE,
+		vd.`role` AS roleId,
+		vdr.`name` AS role,
+		vdd.`dev_func` AS devFunc
+		FROM vc_devgroup_dev vdd
+		JOIN vc_dev vd ON vdd.`dev_id`=vd.`id`
+		JOIN vc_dev_type vdt ON vd.`type`=vdt.`id`
+		JOIN vc_dev_role vdr ON vd.`role`=vdr.`id`
+		<where>
+			<if test="groupId != '' and groupId != null">
+				and vdd.devgroup_id = #{groupId}
+			</if>
+			<if test="id != '' and id != null">
+				and vd.id like CONCAT('%',#{id},'%')
+			</if>
+			<if test="name != '' and name != null">
+				and vd.name like CONCAT('%',#{name},'%')
+			</if>
+			<if test="typeId != '' and typeId != null">
+				and vd.type = #{typeId}
+			</if>
+		</where>
+		order by CONVERT(vd.name USING gbk)
+	</select>
+
+	<!--获取用户定制私有群成员列表总数 -->
+	<select id="getCustomizedGroupMembersCount" parameterType="map" resultType="int">
+		SELECT count(vd.`id`)
+		FROM vc_devgroup_dev vdd
+		JOIN vc_dev vd ON vdd.`dev_id`=vd.`id`
+		JOIN vc_dev_type vdt ON vd.`type`=vdt.`id`
+		JOIN vc_dev_role vdr ON vd.`role`=vdr.`id`
+		<where>
+			<if test="groupId != '' and groupId != null">
+				and vdd.devgroup_id = #{groupId}
+			</if>
+			<if test="id != '' and id != null">
+				and vd.id like CONCAT('%',#{id},'%')
+			</if>
+			<if test="name != '' and name != null">
+				and vd.name like CONCAT('%',#{name},'%')
+			</if>
+			<if test="typeId != '' and typeId != null">
+				and vd.type = #{typeId}
+			</if>
+		</where>
+	</select>
+	
+	
+	<!-- 获取用户 -->
+	<select id="getUserInformation"  resultType="UserVO">
+		select
+		vc_user.login_name as loginName
+		from vc_user 
+	</select>
+	<!-- 基础服务同步数据到会管 -->
+	<insert id="addUserInfo" parameterType="list">  
+<!--	<selectKey resultType="java.lang.String" order="BEFORE"
+			keyProperty="uuid">
+			select replace(uuid(), '-', '') from dual
+		</selectKey>-->
+		insert into vc_user(uuid,userid,login_name,name, phone,create_time,login_pwd,web_login,isvalid)
+		values
+		<foreach collection="list" item="item" index="index" separator=",">
+			(REPLACE(UUID(),'-',''),#{item.userid},#{item.loginName},#{item.name},#{item.phone}, #{item.createTime} ,#{item.loginPwd},#{item.webLogin},#{item.isvalid})
+		</foreach>
+		ON DUPLICATE KEY UPDATE userid=values(userid),phone=values(phone),name=values(name),
+		create_time=values(create_time),login_pwd=values(login_pwd)
+	</insert>
+<!-- 根据uuid查询 -->
+	<select id="getUserListInfo" parameterType="map"  resultType="UserVO">
+		select 	vc_user.login_name as loginName
+		from vc_user
+		where vc_user.uuid in
+			<foreach item="uuid" index="index" collection="uuids" open="("
+				separator="," close=")">
+				#{uuid}
+			</foreach>
+	</select>
+	
+	<!-- 根据uuid查询 -->
+	<select id="getUserByUuid" parameterType="map"  resultType="UserVO">
+		select 	vc_user.login_name as loginName
+		from vc_user
+		where vc_user.uuid =#{uuid}
+	</select>
+	
+	<!-- 根据loginName获取用户登录密码 -->
+	<select id="getUserByLoginName" parameterType="map"  resultType="UserVO">
+		select 	vc_user.login_name as loginName,
+		vc_user.login_pwd as loginPwd,name
+		from vc_user
+		where vc_user.login_name =#{loginName}
+	</select>
+	
+	<!-- 获取现有用户的来源-行政区域 -->
+	<select id="getUserRegionList" parameterType="map"  resultType="RegionVO">
+		SELECT DISTINCT(vs.svr_region_id) AS id, vr.`name` FROM vc_user vs
+		JOIN vc_region vr ON vs.`svr_region_id`=vr.id
+	</select>
+	
+	
+	<!-- 根据loginName获取用户真实名称-->
+	<select id="getNameByLoginName" parameterType="String"  resultType="UserVO">
+		select uuid,name,max_dev_num as maxDevNum
+		from vc_user
+		where vc_user.login_name = #{loginName} and vc_user.svr_region_id is null
+	</select>
+	
+	<!-- 根据loginName获取用户access_token-->
+	<select id="getTokenByLoginName" parameterType="map"  resultType="String">
+		SELECT access_token 
+		FROM vc_user_access_token 
+		WHERE user_id = (SELECT UUID FROM vc_user WHERE login_name = #{loginName})
+		and client_type = #{clientType}
+	</select>
+	
+		<!-- 设置用户最大参会数 -->
+	<update id="updateMaxDevNumByLoginName" parameterType="UserVO" >
+	 update vc_user set max_dev_num=#{maxDevNum} where login_name=#{loginName}
+	</update>
+</mapper>

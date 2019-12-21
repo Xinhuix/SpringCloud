@@ -1,0 +1,297 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd" >
+<mapper namespace="com.visionvera.dao.datacore.HospitalMapper" >
+    <resultMap id="BaseResultMap" type="com.visionvera.bean.datacore.Hospital" >
+        <id column="id" property="id" jdbcType="BIGINT" />
+        <result column="hospital_name" property="hospitalName" jdbcType="VARCHAR" />
+        <result column="hospital_level" property="hospitalLevel" jdbcType="TINYINT" />
+        <result column="opening_time" property="openingTime" jdbcType="TIMESTAMP" />
+        <result column="people_num" property="peopleNum" jdbcType="INTEGER" />
+        <result column="area" property="area" jdbcType="VARCHAR" />
+        <result column="province" property="province" jdbcType="VARCHAR" />
+        <result column="city" property="city" jdbcType="VARCHAR" />
+        <result column="county" property="county" jdbcType="VARCHAR" />
+        <result column="town" property="town" jdbcType="VARCHAR" />
+        <result column="uuid" property="uuid" jdbcType="VARCHAR" />
+        <result column="create_time" property="createTime" jdbcType="TIMESTAMP" />
+        <result column="update_time" property="updateTime" jdbcType="TIMESTAMP" />
+        <result column="regions" property="regions" jdbcType="VARCHAR" />
+        <result column="level_name" property="levelName" jdbcType="VARCHAR" />
+    </resultMap>
+    <sql id="Base_Column_List" >
+            t_hosp_hospital.id, hospital_name, hospital_level, opening_time, people_num, area, province, city,
+        county, town, uuid, create_time, update_time, regions
+    </sql>
+    <select id="selectByPrimaryKey" resultMap="BaseResultMap" parameterType="java.lang.Long" >
+        select 
+        <include refid="Base_Column_List" />
+        from t_hosp_hospital
+        where id = #{id,jdbcType=BIGINT}
+    </select>
+    <delete id="deleteByPrimaryKey" parameterType="java.lang.Long" >
+        delete from t_hosp_hospital
+        where id = #{id,jdbcType=BIGINT}
+    </delete>
+    <insert id="insert" parameterType="com.visionvera.bean.datacore.Hospital" >
+        insert into t_hosp_hospital (id, hospital_name, hospital_level,
+            opening_time, people_num, area, 
+            province, city, county, 
+            town, uuid, create_time, 
+            update_time, regions)
+        values (#{id,jdbcType=BIGINT}, #{hospitalName,jdbcType=VARCHAR}, #{hospitalLevel,jdbcType=TINYINT}, 
+            #{openingTime,jdbcType=TIMESTAMP}, #{peopleNum,jdbcType=INTEGER}, #{area,jdbcType=VARCHAR}, 
+            #{province,jdbcType=VARCHAR}, #{city,jdbcType=VARCHAR}, #{county,jdbcType=VARCHAR}, 
+            #{town,jdbcType=VARCHAR}, #{uuid,jdbcType=VARCHAR}, #{createTime,jdbcType=TIMESTAMP}, 
+            #{updateTime,jdbcType=TIMESTAMP}, #{regions,jdbcType=VARCHAR})
+    </insert>
+    <insert id="insertSelective" parameterType="com.visionvera.bean.datacore.Hospital" >
+        insert into t_hosp_hospital
+        <trim prefix="(" suffix=")" suffixOverrides="," >
+            <if test="id != null" >
+                id,
+            </if>
+            <if test="hospitalName != null" >
+                hospital_name,
+            </if>
+            <if test="hospitalLevel != null" >
+                hospital_level,
+            </if>
+            <if test="openingTime != null" >
+                opening_time,
+            </if>
+            <if test="peopleNum != null" >
+                people_num,
+            </if>
+            <if test="area != null" >
+                area,
+            </if>
+            <if test="province != null" >
+                province,
+            </if>
+            <if test="city != null" >
+                city,
+            </if>
+            <if test="county != null" >
+                county,
+            </if>
+            <if test="town != null" >
+                town,
+            </if>
+            <if test="uuid != null" >
+                uuid,
+            </if>
+            <if test="createTime != null" >
+                create_time,
+            </if>
+            <if test="updateTime != null" >
+                update_time,
+            </if>
+            <if test="regions != null" >
+                regions,
+            </if>
+            <if test="lastRegion != null" >
+                lastRegion,
+            </if>
+        </trim>
+        <trim prefix="values (" suffix=")" suffixOverrides="," >
+            <if test="id != null" >
+                #{id,jdbcType=BIGINT},
+            </if>
+            <if test="hospitalName != null" >
+                #{hospitalName,jdbcType=VARCHAR},
+            </if>
+            <if test="hospitalLevel != null" >
+                #{hospitalLevel,jdbcType=TINYINT},
+            </if>
+            <if test="openingTime != null" >
+                #{openingTime,jdbcType=TIMESTAMP},
+            </if>
+            <if test="peopleNum != null" >
+                #{peopleNum,jdbcType=INTEGER},
+            </if>
+            <if test="area != null" >
+                #{area,jdbcType=VARCHAR},
+            </if>
+            <if test="province != null" >
+                #{province,jdbcType=VARCHAR},
+            </if>
+            <if test="city != null" >
+                #{city,jdbcType=VARCHAR},
+            </if>
+            <if test="county != null" >
+                #{county,jdbcType=VARCHAR},
+            </if>
+            <if test="town != null" >
+                #{town,jdbcType=VARCHAR},
+            </if>
+            <if test="uuid != null" >
+                #{uuid,jdbcType=VARCHAR},
+            </if>
+            <if test="createTime != null" >
+                #{createTime,jdbcType=TIMESTAMP},
+            </if>
+            <if test="updateTime != null" >
+                #{updateTime,jdbcType=TIMESTAMP},
+            </if>
+            <if test="regions != null" >
+                #{regions,jdbcType=VARCHAR},
+            </if>
+            <if test="lastRegion != null" >
+                #{lastRegion,jdbcType=VARCHAR},
+            </if>
+        </trim>
+    </insert>
+    <update id="updateByPrimaryKeySelective" parameterType="com.visionvera.bean.datacore.Hospital" >
+        update t_hosp_hospital
+        <set >
+            <if test="hospitalName != null" >
+                hospital_name = #{hospitalName,jdbcType=VARCHAR},
+            </if>
+            <if test="hospitalLevel != null" >
+                hospital_level = #{hospitalLevel,jdbcType=TINYINT},
+            </if>
+            <if test="openingTime != null" >
+                opening_time = #{openingTime,jdbcType=TIMESTAMP},
+            </if>
+            <if test="peopleNum != null" >
+                people_num = #{peopleNum,jdbcType=INTEGER},
+            </if>
+            <if test="area != null" >
+                area = #{area,jdbcType=VARCHAR},
+            </if>
+            <if test="province != null" >
+                province = #{province,jdbcType=VARCHAR},
+            </if>
+            <if test="city != null" >
+                city = #{city,jdbcType=VARCHAR},
+            </if>
+            <if test="county != null" >
+                county = #{county,jdbcType=VARCHAR},
+            </if>
+            <if test="town != null" >
+                town = #{town,jdbcType=VARCHAR},
+            </if>
+            <if test="uuid != null" >
+                uuid = #{uuid,jdbcType=VARCHAR},
+            </if>
+            <if test="createTime != null" >
+                create_time = #{createTime,jdbcType=TIMESTAMP},
+            </if>
+            <if test="updateTime != null" >
+                update_time = #{updateTime,jdbcType=TIMESTAMP},
+            </if>
+            <if test="regions != null" >
+                regions = #{regions,jdbcType=VARCHAR},
+            </if>
+        </set>
+        where id = #{id,jdbcType=BIGINT}
+    </update>
+    <update id="updateByPrimaryKey" parameterType="com.visionvera.bean.datacore.Hospital" >
+        update t_hosp_hospital
+        set hospital_name = #{hospitalName,jdbcType=VARCHAR},
+            hospital_level = #{hospitalLevel,jdbcType=TINYINT},
+            opening_time = #{openingTime,jdbcType=TIMESTAMP},
+            people_num = #{peopleNum,jdbcType=INTEGER},
+            area = #{area,jdbcType=VARCHAR},
+            province = #{province,jdbcType=VARCHAR},
+            city = #{city,jdbcType=VARCHAR},
+            county = #{county,jdbcType=VARCHAR},
+            town = #{town,jdbcType=VARCHAR},
+            uuid = #{uuid,jdbcType=VARCHAR},
+            create_time = #{createTime,jdbcType=TIMESTAMP},
+            update_time = #{updateTime,jdbcType=TIMESTAMP},
+            regions = #{regions,jdbcType=VARCHAR}
+        where id = #{id,jdbcType=BIGINT}
+    </update>
+    <insert id="batchInsert">
+    <if test="items.get(0) != null">
+            insert into t_hosp_hospital  (id, hospital_name, hospital_level,
+          opening_time, people_num, area, 
+          province, city, county, 
+          town, uuid, create_time, 
+          update_time, regions)
+      values
+      <foreach collection="items" item="item" index="index" separator=",">
+      (#{item.id,jdbcType=BIGINT}, #{item.hospitalName,jdbcType=VARCHAR}, #{item.hospitalLevel,jdbcType=TINYINT}, 
+          #{item.openingTime,jdbcType=TIMESTAMP}, #{item.peopleNum,jdbcType=INTEGER}, #{item.area,jdbcType=VARCHAR}, 
+          #{item.province,jdbcType=VARCHAR}, #{item.city,jdbcType=VARCHAR}, #{item.county,jdbcType=VARCHAR}, 
+          #{item.town,jdbcType=VARCHAR}, #{item.uuid,jdbcType=VARCHAR}, #{item.createTime,jdbcType=TIMESTAMP}, 
+          #{item.updateTime,jdbcType=TIMESTAMP}, #{item.regions,jdbcType=VARCHAR})
+      </foreach>
+    </if>
+  </insert>
+    <select id="selectByObject" resultMap="BaseResultMap" parameterType="com.visionvera.bean.datacore.Hospital" >
+      select 
+          <include refid="Base_Column_List" />,level_name
+      from t_hosp_hospital left join t_hosp_hospital_level on hospital_level = t_hosp_hospital_level.id
+      <where>
+		<if test="hospitalName != null and hospitalName != ''">
+			AND hospital_name LIKE CONCAT('%',#{hospitalName,jdbcType=VARCHAR},'%')
+		</if>
+		<if test="hospitalLevel != null ">
+			AND hospital_level = #{hospitalLevel,jdbcType=TINYINT}
+		</if>
+		<if test="openingTime != null ">
+			AND opening_time = #{openingTime,jdbcType=TIMESTAMP}
+		</if>
+		<if test="peopleNum != null ">
+			AND people_num = #{peopleNum,jdbcType=INTEGER}
+		</if>
+		<if test="area != null and area != ''">
+			AND area = #{area,jdbcType=VARCHAR}
+		</if>
+		<if test="province != null and province != ''">
+			AND province = #{province,jdbcType=VARCHAR}
+		</if>
+		<if test="city != null and city != ''">
+			AND city = #{city,jdbcType=VARCHAR}
+		</if>
+		<if test="county != null and county != ''">
+			AND county = #{county,jdbcType=VARCHAR}
+		</if>
+		<if test="town != null and town != ''">
+			AND town = #{town,jdbcType=VARCHAR}
+		</if>
+		<if test="uuid != null and uuid != ''">
+			AND uuid = #{uuid,jdbcType=VARCHAR}
+		</if>
+		<if test="createTime != null ">
+			AND create_time = #{createTime,jdbcType=TIMESTAMP}
+		</if>
+		<if test="updateTime != null ">
+			AND update_time = #{updateTime,jdbcType=TIMESTAMP}
+		</if>
+		<if test="regions != null and regions != ''">
+			AND regions = #{regions,jdbcType=VARCHAR}
+		</if>
+      </where>
+   order by id
+  </select>
+    <select id="level" resultType="java.util.Map">
+        select id,level_name as levelName from t_hosp_hospital_level
+    </select>
+    <select id="area" resultType="java.util.Map">
+        SELECT
+            id,
+            area_name AS name
+        FROM
+            t_hosp_area;
+    </select>
+    <select id="areaRegion" resultType="java.util.Map">
+        SELECT
+            r.id,
+            r.`name` AS name
+        FROM
+            t_hosp_area_region ar LEFT JOIN t_regionb r on ar.region_id=r.id
+        where
+            area_id=#{regionId,jdbcType=INTEGER};
+    </select>
+    <select id="region" resultType="java.util.Map">
+        SELECT
+            r.id,
+            r.`name` AS name
+        FROM
+            t_regionb r
+        where r.pid=#{regionId,jdbcType=BIGINT}
+    </select>
+</mapper>

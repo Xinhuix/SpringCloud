@@ -1,0 +1,296 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.visionvera.dao.operation.BreakdownMeetingDao">
+
+    <!-- 通用查询映射结果 -->
+    <resultMap id="BaseResultMap" type="com.visionvera.bean.operation.BreakdownMeeting">
+        <id column="meetingId" property="meetingId"/>
+        <result column="breakDownCount" property="breakDownCount"/>
+        <result column="solveCount" property="solveCount"/>
+        <result column="needVisitTotal" property="needVisitTotal"/>
+        <result column="visitCount" property="visitCount"/>
+        <result column="solveStatus" property="solveStatus"/>
+        <result column="visitStatus" property="visitStatus"/>
+    </resultMap>
+
+    <!-- 通用查询结果列 -->
+    <sql id="Base_Column_List">
+        meetingId, breakDownCount, solveCount, needVisitTotal, visitCount, solveStatus, visitStatus
+    </sql>
+
+  <!-- 通用查询条件 -->
+  <sql id="Where_Common">
+  		<if test="null != meetingId">
+			AND meetingId = #{meetingId}
+		</if>
+		<if test="null != breakDownCount">
+			AND breakDownCount = #{breakDownCount}
+		</if>
+		<if test="null != solveCount">
+			AND solveCount = #{solveCount}
+		</if>
+		<if test="null != needVisitTotal">
+			AND needVisitTotal = #{needVisitTotal}
+		</if>
+		<if test="null != visitCount">
+			AND visitCount = #{visitCount}
+		</if>
+		<if test="null != solveStatus">
+			AND solveStatus = #{solveStatus}
+		</if>
+		<if test="null != visitStatus">
+			AND visitStatus = #{visitStatus}
+		</if>
+	   </sql>
+ 	<select id="selectByPrimaryKey" resultType="com.visionvera.bean.operation.BreakdownMeeting">
+		SELECT <include refid="Base_Column_List" /> FROM vc_breakdown_meeting WHERE meetingId = #{meetingId}
+	</select>
+	
+	<select id="get" resultType="com.visionvera.bean.operation.BreakdownMeeting">
+		SELECT <include refid="Base_Column_List" /> FROM vc_breakdown_meeting
+		<where>
+     		 <include refid="Where_Common"/>
+ 		</where>
+		limit 1
+	</select>
+	
+	<select id="queryList" resultType="com.visionvera.bean.operation.BreakdownMeeting" parameterType="com.visionvera.bean.operation.BreakdownMeeting">
+		SELECT <include refid="Base_Column_List" /> FROM vc_breakdown_meeting
+		 <where>
+     		 <include refid="Where_Common"/>
+ 		</where>
+	</select>
+	
+	<select id="queryCount" resultType="java.lang.Integer" parameterType="com.visionvera.bean.operation.BreakdownMeeting">
+		SELECT count(*) FROM vc_breakdown_meeting
+		<where>
+     		 <include refid="Where_Common"/>
+ 		</where>
+	</select>
+	
+    <insert id="insert" parameterType="com.visionvera.bean.operation.BreakdownMeeting">
+		INSERT INTO vc_breakdown_meeting
+		<trim prefix="(" suffix=")" suffixOverrides="," >
+			breakDownCount,
+			solveCount,
+			needVisitTotal,
+			visitCount,
+			solveStatus,
+			visitStatus,
+		</trim>	
+		<trim prefix="values (" suffix=")" suffixOverrides="," >
+			#{breakDownCount},
+			#{solveCount},
+			#{needVisitTotal},
+			#{visitCount},
+			#{solveStatus},
+			#{visitStatus},
+		</trim>	
+	</insert>
+	
+    <insert id="insertSelective" parameterType="com.visionvera.bean.operation.BreakdownMeeting">
+		INSERT INTO vc_breakdown_meeting
+		<trim prefix="(" suffix=")" suffixOverrides="," >
+		<if test="null != meetingId">
+			meetingId,
+		</if>
+		<if test="null != breakDownCount">
+			breakDownCount,
+		</if>
+		<if test="null != solveCount">
+			solveCount,
+		</if>
+		<if test="null != needVisitTotal">
+			needVisitTotal,
+		</if>
+		<if test="null != visitCount">
+			visitCount,
+		</if>
+		<if test="null != solveStatus">
+			solveStatus,
+		</if>
+		<if test="null != visitStatus">
+			visitStatus,
+		</if>
+	</trim>	
+	<trim prefix="values (" suffix=")" suffixOverrides="," >
+		<if test="null != meetingId">
+			#{meetingId},
+		</if>
+		<if test="null != breakDownCount">
+			#{breakDownCount},
+		</if>
+		<if test="null != solveCount">
+			#{solveCount},
+		</if>
+		<if test="null != needVisitTotal">
+			#{needVisitTotal},
+		</if>
+		<if test="null != visitCount">
+			#{visitCount},
+		</if>
+		<if test="null != solveStatus">
+			#{solveStatus},
+		</if>
+		<if test="null != visitStatus">
+			#{visitStatus},
+		</if>
+	</trim>	
+	</insert>
+	
+	 <update id="updateByPrimaryKeySelective" parameterType="com.visionvera.bean.operation.BreakdownMeeting" >
+	 update vc_breakdown_meeting
+     <set>
+	    <trim suffixOverrides="," >
+		    <if test="null != breakDownCount">
+				breakDownCount = #{breakDownCount},
+			</if>
+			<if test="null != solveCount">
+				solveCount = #{solveCount},
+			</if>
+			<if test="null != needVisitTotal">
+				needVisitTotal = #{needVisitTotal},
+			</if>
+			<if test="null != visitCount">
+				visitCount = #{visitCount},
+			</if>
+			<if test="null != solveStatus">
+				solveStatus = #{solveStatus},
+			</if>
+			<if test="null != visitStatus">
+				visitStatus = #{visitStatus},
+			</if>
+		</trim>
+	 </set>
+   WHERE meetingId = #{meetingId}
+   </update>
+	
+	 <update id="updateByPrimaryKey" parameterType="com.visionvera.bean.operation.BreakdownMeeting" >
+	 update vc_breakdown_meeting
+     <set>
+	    <trim suffixOverrides="," >
+    		breakDownCount = #{breakDownCount},
+			solveCount = #{solveCount},
+			needVisitTotal = #{needVisitTotal},
+			visitCount = #{visitCount},
+			solveStatus = #{solveStatus},
+			visitStatus = #{visitStatus},
+		</trim>
+	 </set>
+   	WHERE meetingId = #{meetingId}
+    </update>
+  
+  <delete id="deleteByPrimaryKey" parameterType="java.lang.Integer" >
+    delete from vc_breakdown_meeting
+    where meetingId = #{meetingId}
+  </delete>
+  
+  <delete id="delete" parameterType="com.visionvera.bean.operation.BreakdownMeeting" >
+    delete from vc_breakdown_meeting
+    where 1=1
+    <if test="null != meetingId">
+		and meetingId = #{meetingId}
+	</if>
+	<if test="null != breakDownCount">
+		and breakDownCount = #{breakDownCount}
+	</if>
+	<if test="null != solveCount">
+		and solveCount = #{solveCount}
+	</if>
+	<if test="null != needVisitTotal">
+		and needVisitTotal = #{needVisitTotal}
+	</if>
+	<if test="null != visitCount">
+		and visitCount = #{visitCount}
+	</if>
+	<if test="null != solveStatus">
+		and solveStatus = #{solveStatus}
+	</if>
+	<if test="null != visitStatus">
+		and visitStatus = #{visitStatus}
+	</if>
+	</delete>
+	
+	<!-- 获取故障会议信息列表 -->
+	<!-- 获取故障会议信息列表 -->
+	<select id="getBreakdownMeetingList" resultType="BreakdownMeeting" parameterType="map">
+		select meeting.uuid        as meetingId,
+			   meeting.name        as name,
+			   meeting.level       as level,
+			   meeting.compere     as compere,
+			   meeting.devNum      as devNum,
+			   meeting.startTime   as startTime,
+			   meeting.endTime     as endTime,
+			   meeting.type        as type,
+			   meeting.masterNo	   as masterNo,
+			   bdm.breakDownCount  as breakDownCount,
+			   bdm.solveCount      as solveCount,
+			   bdm.needVisitTotal  as needVisitTotal,
+			   bdm.visitCount      as visitCount,
+			   bdm.solveStatus     as solveStatus,
+			   bdm.visitStatus     as visitStatus,
+			   bdi.id			   as breakdownId
+		from view_schedule_detail_info meeting 
+		left join vc_breakdown_meeting bdm on meeting.uuid=bdm.meetingId 
+		left join vc_breakdown_info bdi   on   bdi.meetingId=bdm.meetingId
+		<where>
+			and (meeting.status=4 or meeting.status=5) 
+			<if test="name != '' and name != null">
+				and meeting.name like CONCAT('%',#{name},'%')
+			</if>
+			<if test="compere != '' and compere != null">
+				and meeting.compere like CONCAT('%',#{compere},'%')
+			</if>
+			<if test="startStartMeetingTime != null and startStartMeetingTime != '' ">
+				and UNIX_TIMESTAMP(meeting.startTime) &gt;=
+				UNIX_TIMESTAMP(#{startStartMeetingTime})
+			</if>
+			<if test="endStartMeetingTime != null and endStartMeetingTime !='' ">
+				and UNIX_TIMESTAMP(meeting.startTime) &lt;=
+				UNIX_TIMESTAMP(#{endStartMeetingTime})
+			</if>
+			<if test="type != '' and type != null">
+				and meeting.type = #{type}
+			</if>
+			<if test="level != '' and level != null">
+				and meeting.level = #{level}
+			</if>
+			<if test="solveStatus != '' and solveStatus != null">
+				and bdm.solveStatus =#{solveStatus}
+			</if>
+			<if test="isMaintainBreakdown != '' and isMaintainBreakdown != null and isMaintainBreakdown==1">
+				and bdm.breakDownCount &gt; 0
+			</if>
+			<if test="isMaintainBreakdown != '' and isMaintainBreakdown != null and isMaintainBreakdown==0">
+				and bdm.breakDownCount &lt;= 0
+			</if>
+			<if test="visitStatus != '' and visitStatus != null">
+				and bdm.visitStatus =#{visitStatus}
+			</if>
+			<if test="masterNo != null and masterNo.length() > 0">
+				and meeting.masterNo = #{masterNo}
+			</if>
+		</where>
+		GROUP BY meeting.uuid
+		ORDER BY ABS(TIMESTAMPDIFF(SECOND,NOW(),bdi.actualVisitTime)), bdm.breakDownCount DESC,meeting.endTime DESC
+	</select>
+	<!-- 查询会议详情 -->
+	<select id="getBreakdownMeetingInfo" resultType="map" parameterType="map">
+		select meeting.uuid        as meetingId,
+			   meeting.xxdz        as masterAddr,
+			   region.name         as region,
+			   meeting.staffLevel  as staffLevel,
+			   meeting.name		   as name,
+			   meeting.masterNo    as masterNo,
+			   meeting.masterName  as masterName,
+			   meeting.startTime   as startTime,
+			   meeting.endTime     as endTime,
+			   meeting.creatorName as creatorName,
+			   meeting.alostpacket as alostpacket,
+			   meeting.vlostpacket as vlostpacket,
+			   meeting.meetCount   as meetCount
+		from view_schedule_base_info meeting 
+		left join vc_region region on region.id = meeting.devRegionId
+		where meeting.uuid = #{meetingId} and region.gradeid = 1
+	</select>
+</mapper>

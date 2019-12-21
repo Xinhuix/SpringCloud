@@ -1,0 +1,12 @@
+server:
+  port: 8807
+
+spring:
+  application:
+    #项目的服务名称
+    name: visionvera-perception
+  #开发环境配置文件
+  profiles:
+    active:
+      production
+#      development

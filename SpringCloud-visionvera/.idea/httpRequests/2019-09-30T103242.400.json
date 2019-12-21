@@ -1,0 +1,8 @@
+{
+  "timestamp": 1569810762080,
+  "status": 400,
+  "error": "Bad Request",
+  "exception": "org.springframework.web.bind.MissingServletRequestParameterException",
+  "message": "Required String parameter 'access_token' is not present",
+  "path": "/rest/unifiedInterface/netWork/getOrganizationalStructures"
+}

@@ -1,0 +1,202 @@
+<project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+	xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
+	<modelVersion>4.0.0</modelVersion>
+	<parent>
+		<groupId>com.visionvera</groupId>
+		<artifactId>visionvera-parent</artifactId>
+		<version>0.0.1-SNAPSHOT</version>
+	</parent>
+	<version>2.2.0-SNAPSHOT</version>
+	<artifactId>visionvera-operation</artifactId>
+	<description>运维中心</description>
+	<dependencies>
+		<!-- Feign调用的服务公共API Start -->
+		<dependency>
+			<groupId>com.visionvera</groupId>
+			<artifactId>visionvera-common-api</artifactId>
+			<version>0.0.1-SNAPSHOT</version>
+		</dependency>
+		<!-- Feign调用的服务公共API End -->
+
+		<!-- Spring Boot Start -->
+		<!-- Spring Boot Web Start -->
+		<dependency>
+			<groupId>org.springframework.boot</groupId>
+			<artifactId>spring-boot-starter-web</artifactId>
+		</dependency>
+		<!-- Spring Boot Web End -->
+
+		<!-- Spring Boot WebSocket Start -->
+		<dependency>
+			<groupId>org.springframework.boot</groupId>
+			<artifactId>spring-boot-starter-websocket</artifactId>
+		</dependency>
+		<!-- Spring Boot WebSocket End -->
+
+		<!-- Spring Boot Test Start -->
+		<dependency>
+			<groupId>org.springframework.boot</groupId>
+			<artifactId>spring-boot-starter-test</artifactId>
+		</dependency>
+		<!-- Spring Boot Test End -->
+		<!-- Spring Boot Actuator Start -->
+		<dependency>
+			<groupId>org.springframework.boot</groupId>
+			<artifactId>spring-boot-starter-actuator</artifactId>
+		</dependency>
+		<!-- Spring Boot Actuator End -->
+		<!-- Spring Boot End -->
+
+		<!-- 数据库相关包 Start -->
+		<!-- PageHelper分页插件 Start -->
+		<dependency>
+			<groupId>com.github.pagehelper</groupId>
+			<artifactId>pagehelper-spring-boot-starter</artifactId>
+			<exclusions>
+				<exclusion>
+					<groupId>org.mybatis.spring.boot</groupId>
+					<artifactId>mybatis-spring-boot-starter</artifactId>
+				</exclusion>
+			</exclusions>
+		</dependency>
+		<!-- PageHelper分页插件 End -->
+		<!-- Spring-Boot-MyBatis Start -->
+		<dependency>
+			<groupId>org.mybatis.spring.boot</groupId>
+			<artifactId>mybatis-spring-boot-starter</artifactId>
+		</dependency>
+		<!-- Spring-Boot-MyBatis End -->
+		<!-- Druid数据库连接池 Start -->
+		<dependency>
+			<groupId>com.alibaba</groupId>
+			<artifactId>druid-spring-boot-starter</artifactId>
+		</dependency>
+		<!-- Druid数据库连接池 End -->
+		<!-- MySQL Connect Start -->
+		<dependency>
+			<groupId>mysql</groupId>
+			<artifactId>mysql-connector-java</artifactId>
+		</dependency>
+		<!-- MySQL Connect End -->
+		<!-- 数据库相关包 End -->
+
+		<!-- Spring Cloud Component Start -->
+		<!-- Spring Cloud Eureka Client Start -->
+		<dependency>
+			<groupId>org.springframework.cloud</groupId>
+			<artifactId>spring-cloud-starter-eureka</artifactId>
+		</dependency>
+		<!-- Spring Cloud Eureka Client End -->
+		<!-- Spring Cloud Feign Start -->
+		<dependency>
+			<groupId>org.springframework.cloud</groupId>
+			<artifactId>spring-cloud-starter-feign</artifactId>
+		</dependency>
+		<!-- Spring Cloud Feign End -->
+		<!-- Spring Cloud Hystrix Start -->
+		<dependency>
+			<groupId>org.springframework.cloud</groupId>
+			<artifactId>spring-cloud-starter-hystrix</artifactId>
+		</dependency>
+		<!-- Spring Cloud Hystrix End Spring Cloud Ribbon Start -->
+		<dependency>
+			<groupId>org.springframework.cloud</groupId>
+			<artifactId>spring-cloud-starter-ribbon</artifactId>
+		</dependency>
+		<!-- Spring Cloud Ribbon End -->
+		<!-- Spring Cloud Slueth Start -->
+		<!-- <dependency> 
+				<groupId>org.springframework.cloud</groupId> 
+				<artifactId>spring-cloud-starter-sleuth</artifactId> 
+			</dependency> -->
+		<!-- Spring Cloud Slueth End -->
+		<!-- Spring Cloud Component End -->
+
+		<!-- Tomcat Start -->
+		<dependency>
+			<groupId>org.apache.tomcat</groupId>
+			<artifactId>tomcat-juli</artifactId>
+		</dependency>
+		<!-- Tomcat End -->
+		
+		<!-- POI Start -->
+		<dependency>
+	    	<groupId>org.apache.poi</groupId>
+		    <artifactId>poi</artifactId>
+		</dependency>
+		<dependency>
+		    <groupId>org.apache.poi</groupId>
+		    <artifactId>poi-ooxml</artifactId>
+		</dependency>
+		<!-- POI End -->
+		
+		<!-- fileUpload Start -->
+		<dependency>
+		      <groupId>commons-fileupload</groupId>
+		      <artifactId>commons-fileupload</artifactId>
+		</dependency>
+		<dependency>
+		      <groupId>commons-io</groupId>
+		      <artifactId>commons-io</artifactId>
+		</dependency>
+		<!-- fileUpload End -->
+		
+		<!-- Spring Boot Activiti Start -->
+		<dependency>
+			<groupId>org.activiti</groupId>
+			<artifactId>activiti-spring-boot-starter-basic</artifactId>
+		</dependency>
+		<!-- Spring Boot Activiti End -->
+		<dependency>
+			<groupId>org.springframework.boot</groupId>
+			<artifactId>spring-boot-starter-data-solr</artifactId>
+		</dependency>
+		<!-- Spring Boot Redis Start -->
+		<dependency>
+            <groupId>org.springframework.boot</groupId>
+            <artifactId>spring-boot-starter-data-redis</artifactId>
+        </dependency>
+		<!-- Spring Boot Redis End -->
+		<!-- Netty Start -->
+		<dependency>
+			<groupId>io.netty</groupId>
+            <artifactId>netty-all</artifactId>
+		</dependency>
+		<!-- Netty End -->
+		
+		<!-- dom4j Start-->
+		<dependency>
+		    <groupId>dom4j</groupId>
+		    <artifactId>dom4j</artifactId>
+		</dependency>
+		<!-- dom4j End -->
+		<!-- jaxen XPath库 Start-->
+		<dependency>
+    		<groupId>jaxen</groupId>
+    		<artifactId>jaxen</artifactId>
+    	</dependency>
+		<!-- jaxen XPath库 End -->
+		<dependency>
+			<groupId>org.infinispan</groupId>
+			<artifactId>infinispan-core</artifactId>
+			<version>7.1.1.Final</version>
+		</dependency>
+		<!-- Spring Boot AMQP Start -->
+		<dependency>
+			<groupId>org.springframework.boot</groupId>
+			<artifactId>spring-boot-starter-amqp</artifactId>
+		</dependency>
+		<!-- Spring Boot AMQP End -->
+	</dependencies>
+
+	<build>
+		<plugins>
+			<!-- Spring Boot启动插件 Start -->
+			<plugin>
+				<groupId>org.springframework.boot</groupId>
+				<artifactId>spring-boot-maven-plugin</artifactId>
+			</plugin>
+			<!-- Spring Boot启动插件 End -->
+		</plugins>
+	</build>
+</project>

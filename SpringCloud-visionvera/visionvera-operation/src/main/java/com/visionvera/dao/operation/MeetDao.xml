@@ -1,0 +1,134 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+        "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+
+<mapper namespace="com.visionvera.dao.operation.MeetDao">
+	<!-- 查询会议列表 -->
+	<select id="getMeetList" resultType="ScheduleVO" parameterType="Map">
+		select
+		vsbi.uuid,
+		vsbi.name,
+		vsbi.starttime as startTime,
+		vsbi.endtime as endTime,
+		vsbi.createtime as createTime,
+		vsbi.groupid as groupId,
+		vsbi.groupname as groupName,
+		vsbi.creatorId,
+		vsbi.creatorName,
+		vsbi.accessor,
+		vsbi.status,
+		vsbi.svrRegionId ,
+		vsbi.svrRegionName,
+		vsbi.masterId,
+		vsbi.level as level,
+		vc_region.name as devRegionName
+		from view_schedule_base_info vsbi
+		INNER JOIN vc_meeting m
+		ON vsbi.`uuid` = m.`uuid`
+		left join vc_schedule on
+		vsbi.uuid = vc_schedule.uuid
+		left join vc_dev on
+		vc_schedule.master_no = vc_dev.id
+		left join vc_region on
+		vc_dev.region_id = vc_region.id
+		<if test="devId != null and devId != '' ">
+			LEFT JOIN vc_schedule_dev sd
+			ON sd.`schedule_id` = vsbi.`uuid`
+		</if>
+		<where>
+			<if test="start_time != null and start_time != '' ">
+				and UNIX_TIMESTAMP(vsbi.starttime) &gt;=
+				UNIX_TIMESTAMP(#{start_time})
+			</if>
+			<if test="end_time != null and end_time !='' ">
+				and UNIX_TIMESTAMP(vsbi.endtime) &lt;=
+				UNIX_TIMESTAMP(#{end_time})
+			</if>
+			<if test="name != null and name != '' ">
+				and vsbi.name like CONCAT('%',#{name},'%')
+			</if>
+			<if test="svrRegionId != null and svrRegionId != '' ">
+				and vsbi.svrRegionId=#{svrRegionId}
+			</if>
+			<if test="creatorName != null and creatorName !='' ">
+				and vsbi.creatorName like CONCAT('%',#{creatorName},'%')
+			</if>
+			<if test="creatorId != null and creatorId !='' ">
+				and (vsbi.creatorId = #{creatorId}
+					<if test="userName != null and userName != '' ">
+						or vsbi.authMember like CONCAT('%',#{userName},'%')
+					</if>
+					<if test="processIds != null and processIds.size() > 0">
+						or vsbi.processId in 
+						<foreach item="processId" index="index" collection="processIds" open="("
+							separator="," close=")">
+							#{processId}
+						</foreach>
+					</if>)
+			</if>
+		</where>
+		order by vsbi.starttime desc
+	</select>
+
+	<select id="getMeetListCount" resultType="int"
+		parameterType="Map">
+		select count(1) from view_schedule_base_info vsbi
+		INNER JOIN vc_meeting m
+		ON vsbi.`uuid` = m.`uuid`
+		<if test="devId != null and devId != '' ">
+			LEFT JOIN vc_schedule_dev sd
+			ON sd.`schedule_id` = vsbi.`uuid`
+		</if>
+		<where>
+			<if test="start_time != null and start_time != '' ">
+				and UNIX_TIMESTAMP(vsbi.starttime) &gt;=
+				UNIX_TIMESTAMP(#{start_time})
+			</if>
+			<if test="end_time != null and end_time !='' ">
+				and UNIX_TIMESTAMP(vsbi.endtime) &lt;=
+				UNIX_TIMESTAMP(#{end_time})
+			</if>
+			<if test="svrRegionId != null and svrRegionId != '' ">
+				and vsbi.svrRegionId=#{svrRegionId}
+			</if>
+			<if test="name != null and name != '' ">
+				and vsbi.name like CONCAT('%',#{name},'%')
+			</if>
+			<if test="creatorId != null and creatorId !='' ">
+				and (vsbi.creatorId = #{creatorId}
+				<if test="userName != null and userName != '' ">
+					or vsbi.authMember like CONCAT('%',#{userName},'%')
+				</if>
+				<if test="processIds != null and processIds.size() > 0">
+					or vsbi.processId in 
+					<foreach item="processId" index="index" collection="processIds" open="("
+						separator="," close=")">
+						#{processId}
+					</foreach>
+				</if>)
+			</if>
+		</where>
+	</select>
+	
+	<!-- 新增会议记录 -->
+	<insert id="addMeeting" parameterType="ScheduleVO">
+		insert ignore into vc_meeting(`uuid`,`operator_id`,start_time,stop_time,status)
+		VALUES(#{uuid},#{creatorId},#{startTime},#{endTime},#{status})
+	</insert>
+	
+	<!-- 新增会议记录 -->
+	<update id="updateMeeting" parameterType="ScheduleVO">
+		update vc_meeting set stop_time = #{endTime}, status = #{status}
+		<where>
+			uuid = #{uuid}
+		</where>
+	</update>
+	
+	<!-- 获取会议区域下拉菜单 -->
+	<select id="getConferenceSelectionArea"   resultType="RegionVO">
+	SELECT DISTINCT(vm.svr_region_id) AS id,
+	vr.`name` FROM vc_meeting vm
+	JOIN vc_region vr ON vm.`svr_region_id`=vr.id
+	</select>
+	
+</mapper>

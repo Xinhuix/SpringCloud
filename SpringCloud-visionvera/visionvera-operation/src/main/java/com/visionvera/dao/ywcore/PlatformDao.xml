@@ -1,0 +1,138 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+        "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.visionvera.dao.ywcore.PlatformDao">
+	<select id="getProcessExceptionCount" parameterType="string" resultType="int">
+		SELECT
+			COUNT(1)
+		FROM
+			tpos_process_relation a
+			JOIN t_platform_process b ON a.tpos_process_id = b.id
+		WHERE 
+			b.process_status = 'PROBLEM'
+			AND a.tpos_registerid = #{registerid}
+			AND a.yw_uuid = '' AND b.yw_uuid = ''
+	</select>
+	
+	<!-- 根据服务器唯一标识查询平台列表 -->
+	<select id="getPlatformListByServerUnique" parameterType="string" resultType="PlatformVO">
+		SELECT
+			a.tpos_id tposId,a.tpos_registerid tposRegisterid,a.tpos_name tposName,
+			b.abbreviation abbreviation,b.platformName,a.tpos_platform_type tposPlatformType,a.tpos_ip tposIp,
+			a.tpos_platform_version tposPlatformVersion,a.tpos_linkman tposLinkman,
+			a.tpos_phone tposPhone,a.tpos_email tposEmail,a.server_unique serverUnique,
+			a.conf_check confCheck,a.conf_check_time confCheckTime,a.version_check versionCheck
+		FROM
+			t_platform_tpos a LEFT JOIN t_platform_type b ON a.tpos_platform_type=b.platformType
+		WHERE
+			a.server_unique = #{serverUnique} AND a.tpos_state = 0
+			AND a.yw_uuid = ''
+	</select>
+	
+	<!-- 添加平台  -->
+	<insert id="insertPlatform" parameterType="PlatformVO">
+		INSERT INTO 
+			t_platform_tpos
+			(tpos_name ,tpos_phone ,tpos_linkman ,tpos_email ,
+			tpos_platform_version,tpos_platform_type ,tpos_ip ,
+			server_unique ,
+			tpos_registerid ,tpos_state ,tpos_createtime,conf_check,conf_check_time,version_check)
+		VALUES
+			(#{tposName},#{tposPhone},#{tposLinkman},#{tposEmail},
+			#{tposPlatformVersion},#{tposPlatformType},#{tposIp},
+			#{serverUnique},
+			#{tposRegisterid},#{tposState},now(),#{confCheck},#{confCheckTime},#{versionCheck})
+	</insert>
+	
+	<!-- 修改平台 -->
+	<update id="updatePlatform" parameterType="PlatformVO">
+		UPDATE t_platform_tpos
+        <set>
+            <if test="tposName != null and tposName !='' ">tpos_name = #{tposName},</if>
+            <if test="tposPhone != null and tposPhone !='' ">tpos_phone = #{tposPhone},</if>
+            <if test="tposLinkman != null and tposLinkman !='' ">tpos_linkman = #{tposLinkman},</if>
+            <if test="tposEmail != null and tposEmail !='' ">tpos_email = #{tposEmail},</if>
+            <if test="tposPlatformVersion != null and tposPlatformVersion !='' ">tpos_platform_version =
+                #{tposPlatformVersion},
+            </if>
+            <if test="tposPlatformType != null">tpos_platform_type = #{tposPlatformType},</if>
+            <if test="tposIp != null and tposIp !='' ">tpos_ip = #{tposIp},</if>
+            <if test="serverUnique != null and serverUnique !='' ">server_unique=#{serverUnique},</if>
+            <if test="tposModifytime != null">tpos_modifytime = now(),</if>
+			<if test="confCheck != null">conf_check = #{confCheck},</if>
+			<if test="confCheckTime != null and confCheckTime !=''">conf_check_time = #{confCheckTime},</if>
+			<if test="versionCheck != null">version_check = #{versionCheck},</if>
+        </set>
+        WHERE 
+        	tpos_registerid = #{tposRegisterid}
+	</update>
+	<!-- 删除平台 -->
+	<update id="deletePlatform" parameterType="string">
+		UPDATE 
+			t_platform_tpos 
+		SET 
+			tpos_state = -1,tpos_modifytime = now() 
+		WHERE 
+			tpos_registerid = #{tposRegisterid}
+	</update>
+
+	<!-- 根据平台唯一标识查询平台 -->
+	<select id="getPlatformByTposRegisterid" parameterType="string" resultType="PlatformVO">
+		SELECT
+			a.tpos_id tposId,a.tpos_registerid tposRegisterid,a.tpos_name tposName,
+			b.platformName,b.abbreviation abbreviation,a.tpos_platform_type tposPlatformType,a.tpos_ip tposIp,
+			a.tpos_platform_version tposPlatformVersion,a.tpos_linkman tposLinkman,
+			a.tpos_phone tposPhone,a.tpos_email tposEmail,a.server_unique serverUnique,a.conf_check confCheck,a.version_check versionCheck
+		FROM
+			t_platform_tpos a LEFT JOIN t_platform_type b ON a.tpos_platform_type=b.platformType
+		WHERE
+			a.tpos_registerid = #{tposRegisterid} AND a.tpos_state = 0
+	</select>
+
+	<!-- 根据平台唯一标识查询服务器信息 -->
+	<select id="getServerBasicsByTposRegisterid" parameterType="string" resultType="ServerBasics">
+		SELECT
+			a.id,a.serverName,a.serverUnique,a.serverHostname,a.serverSite,a.serverHostGroup,a.serverManageIp,a.port,a.serverElseIp,
+			a.serverTheirRoom,a.serverManufacturer,a.serverProvince,a.serverDistrict,a.serverOs,
+			a.serverPrincipal,a.serverPhone,a.transferType,a.terminalCode,a.v2vNetMac,a.netMac
+		FROM
+			t_server_basics a LEFT JOIN t_platform_tpos b ON a.serverUnique = b.server_unique
+		WHERE
+			b.tpos_registerid = #{registerid}
+	</select>
+
+	<!-- 恢复平台 -->
+	<update id="recoverPlatform" parameterType="string">
+		UPDATE
+			t_platform_tpos
+		SET
+			tpos_state = 0,tpos_modifytime = now()
+		WHERE
+			tpos_registerid = #{tposRegisterid}
+	</update>
+
+	<update id = "updatePlatfomVersionByPlatformType">
+		UPDATE
+			t_platform_tpos
+		SET tpos_platform_version = #{version}
+		WHERE tpos_platform_type = #{platformType} and tpos_state = 0
+	</update>
+	
+	
+	<!-- 根据进程id查询进程和平台信息 -->
+	<select id="getPlatformProcessByProcessId" parameterType="string" resultType="map">
+		SELECT
+		pt.tpos_id tposId,pt.tpos_registerid tposRegisterid,pt.tpos_name tposName,
+		pt.tpos_platform_type tposPlatformType,pt.tpos_ip tposIp,
+		pt.tpos_platform_version tposPlatformVersion,pt.tpos_linkman tposLinkman,
+		pt.tpos_phone tposPhone,pt.tpos_email tposEmail,pt.server_unique serverUnique,pt.conf_check confCheck,pt.version_check versionCheck,
+        pp.process_name processName
+		FROM
+		t_platform_process  pp  
+        LEFT JOIN tpos_process_relation pr on pp.id = pr.tpos_process_id
+        LEFT JOIN  t_platform_tpos pt on pr.tpos_registerid = pt.tpos_registerid
+		WHERE
+	    pt.tpos_state = 0 and pp.id =#{processId}
+		AND pp.yw_uuid = '' AND pr.yw_uuid = '' AND pt.yw_uuid = ''
+	</select>
+</mapper>

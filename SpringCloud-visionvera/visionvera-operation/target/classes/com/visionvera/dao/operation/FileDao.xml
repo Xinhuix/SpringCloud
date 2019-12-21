@@ -1,0 +1,193 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+        "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.visionvera.dao.operation.FileDao">
+	<!-- 获取文件列表 -->
+	<select id="getFileList"  resultType="FileVO" parameterType="map">
+		SELECT uuid,version,name,size,isforce as `force`,type,
+		DATE_FORMAT(create_time,'%Y-%m-%d %H:%i') AS createTime,
+		DATE_FORMAT(lastUpdateTime,'%Y-%m-%d %H:%i') AS lastUpdateTime,
+		applyFlag,updateMsg,spVersion,creator
+		FROM vc_file
+		<where>
+			<if test="version != null and version != '' ">
+				and version like CONCAT('%', #{version},'%') 
+			</if>
+			<if test="name != null and name != '' ">
+				and name like CONCAT('%', #{name},'%') 
+			</if>
+			<if test="type != null and type != '' ">
+				and type = #{type}
+			</if>
+			<if test="force != null and force != '' ">
+				and isforce = #{force}
+			</if>
+			<if test="applyFlag != null and applyFlag != '' ">
+				and applyFlag = #{applyFlag}
+			</if>
+			<if test="spVersion != null ">
+				and spVersion = #{spVersion}
+			</if>
+		</where>
+		order by isforce desc
+	</select>
+
+	<!-- 获取文件列表 -->
+	<select id="getFileListCount"  resultType="int" parameterType="map">
+		SELECT count(1)
+		FROM vc_file
+		<where>
+			<if test="version != null and version != '' ">
+				and version = #{version}
+			</if>
+			<if test="name != null and name != '' ">
+				and name like CONCAT('%', #{name},'%') 
+			</if>
+			<if test="type != null and type != '' ">
+				and type = #{type}
+			</if>
+			<if test="force != null and force != '' ">
+				and isforce = #{force}
+			</if>
+			<if test="applyFlag != null and applyFlag != '' ">
+				and applyFlag = #{applyFlag}
+			</if>
+			<if test="spVersion != null ">
+				and spVersion = #{spVersion}
+			</if>
+		</where>
+	</select>
+	
+	<!-- 插入文件信息 -->
+	<insert id="addFile" parameterType="FileVO" keyProperty="uuid">
+		<selectKey resultType="java.lang.String" order="BEFORE"
+			keyProperty="uuid">
+			select replace(uuid(), '-', '') from dual
+		</selectKey>
+		insert into vc_file(uuid,name,version,size,type,
+		isforce,creator,appMd5,create_time,applyFlag,spVersion)
+		values(#{uuid},#{name},#{version},#{size},#{type},
+		#{force},#{creator},#{appMd5},#{createTime},#{applyFlag},#{spVersion})
+	</insert>
+
+	<!-- 更新文件信息 -->
+	<update id="updateFile" parameterType="FileVO">
+		update vc_file set isforce = #{force},updateMsg = #{updateMsg},
+		lastUpdateTime = #{lastUpdateTime}, spVersion = #{spVersion}
+		<where>
+			uuid = #{uuid}
+		</where>
+	</update>
+	
+	<!-- 插入文件信息 -->
+	<delete id="deleteFile" parameterType="FileVO">
+		delete from vc_file
+		<where>
+			name = #{name}
+		</where>
+	</delete>
+
+	<!-- 插入文件信息 -->
+	<select id="checkName" parameterType="FileVO" resultType="int">
+		select count(1) from vc_file
+		<where>
+			name = #{name}
+		</where>
+	</select>
+	<!-- 根据应用包名查询最新更新版本 -->
+	<select id="getAppInfoByAppPackage" parameterType="map" resultType="FileVO">
+		SELECT uuid,name,applyFlag,version,isforce 'force',updateMsg,appMd5,
+		DATE_FORMAT(lastUpdateTime,'%Y-%m-%d %H:%i:%s') AS lastUpdateTime,size
+		FROM vc_file
+		where applyFlag = #{applyFlag}
+		and version != #{version}
+		and isforce > 0
+	</select>
+	
+	<!-- 根据应用包名查询最新更新版本 -->
+	<select id="getAppInfoByAppQRCode" resultType="FileVO">
+		SELECT name,applyFlag,version,isforce 'force',updateMsg,lastUpdateTime 
+		FROM vc_file
+		WHERE applyFlag = 2
+		AND isforce > 0
+	</select>
+	
+	<!-- 根据分类名称修改更新状态 -->
+	<update id="updateForceByPackage" parameterType="Map">
+	     update vc_file 
+	     set isforce = #{force},spVersion = #{spVersion},lastUpdateTime=#{lastUpdateTime}
+	     where applyFlag = #{applyFlag}
+	     and uuid != #{uuid} 
+	</update>
+	
+	<!-- 检查是否为特殊版本 -->
+	<select id="checkSpecialVersion" resultType="Integer" parameterType="Map">
+		SELECT spVersion 
+		FROM vc_file
+		WHERE applyFlag = #{applyFlag}
+		AND version = #{version}
+	</select>
+	
+	<!-- 获取当前登录用户path值 -->
+	<select id="getUserPath" resultType="String" parameterType="Map">
+		SELECT ou.path FROM org_member om 
+		LEFT JOIN vc_user vu
+		ON vu.name = om.name
+		LEFT JOIN org_unit ou 
+		ON om.ORG_DEPARTMENT_ID = ou.idfaddFile
+		WHERE vu.login_name = #{loginName}
+	</select>
+	
+	<!-- 根据升级包名称获取详细信息 -->
+	<select id="getFileDetail" resultType="FileVO" parameterType="Map">
+		SELECT 
+		UUID,NAME,VERSION,size,isforce as `force`,creator,
+		DATE_FORMAT(create_time,'%Y-%m-%d %H:%i') AS createTime,
+		DATE_FORMAT(lastUpdateTime,'%Y-%m-%d %H:%i') AS lastUpdateTime,
+		applyFlag,updateMsg,spVersion
+ 		FROM vc_file 
+ 		WHERE NAME LIKE CONCAT('%', #{name},'%') 
+	</select>
+	
+	<!-- 获取会控App当前可使用版本 -->
+	<select id="qrUpdate" resultType="FileVO" >
+		SELECT 
+		UUID,NAME,VERSION,size,isforce as `force`,creator,
+		DATE_FORMAT(create_time,'%Y-%m-%d %H:%i:%s') AS createTime,
+		DATE_FORMAT(lastUpdateTime,'%Y-%m-%d %H:%i:%s') AS lastUpdateTime,
+		applyFlag,updateMsg,spVersion
+ 		FROM vc_file 
+ 		WHERE applyFlag = 2
+ 		and isforce > 0
+	</select>
+	
+	<!-- 插入文件升级信息 -->
+	 <insert id="addFileGrade" parameterType="FileGradeVO" keyProperty="uuid">
+		<selectKey resultType="java.lang.String" order="BEFORE"
+			keyProperty="uuid">
+			select replace(uuid(), '-', '') from dual
+		</selectKey>
+		insert into vc_file_grade(uuid,fileName,fileSize,type,
+		fileVersion,version,remark,dependDesc,rand)
+		values(#{uuid},#{fileName},#{fileSize},#{type},
+		#{fileVersion},#{version},#{remark},#{dependDesc},#{rand})
+	</insert>
+	
+	 <select id="selectFile" resultType="FileGradeVO">
+		SELECT uuid,fileName,fileSize,type,
+		fileVersion,version,remark,userId,dependDesc,rand
+ 		FROM vc_file_grade 
+	</select>
+	
+	<update id="updateGrade" parameterType="map">
+	     update vc_file_grade
+	     set type = #{type}
+	     <if test="userId != null and userId != ''">
+				,userId = #{userId}
+		 </if>
+	</update>
+	
+	<delete id="deleteFileGrade" >
+		delete from vc_file_grade
+	</delete> 
+</mapper>

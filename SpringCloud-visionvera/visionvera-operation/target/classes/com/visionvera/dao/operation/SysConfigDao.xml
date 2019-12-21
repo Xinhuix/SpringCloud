@@ -1,0 +1,332 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+        "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+
+<mapper namespace="com.visionvera.dao.operation.SysConfigDao">
+	<!-- 获取短信配置 -->
+	<select id="getSms" resultType="SmsVO" parameterType="map">
+		select (vc_sms.uuid) AS uuid,
+		vc_sms.name as name,
+		vc_sms.loginName as loginName,
+		vc_sms.loginPwd as loginPwd,
+		vc_sms.owner as owner,
+		vc_sms.cid as cid,
+		vc_sms.url as url,
+		vc_sms.encode as encode,
+		vc_sms.status as status
+		from vc_sms
+	</select>
+
+	<!-- 更新短信配置 -->
+	<update id="updateSms" parameterType="SmsVO">
+		update vc_sms set name=#{name},loginName=#{loginName},
+		url=#{url}, status=#{status}
+		<if test="loginPwd != null and loginPwd != '' ">
+			,loginPwd=#{loginPwd}
+		</if>
+		where
+		vc_sms.uuid=#{uuid}
+	</update>
+	
+	<!-- 更新审批配置 -->
+	<insert id="updateApr" parameterType="list">
+		insert ignore into vc_const_data(const_id, display, value_type)
+		values
+		<foreach collection="list" item="item" index="index" separator=",">
+			(#{item.constId},#{item.display},#{item.valueType})
+		</foreach>
+	</insert>
+	
+	<delete id="deleteData">
+		delete from vc_const_data where value_type in (1,2,3)
+	</delete>
+	
+	<select id="getAprUuid" parameterType="list" resultType="ConstDataVO">
+		select ID as constId,
+		`name` as display
+		from org_member
+		where NAME
+		in 
+		<foreach item="display" index="index" collection="list" open="("
+			separator="," close=")">
+			#{display}
+		</foreach>
+	</select>
+	
+	<!-- 获取服务配置 -->
+	<select id="getServer" resultType="ServerVO" parameterType="map">
+		select uuid,
+		name,
+		type,
+		ip,
+		port,
+		account,
+		password
+		from vc_server
+		where type = #{type}
+	</select>
+	
+	<!-- 获取服务配置 -->
+	<select id="getPerServer" resultType="ServerVO" parameterType="map">
+		select uuid,
+		name,
+		type,
+		ip,
+		port,
+		account,
+		password
+		from vc_server
+	</select>
+
+	<!-- 更新服务配置 -->
+	<update id="updateServer" parameterType="ServerVO">
+		update vc_server set name=#{name},
+		ip=#{ip},port=#{port}
+		<if test="account != null and account != '' ">
+			,account=#{account}
+		</if>
+		<if test="password != null and password != '' ">
+			,password=#{password}
+		</if>
+		where
+		type=#{type}
+	</update>
+	
+	<!-- 更新服务配置 -->
+	<select id="getServerType" resultType="ServerTypeVO">
+		select id, name, description
+		from vc_server_type
+	</select>
+	
+	<!-- 获取系统版本信息 -->
+	<select id="getVersion" resultType="VersionVO">
+		select uuid, component, version, description
+		from vc_version
+	</select>
+	
+	
+	<select id="getApproval" resultType="ConstDataVO">
+		select cd.const_id as constId, cd.display as display, cd.value as value, 
+		cd.value_type as valueType,op.name as empPost
+		from vc_const_data cd
+		join org_member om
+		on cd.const_id = om.id
+		join org_post op
+		on om.org_post_id = op.id
+		where cd.value_type in(1,2,3)
+	</select>
+	
+	<insert id="updateSes" parameterType="ConstDataVO">
+		<!-- insert into vc_const_data(const_id,display,value) values(#{constId},#{display},#{value}) -->
+		update vc_const_data set value = #{value} where display=#{display}
+	</insert>
+	
+	<delete id="deleteSes" parameterType="ConstDataVO">
+		delete from vc_const_data where display=#{display}
+	</delete>
+	
+	
+	<!-- 查询是否启用平台同步状态 -->
+	<select id="getPTM"  resultType="String">
+		select value from vc_const_data where display = '是否启用平台同步'
+	</select>
+	
+	<!-- 获取基础服务状态 -->
+	<select id="getSSOServer" resultType="ServerVO" parameterType="map">
+		select uuid,
+		name,
+		type,
+		ip,
+		port,
+		account,
+		password,
+		vc_server.tcp_state as tcpState 
+		from vc_server
+		where type = #{type}
+	</select>
+	<!-- 更新基础服务开关 -->
+	<update id="updateOpen" parameterType="ServerVO" >
+		update vc_server set tcp_state=#{tcpState}
+		where
+		type=#{type}
+	</update>
+	
+	<!-- 获取当前审批超时时间 -->
+	<select id="getAprTime" parameterType="int" resultType="ConstDataVO">
+		SELECT const_id as constId,VALUE 
+		FROM vc_const_data
+		WHERE value_type=#{valueType}
+	</select>
+	
+	<!-- 更新当前审批超时时间-->
+	<update id="updateAprTime" parameterType="list" >
+		<foreach collection="list" item="item" separator=";">
+			UPDATE vc_const_data 
+			SET VALUE=#{item.value}
+			WHERE const_id=#{item.constId}
+		</foreach>
+	</update>
+	
+	<select id="getConfigUpdate" resultType="ConstDataVO">
+		select cd.const_id as constId, cd.display as display, cd.value as value, 
+		cd.value_type as valueType,op.name as empPost
+		from vc_const_data cd
+		join org_member om
+		on cd.const_id = om.id
+		join org_post op
+		on om.org_post_id = op.id
+		WHERE value_type = 5
+	</select>
+	
+	
+	<delete id="deleteConfigData">
+		delete from vc_const_data where value_type = 5
+	</delete>
+	
+		
+	<!-- 更新可操作上传文件人员 -->
+	<insert id="updateConfigPerson" parameterType="list">
+		insert ignore into vc_const_data(const_id, display, value_type)
+		values
+		<foreach collection="list" item="item" index="index" separator=",">
+			(#{item.constId},#{item.display},#{item.valueType})
+		</foreach>
+	</insert>
+	
+	
+	<select id="getShold" parameterType="list" resultType="ConstDataVO">
+		select const_id as constId, display as display, value as value, 
+		value_type as valueType
+		from vc_const_data
+		where value_type
+		in 
+		<foreach item="valueType" index="index" collection="list" open="("
+			separator="," close=")">
+			#{valueType}
+		</foreach>
+	</select>
+	
+	
+	<!-- 获取终端日志列表 -->
+	<select id="getDevLog" parameterType="map" resultType="DeviceLogVO">
+		SELECT UUID,vc_dev.devno as devid,filename,filesize,filetype,downloadsize,
+		date_format(downstarttime,'%Y-%m-%d %H:%i:%s') AS downstarttime,
+		date_format(downendtime,'%Y-%m-%d %H:%i:%s') AS downendtime,
+		downstate,savepath,isAnalyze 
+		FROM vc_dev_downloads
+		left join vc_dev 
+		on vc_dev_downloads.devid = vc_dev.id
+		<where>
+			downstate != 0
+			<if test="devno != null and devno != '' ">
+				and vc_dev.devno like CONCAT('%',#{devno},'%')
+			</if>
+			<if test="devid != null and devid != '' ">
+				and vc_dev.devno = #{devid}
+			</if>
+			<if test="type != null and type != '' and type != 0 ">
+				and filetype = #{type}
+			</if>
+			<if test="uuid != null and uuid != '' ">
+				and uuid = #{uuid}
+			</if>
+		</where>
+		order by downstarttime desc
+	</select>
+	
+	<!-- 获取数据总条数 -->
+	<select id="getDevLogCount" parameterType="map" resultType="int">
+		SELECT count(1)
+		FROM vc_dev_downloads
+		left join vc_dev 
+		on vc_dev_downloads.devid = vc_dev.id
+		<where>
+			<if test="devno != null and devno != '' ">
+				vc_dev.devno like CONCAT('%',#{devno},'%')
+			</if>
+		</where>
+	</select>
+	
+	
+	<!-- 获取终端日志分析参数列表 -->
+	<select id="getDeviceLogKeyList" parameterType="map" resultType="LogKeyValueVO">
+		SELECT 
+		uuid,
+		device_type AS deviceType,
+		log_key AS logKey,
+		log_value AS logValue
+		FROM vc_log_key_value
+		<where>
+			<if test="uuid != null and uuid != '' ">
+				uuid = #{uuid}
+			</if>
+			<if test="type != null and type != '' ">
+				and device_type = #{type}
+			</if>
+			<if test="logKey != null and logKey != '' ">
+				and log_key like CONCAT('%',#{logKey},'%')
+			</if>
+			<if test="logValue != null and logValue != '' ">
+				and log_value like CONCAT('%',#{logValue},'%')
+			</if>
+		</where>
+	</select>
+	
+	
+	<!-- 获取终端日志分析参数列表 总条数-->
+	<select id="getDeviceLogKeyListCount" parameterType="map" resultType="int">
+		SELECT count(*)
+		FROM vc_log_key_value
+		<where>
+			<if test="type != null and type != '' ">
+				device_type = #{type}
+			</if>
+			<if test="logKey != null and logKey != '' ">
+				and log_key like CONCAT('%',#{logKey},'%')
+			</if>
+			<if test="logValue != null and logValue != '' ">
+				and log_value like CONCAT('%',#{logValue},'%')
+			</if>
+		</where>
+	</select>
+	
+	<!-- 新增日志分析参数 -->
+	<insert id="addLogKey" parameterType="LogKeyValueVO">
+		<selectKey resultType="java.lang.String" order="BEFORE"
+			keyProperty="uuid">
+			select replace(uuid(), '-', '') from dual
+		</selectKey>
+		INSERT ignore INTO vc_log_key_value(`uuid`,`device_type`,`log_key`,`log_value`) 
+		VALUES (#{uuid},#{deviceType},#{logKey},#{logValue});
+	</insert>
+	
+	
+	<!-- 更新终端分析参数 -->
+	<update id="updateLogKey" parameterType="LogKeyValueVO">
+		update vc_log_key_value set device_type=#{deviceType},log_key=#{logKey},
+		log_value=#{logValue}
+		where
+		uuid = #{uuid}
+	</update>
+	
+	<!-- 更新终端分析参数 -->
+	<delete id="deleteLogKey" parameterType="map">
+		delete from vc_log_key_value where uuid = #{uuid}
+	</delete>
+	
+	
+	<!-- 查询是够有相同的key值 -->
+	<select id="checkKey" parameterType="LogKeyValueVO" resultType="int">
+		SELECT count(*)
+		FROM vc_log_key_value
+		<where>
+			<if test="deviceType != null and deviceType != '' ">
+				device_type = #{deviceType}
+			</if>
+			<if test="logKey != null and logKey != '' ">
+				and REPLACE(log_key,' ','') = REPLACE(#{logKey},' ','')
+			</if>
+		</where>
+	</select>
+	
+</mapper>

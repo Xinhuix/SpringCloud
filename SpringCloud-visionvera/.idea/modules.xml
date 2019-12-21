@@ -1,0 +1,22 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<project version="4">
+  <component name="ProjectModuleManager">
+    <modules>
+      <module fileurl="file://$PROJECT_DIR$/.idea/SpringCloud-visionvera.iml" filepath="$PROJECT_DIR$/.idea/SpringCloud-visionvera.iml" />
+      <module fileurl="file://$PROJECT_DIR$/serverwatchV2/serverwatch.iml" filepath="$PROJECT_DIR$/serverwatchV2/serverwatch.iml" />
+      <module fileurl="file://$PROJECT_DIR$/slweomsV2/slweoms.iml" filepath="$PROJECT_DIR$/slweomsV2/slweoms.iml" />
+      <module fileurl="file://$PROJECT_DIR$/visionvera-app-server/visionvera-app-server.iml" filepath="$PROJECT_DIR$/visionvera-app-server/visionvera-app-server.iml" />
+      <module fileurl="file://$PROJECT_DIR$/visionvera-authentication/visionvera-authentication.iml" filepath="$PROJECT_DIR$/visionvera-authentication/visionvera-authentication.iml" />
+      <module fileurl="file://$PROJECT_DIR$/visionvera-common/visionvera-common.iml" filepath="$PROJECT_DIR$/visionvera-common/visionvera-common.iml" />
+      <module fileurl="file://$PROJECT_DIR$/visionvera-common-api/visionvera-common-api.iml" filepath="$PROJECT_DIR$/visionvera-common-api/visionvera-common-api.iml" />
+      <module fileurl="file://$PROJECT_DIR$/visionvera-eureka-server/visionvera-eureka-server.iml" filepath="$PROJECT_DIR$/visionvera-eureka-server/visionvera-eureka-server.iml" />
+      <module fileurl="file://$PROJECT_DIR$/visionvera-gateway/visionvera-gateway.iml" filepath="$PROJECT_DIR$/visionvera-gateway/visionvera-gateway.iml" />
+      <module fileurl="file://$PROJECT_DIR$/visionvera-operation/visionvera-operation.iml" filepath="$PROJECT_DIR$/visionvera-operation/visionvera-operation.iml" />
+      <module fileurl="file://$PROJECT_DIR$/visionvera-parent/visionvera-parent.iml" filepath="$PROJECT_DIR$/visionvera-parent/visionvera-parent.iml" />
+      <module fileurl="file://$PROJECT_DIR$/visionvera-resource/visionvera-resource.iml" filepath="$PROJECT_DIR$/visionvera-resource/visionvera-resource.iml" />
+      <module fileurl="file://$PROJECT_DIR$/visionvera-server-test/visionvera-server-test.iml" filepath="$PROJECT_DIR$/visionvera-server-test/visionvera-server-test.iml" />
+      <module fileurl="file://$PROJECT_DIR$/visionvera-serverwatch-upgrade/visionvera-serverwatch (1).iml" filepath="$PROJECT_DIR$/visionvera-serverwatch-upgrade/visionvera-serverwatch (1).iml" />
+      <module fileurl="file://$PROJECT_DIR$/visionvera-serverwatch/visionvera-serverwatch (2).iml" filepath="$PROJECT_DIR$/visionvera-serverwatch/visionvera-serverwatch (2).iml" />
+    </modules>
+  </component>
+</project>

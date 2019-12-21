@@ -1,0 +1,595 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+        "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.visionvera.dao.authentication.CMSDao">
+	
+	<!-- 根据时间段获取该时间段内所有的会议数量 -->
+	<select id="selectMeetingNum" resultType="int" parameterType="map">
+		SELECT COUNT(*) FROM vc_meeting WHERE
+		<![CDATA[ DATE_FORMAT(start_time,'%Y-%m-%d') >= #{startTime} ]]>
+		<![CDATA[ AND DATE_FORMAT(stop_time,'%Y-%m-%d') <= #{endTime} ]]>
+	</select>
+	
+	<!-- 通过数据库的唯一键获取用户数据 -->
+	<select id="selectUserByUniqueKey" resultType="com.visionvera.bean.cms.UserVO" parameterType="map">
+		SELECT
+			DISTINCT(user.uuid) AS uuid,
+			user.`name` AS name,
+			user.login_name AS loginName,
+			user.login_pwd AS loginPwd,
+			user.phone AS phone,
+			user.login_module AS loginModule
+		FROM
+			vc_user AS user
+		<where>
+			<choose>
+				<when test="loginName != null and loginName.length() > 0">
+					AND user.login_name = #{loginName}
+				</when>
+				<when test="phone != null and phone.length() > 0">
+					AND user.phone = #{phone}
+				</when>
+				<otherwise>
+					AND user.uuid = ''
+				</otherwise>
+			</choose>
+		</where>
+			
+		
+		
+		<!-- SELECT 
+			DISTINCT(user.uuid) AS uuid,
+			user.`name` AS name,
+			user.login_name AS loginName,
+			user.login_pwd AS loginPwd,
+			user.phone AS phone,
+			department.`name` AS department,
+			role.`name` AS role,
+			role.`uuid` AS roleId,
+			user.isvalid AS isvalid,
+			user.web_login AS webLogin,
+			user.area AS areaId,
+			user.area_name AS areaName,
+			user.allow_hkzs AS allowHkzs
+		FROM 
+			vc_user AS user
+		LEFT JOIN 
+			vc_department AS department
+		ON 
+			department.uuid = user.depart
+		LEFT JOIN
+			vc_user_role AS userRole
+		ON
+			userRole.user_id = user.uuid
+		LEFT JOIN 
+			vc_role AS role
+		ON
+			role.uuid = userRole.role_id
+		<where>
+			<choose>
+				<when test="loginName != null and loginName.length() > 0">
+					AND user.login_name = #{loginName}
+				</when>
+				<when test="phone != null and phone.length() > 0">
+					AND user.phone = #{phone}
+				</when>
+				<otherwise>
+					AND user.uuid = ''
+				</otherwise>
+			</choose>
+		</where> -->
+	</select>
+	
+	<!-- 获取Session失效时间 -->
+	<select id="selectSessionTimeout" resultType="string">
+		SELECT value FROM vc_const_data WHERE display = 'session失效时间'
+	</select>
+	
+	<!-- 通过手机号和验证码查询验证信息 -->
+	<select id="selectPhoneByPhoneAndVriCode" resultType="com.visionvera.bean.cms.PhoneVO" parameterType="map">
+		SELECT 
+			phone,
+			verifi_code AS verifiCode,
+			create_time AS createTime
+		FROM 
+			vc_phone
+		WHERE
+			vc_phone.phone = #{phone}
+		AND 
+			vc_phone.verifi_code = #{verifiCode}
+	</select>
+	
+	<!-- 通过数据库的唯一键获取用户的数量 -->
+	<select id="selectUserCountByUniqueKey" resultType="int" parameterType="map">
+		SELECT COUNT(1) FROM vc_user AS vu
+		<where>
+			<choose>
+				<when test="loginName != null and loginName.length() > 0">
+					AND vu.login_name = #{loginName}
+				</when>
+				<when test="phone != null and phone.length() > 0">
+					AND vu.phone = #{phone}
+				</when>
+				<otherwise>
+					AND vu.uuid = ''
+				</otherwise>
+			</choose>
+		</where>
+	</select>
+	
+	<!-- 插入用户基本信息 -->
+	<insert id="insertUser" parameterType="com.visionvera.bean.cms.UserVO" keyProperty="uuid">
+		<selectKey resultType="java.lang.String" order="BEFORE" keyProperty="uuid">
+			SELECT REPLACE(UUID(), '-', '') FROM dual
+		</selectKey>
+		INSERT INTO 
+			vc_user(uuid, name, login_pwd, login_name, phone, org_name, create_time)
+		VALUES(#{uuid},#{name},#{loginPwd},#{loginName}, #{phone},#{orgName},NOW())
+		
+		
+		<!-- <selectKey resultType="java.lang.String" order="BEFORE"
+			keyProperty="uuid">
+			SELECT REPLACE(UUID(), '-', '') FROM dual
+		</selectKey>
+		INSERT INTO vc_user(uuid, name, login_pwd, login_name, phone, description,
+		depart,org_id, area, isvalid, img_url, dev_id, org_name, depart_name, post_name, rank_name,
+		id_card, info_ok, area_name, web_login, allow_hkzs, create_time)
+		VALUES(#{uuid},#{name},#{loginPwd},#{loginName}, #{phone},
+		#{description}, #{departId},#{orgId},#{areaId},#{isvalid},#{imgUrl},
+		#{devId},#{orgName},#{departName},#{postName},#{rankName},#{idCard},#{infoOk},#{areaName},#{webLogin},#{allowHkzs},NOW()) -->
+	</insert>
+	
+	<!-- 查询OA通讯录中是否有指定用户 -->
+	<select id="selectOAUserByName" parameterType="com.visionvera.bean.cms.UserVO" resultType="com.visionvera.bean.cms.UserVO">
+		SELECT id as uuid FROM org_member WHERE name = #{name}
+	</select>
+	
+	<!-- 向OA通讯录中插入用户 -->
+	<insert id="insertOAUser" parameterType="com.visionvera.bean.cms.UserVO">
+		INSERT IGNORE INTO org_member(id, name, ext_attr_1) VALUES (#{uuid}, #{name}, #{phone})
+	</insert>
+	
+	<!-- 新增用户角色关联 -->
+	<insert id="insertUserRole" parameterType="map">
+		INSERT IGNORE INTO vc_user_role VALUES(#{userId}, #{roleId})
+	</insert>
+	
+	<!-- 新增用户分组 -->
+	<insert id="insertUserGroup" parameterType="com.visionvera.bean.cms.UserGroupVO" keyProperty="uuid">
+		<selectKey resultType="java.lang.String" order="BEFORE"
+			keyProperty="uuid">
+			SELECT REPLACE(UUID(), '-', '') FROM dual
+		</selectKey>
+		INSERT INTO 
+			vc_usergroup(vc_usergroup.uuid, vc_usergroup.name, vc_usergroup.temporarily, vc_usergroup.description)
+		VALUES(#{uuid},#{name},#{temporarily},#{description})
+	</insert>
+	
+	<!-- 新增用于与分组的关联关系 -->
+	<insert id="insertUserGroupRel" parameterType="map">
+		INSERT IGNORE INTO vc_usergroup_user(usergroup_id, user_id)
+		VALUES
+		<foreach collection="userUUIDs" item="userUUID" index="index" separator=",">
+			(#{groupUUID}, #{userUUID})
+		</foreach>
+	</insert>
+	
+	<!-- 添加用户组与设备组的关联 -->
+	<insert id="insertGroupDevGroupRel" parameterType="map">
+		INSERT IGNORE INTO vc_usergroup_devgroup(usergroup_id, devgroup_id)
+		VALUES
+		<foreach collection="deviceGroupIds" item="deviceGroupId" index="index" separator=",">
+			(#{groupUUID},#{deviceGroupId})
+		</foreach>
+	</insert>
+	
+	<!-- 根据用户ID与客户端类型删除access_token -->
+	<delete id="deleteAccessToken" parameterType="map">
+		DELETE FROM vc_user_access_token WHERE user_id = #{userId} AND client_type = #{clientType}
+	</delete>
+	
+	<!-- 更新用户基本信息 -->
+	<update id="updateUser" parameterType="com.visionvera.bean.cms.UserVO">
+		UPDATE vc_user 
+		<set>
+			<if test="name != null and name.length() > 0">
+				name = #{name},
+			</if>
+			<if test="loginPwd != null and loginPwd != '' ">
+				login_pwd = #{loginPwd},
+			</if>
+			<if test="orgName != null and orgName != '' ">
+				org_name = #{orgName}, 
+			</if>
+			<if test="loginModule != null and loginModule.length() > 0">
+				login_module = #{loginModule},
+			</if>
+		</set>
+		WHERE
+			`uuid` = #{uuid}
+	</update>
+	
+	<!-- 根据用户ID删除用户与角色的关联关系 -->
+	<delete id="deleteUserRoleRelByUserId" parameterType="map">
+		DELETE FROM vc_user_role WHERE vc_user_role.user_id = #{userId}
+	</delete>
+	
+	<!-- 查询是否存在超级管理员admin -->
+	<select id="selectAdminCount" parameterType="map" resultType="int">
+		SELECT COUNT(uuid) FROM vc_user
+		WHERE
+			login_name = #{adminName}
+		AND 
+			uuid in
+		<foreach item="uuid" index="index" collection="uuids" open="(" separator="," close=")">
+			#{uuid}
+		</foreach>
+	</select>
+	
+	<!-- 查询用户是否处于登录状态 -->
+	<select id="selectUserOnLine" parameterType="map" resultType="com.visionvera.bean.cms.UserVO">
+		SELECT 
+			DISTINCT(u.login_name) AS loginName, u.uuid AS uuid
+		FROM 
+			vc_user u
+		WHERE 
+			u.uuid IN
+		<foreach item="uuid" index="index" collection="uuids" open="(" separator="," close=")">
+			#{uuid}
+		</foreach>
+		AND u.status = 1
+	</select>
+	
+	<!-- 删除用户 -->
+	<delete id="deleteUser" parameterType="map">
+		DELETE FROM vc_user
+		<where>
+			vc_user.uuid IN
+			<foreach item="uuid" index="index" collection="uuids" open="(" separator="," close=")">
+				#{uuid}
+			</foreach>
+			AND vc_user.login_name != 'admin'
+		</where>
+	</delete>
+	
+	<!-- 获取用户列表 -->
+	<select id="selectUserByCondition" parameterType="com.visionvera.bean.cms.UserVO" resultType="com.visionvera.bean.cms.UserVO">
+		SELECT
+			DISTINCT(user.uuid) AS uuid,
+			user.name AS name,
+			user.login_pwd AS loginPwd,
+			user.login_name AS loginName,
+			user.phone AS phone,
+			user.org_name AS orgName,
+			user.login_module AS loginModule,
+			userPlatform.platform_uuid AS platformId,
+			industry.name AS industryName,
+			industry.uuid AS industryId
+		FROM
+			vc_user AS user
+		LEFT JOIN
+			vc_user_industry userIndustry
+		ON
+			user.uuid = userIndustry.user_uuid
+		LEFT JOIN
+			vc_industry industry
+		ON
+			userIndustry.industry_uuid = industry.uuid
+		LEFT JOIN
+			vc_user_platform userPlatform
+		ON
+			user.uuid = userPlatform.user_uuid
+		<where>
+			<if test="name != null and name.length() > 0">
+				AND user.name LIKE CONCAT('%',#{name},'%')
+			</if>
+			<if test="platformId != null and platformId.length() > 0">
+				AND userPlatform.platform_uuid = #{platformId}
+			</if>
+			<if test="industryId != null and industryId.length() > 0">
+				AND industry.uuid = #{industryId}
+			</if>
+			<if test="orgName != null and orgName.length() > 0">
+				AND user.org_name LIKE CONCAT('%',#{orgName},'%')
+			</if>
+			<if test="startCreateTime != null and startCreateTime.length() > 0">
+				<![CDATA[ AND user.create_time >= #{startCreateTime} ]]>
+			</if>
+			<if test="endCreateTime != null and endCreateTime.length() > 0">
+				<![CDATA[ AND user.create_time <= #{endCreateTime} ]]>
+			</if>
+		</where>
+		ORDER BY user.login_name
+		
+		
+		<!-- select DISTINCT(vc_user.uuid) AS uuid,
+		vc_user.`name` as name,
+		vc_user.login_name as loginName,
+		vc_user.login_pwd as loginPwd,
+		vc_user.phone as phone,
+		vc_user.telPhone as telPhone,
+		vc_user.mail as mail,
+		vc_user.grade as grade,
+		vc_user.area_name as areaName,
+		vc_user.org_name as orgName,
+		vc_user.post_name as postName,
+		vc_user.rank_name as rankName,
+		vc_user.dev_id as devId,
+		vc_user.web_login as webLogin,
+		vc_user.allow_hkzs as allowHkzs,
+		vc_user.id_card as idCard,
+		vc_user.isvalid as isvalid,
+		vc_user.create_time as createTime,
+		vc_role.name as role,
+		vc_role.uuid as roleId,
+		vc_user.status as status,
+		vc_user.description as description,
+		vc_usergroup.uuid as groupId,
+		vc_usergroup.name as groupName,
+		vc_user.info_ok as infoOk,
+		(CASE WHEN (ISNULL(vc_region.id) OR (vc_region.id = '')) THEN 'local' ELSE vc_region.id END) AS `svrRegionId`,
+  		(CASE WHEN (ISNULL(vc_region.id) OR (vc_region.id = '')) THEN '本平台' ELSE `vc_region`.`name` END) AS `svrRegionName`
+		from vc_user
+		LEFT JOIN
+		vc_usergroup_user on
+		vc_usergroup_user.`user_id` =
+		vc_user.uuid
+		LEFT JOIN
+		vc_usergroup on
+		vc_usergroup_user.`usergroup_id` =
+		vc_usergroup.uuid
+		LEFT JOIN
+		vc_user_role on vc_user_role.`user_id` =
+		vc_user.uuid
+		LEFT JOIN
+		vc_role on
+		vc_role.uuid = vc_user_role.role_id
+		LEFT JOIN vc_region ON vc_user.`svr_region_id`= 
+		vc_region.id
+		<where>
+			<if test="isvalid != '' and isvalid != null">
+				and vc_user.isvalid = #{isvalid}
+			</if>
+			<if test="loginName != '' and loginName != null">
+				and vc_user.login_name = #{loginName}
+			</if>
+			<if test="userName != '' and userName != null">
+				and vc_user.name like CONCAT('%',#{userName},'%')
+			</if>
+			<if test="status != '' and status != null">
+				and vc_user.status = #{status}
+			</if>
+			<if test="phone !='' and phone != null">
+				and vc_user.phone = #{phone}
+			</if>
+			<if test="depart !='' and depart != null">
+				and vc_user.depart = #{depart}
+			</if>
+			<if test="role != '' and role != null">
+				and vc_user_role.role_id = #{role}
+			</if>
+			<if test="groupId != '' and groupId != null">
+				and vc_usergroup_user.usergroup_id = #{groupId}
+			</if>
+			<if test="groupName != '' and groupName != null">
+				and vc_usergroup.name like CONCAT('%',#{groupName},'%')
+			</if>
+			<if test="devId != '' and devId != null">
+				and vc_user.dev_id like CONCAT('%',#{devId},'%')
+			</if>
+			<if test="isvalid != null">
+				and isvalid = #{isvalid}
+			</if>
+			<if test="svrRegionId != '' and svrRegionId != null">
+				<choose>
+					<when test="svrRegionId == 'local'">
+						and (vc_region.id = '' OR vc_region.id IS NULL)
+					</when>
+					<otherwise>
+						and vc_region.id = #{svrRegionId}
+					</otherwise>
+				</choose>
+			</if>
+		</where>
+		order by vc_user.login_name -->
+	</select>
+	
+	<!-- 查询所有用户角色 -->
+	<select id="selectAllRoles" resultType="com.visionvera.bean.cms.RoleVO">
+		SELECT uuid, name, grade FROM vc_role
+	</select>
+	
+	<!-- 查询现有用户的所有行政区域 -->
+	<select id="selectUserRegionList" resultType="com.visionvera.bean.cms.RegionVO">
+		SELECT 
+			DISTINCT(vs.svr_region_id) AS id, vr.`name` 
+		FROM 
+			vc_user vs
+		JOIN 
+			vc_region vr ON vs.`svr_region_id`=vr.id
+	</select>
+	
+	<!-- 获取行政区域列表 -->
+	<select id="selectRegions" parameterType="map" resultType="com.visionvera.bean.cms.RegionVO">
+		SELECT 
+			DISTINCT(vr.id), vr.pid, vr.name, vr.gradeid AS gradeId, vr.isleaf AS isLeaf,
+			DATE_FORMAT(vr.updatetime,'%Y-%m-%d %H:%i:%s') AS updateTime
+		FROM 
+			vc_region vr
+		<where>
+			<if test="name != '' and name != null">
+				AND vr.name LIKE CONCAT('%',#{name},'%')
+			</if>
+			<if test="gradeId != '' and gradeId != null">
+				AND vr.gradeid = #{gradeId}
+			</if>
+			<if test="pId != '' and pId != null">
+				AND vr.pid =#{pId}
+			</if>
+			<if test="id != '' and id != null">
+				AND vr.id =#{id}
+			</if>
+		</where>
+	</select>
+	
+	<!-- 根据用户的主键ID查询出用户信息。关联出其角色和组的信息 -->
+	<select id="selectUserByUUID" parameterType="string" resultType="com.visionvera.bean.cms.UserVO">
+		SELECT
+			DISTINCT(user.uuid) AS uuid,
+			user.name,
+			user.login_pwd AS loginPwd,
+			user.login_name AS loginName,
+			user.phone AS phone,
+			user.org_name AS orgName,
+			user.login_module AS loginModule,
+			userPlatform.platform_uuid AS platformId,
+			industry.name AS industryName,
+			industry.uuid AS industryId
+		FROM
+			vc_user AS user
+		LEFT JOIN
+			vc_user_industry userIndustry
+		ON
+			user.uuid = userIndustry.user_uuid
+		LEFT JOIN
+			vc_industry industry
+		ON
+			userIndustry.industry_uuid = industry.uuid
+		LEFT JOIN
+			vc_user_platform userPlatform
+		ON
+			user.uuid = userPlatform.user_uuid
+		WHERE
+			user.uuid = #{uuid}
+		<!-- SELECT  
+			vc_user.uuid,
+		    vc_user.name,
+		    vc_user.login_pwd AS loginPwd,
+		    vc_user.login_name AS loginName,
+		    vc_user.phone AS phone,
+		    vc_user.mail AS mail,
+		    vc_user.depart AS departId,
+		    vc_user.status AS status,
+		    vc_user.description AS description,
+		    vc_user.isvalid AS isvalid,
+		    vc_user.org_id AS orgId,
+		    vc_user.area AS areaId,
+		    vc_user.area_name AS areaName,
+		    vc_user.isWsLogin AS isWsLogin,
+		    vc_user.img_url AS imgUrl,
+		    vc_user.dev_id AS devId,
+		    vc_user.org_name AS orgName,
+		    vc_user.depart_name AS departName,
+		    vc_user.post_name AS postName,
+		    vc_user.rank_name AS rankName,
+		    vc_user.id_card AS idCard,
+		    vc_user.web_login AS webLogin,
+		    vc_user.allow_hkzs AS allowHkzs,
+		    vc_user.info_ok AS infoOk,
+		    vc_user.max_dev_num AS maxDevNum,
+		    vc_user.permission AS permission,
+		    vc_usergroup.uuid AS groupId,
+			vc_role.name AS role,
+			vc_role.uuid AS roleId,
+			vc_usergroup.name AS groupName
+		FROM 
+			vc_user 
+		LEFT JOIN 
+			vc_usergroup_user 
+		ON 
+			vc_usergroup_user.`user_id` = vc_user.uuid
+		LEFT JOIN
+			vc_usergroup
+		ON
+			vc_usergroup_user.`usergroup_id` = vc_usergroup.uuid
+		LEFT JOIN
+			vc_user_role 
+		ON 
+			vc_user_role.`user_id` = vc_user.uuid
+		LEFT JOIN
+			vc_role 
+		ON
+			vc_role.uuid = vc_user_role.role_id
+		WHERE
+			vc_user.uuid = #{uuid} -->
+	</select>
+	
+	<!-- 通过条件查询行业归属信息 -->
+	<select id="selectIndustryByCondition" parameterType="com.visionvera.bean.cms.IndustryVO" resultType="com.visionvera.bean.cms.IndustryVO">
+		SELECT
+			uuid,
+			name,
+			description,
+			DATE_FORMAT(create_time,'%Y-%m-%d %H:%i:%s') AS createTime,
+			DATE_FORMAT(update_time,'%Y-%m-%d %H:%i:%s') AS updateTime
+		FROM
+			vc_industry
+		<where>
+			<if test="uuid != null and uuid.length() > 0">
+				AND uuid = #{uuid}
+			</if>
+			<if test="name != null and name.length() > 0">
+				AND name = #{name}
+			</if>
+			<if test="description != null and description.length() > 0">
+				AND description LIKE CONCAT('%', #{description}, '%')
+			</if>
+		</where>
+	</select>
+	
+	<!-- 批量添加用户可登陆平台信息 -->
+	<insert id="insertUserPlatform" parameterType="map">
+		INSERT INTO
+			vc_user_platform (user_uuid, platform_uuid)
+		VALUES
+		<foreach collection="platformIds" item="platformId" open="(" index="index" separator="," close=")">
+			#{userId}, #{platformId}
+		</foreach>
+	</insert>
+	
+	<!-- 批量添加用户行业归属信息 -->
+	<insert id="insertUserIndustry" parameterType="map">
+		INSERT INTO
+			vc_user_industry (user_uuid, industry_uuid)
+		VALUES
+		<foreach collection="industryIds" item="industryId" open="(" index="index" separator="," close=")">
+			#{userId}, #{industryId}
+		</foreach>
+	</insert>
+	
+	<!-- 删除用户与可登陆平台的关系 -->
+	<delete id="deleteUserPlatform" parameterType="map">
+		DELETE FROM vc_user_platform
+		<where>
+			<choose>
+				<when test="userId != null and userId.length() > 0">
+					AND user_uuid = #{userId}
+				</when>
+				<when test="platformId != null and platformId.length() > 0">
+					AND platform_uuid = #{platformId}
+				</when>
+				<otherwise>
+					AND user_uuid = "" AND platform_uuid = ""
+				</otherwise>
+			</choose>
+		</where>
+	</delete>
+	
+	<!-- 删除用户与行业归属的关系 -->
+	<delete id="deleteUserIndustry" parameterType="map">
+		DELETE FROM vc_user_industry
+		<where>
+			<choose>
+				<when test="userId != null and userId.length() > 0">
+					AND user_uuid = #{userId}
+				</when>
+				<when test="industryId != null and industryId.length() > 0">
+					AND industry_uuid = #{industryId}
+				</when>
+				<otherwise>
+					AND user_uuid = "" AND industry_uuid = ""
+				</otherwise>
+			</choose>
+		</where>
+	</delete>
+</mapper>

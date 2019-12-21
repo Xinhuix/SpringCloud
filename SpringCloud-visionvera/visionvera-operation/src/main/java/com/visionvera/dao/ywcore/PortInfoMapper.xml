@@ -1,0 +1,174 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.visionvera.dao.ywcore.PortInfoDao">
+
+    <!-- 通用查询映射结果 -->
+    <resultMap id="BaseResultMap" type="com.visionvera.bean.ywcore.PortInfo">
+        <id column="id" property="id"/>
+        <result column="port" property="port"/>
+        <result column="description" property="description"/>
+        <result column="state" property="state"/>
+        <result column="modify_time" property="modifyTime"/>
+    </resultMap>
+
+    <!-- 通用查询结果列 -->
+    <sql id="Base_Column_List">
+        id, port, description, state, modify_time AS modifyTime
+    </sql>
+
+  <!-- 通用查询条件 -->
+  <sql id="Where_Common">
+  		<if test="null != id and id !=''">
+			AND id = #{id}
+		</if>
+		<if test="null != port and port !=''">
+			AND port = #{port}
+		</if>
+		<if test="null != description and description !=''">
+			AND description like CONCAT('%',#{description},'%') 
+		</if>
+		<if test="null != modifyTime and modifyTime !=''">
+			AND modify_time = #{modifyTime}
+		</if>
+		    AND state = 0
+	   </sql>
+ 	<select id="selectByPrimaryKey" resultType="com.visionvera.bean.ywcore.PortInfo">
+		SELECT <include refid="Base_Column_List"></include> FROM t_work_port_info WHERE id = #{id}
+	</select>
+	
+	<select id="get" resultType="com.visionvera.bean.ywcore.PortInfo">
+		SELECT <include refid="Base_Column_List"></include> FROM t_work_port_info
+		<where>
+     		 <include refid="Where_Common"/>
+ 		</where>
+		limit 1
+	</select>
+	
+	<select id="queryList" resultType="com.visionvera.bean.ywcore.PortInfo" parameterType="com.visionvera.bean.ywcore.PortInfo">
+		SELECT <include refid="Base_Column_List"></include> FROM t_work_port_info
+		 <where>
+     		 <include refid="Where_Common"/>
+ 		</where>
+ 		order by modify_time desc
+	</select>
+	
+	<select id="queryCount" resultType="java.lang.Integer" parameterType="com.visionvera.bean.ywcore.PortInfo">
+		SELECT count(1) FROM t_work_port_info
+		<where>
+     		 <include refid="Where_Common"/>
+ 		</where>
+	</select>
+	
+    <insert id="insert" parameterType="com.visionvera.bean.ywcore.PortInfo">
+		INSERT INTO t_work_port_info
+		<trim prefix="(" suffix=")" suffixOverrides="," >
+			port,
+			description,
+			state,
+			modify_time,
+		</trim>	
+		<trim prefix="values (" suffix=")" suffixOverrides="," >
+			#{port},
+			#{description},
+			#{state},
+			#{modifyTime},
+		</trim>	
+	</insert>
+	
+    <insert id="insertSelective" parameterType="com.visionvera.bean.ywcore.PortInfo">
+		INSERT INTO t_work_port_info
+		<trim prefix="(" suffix=")" suffixOverrides="," >
+		<if test="null != id">
+			id,
+		</if>
+		<if test="null != port">
+			port,
+		</if>
+		<if test="null != description">
+			description,
+		</if>
+		<if test="null != state">
+			state,
+		</if>
+		<if test="null != modifyTime">
+			modify_time,
+		</if>
+	</trim>	
+	<trim prefix="values (" suffix=")" suffixOverrides="," >
+		<if test="null != id">
+			#{id},
+		</if>
+		<if test="null != port">
+			#{port},
+		</if>
+		<if test="null != description">
+			#{description},
+		</if>
+		<if test="null != state">
+			#{state},
+		</if>
+		<if test="null != modifyTime">
+			#{modifyTime},
+		</if>
+	</trim>	
+	</insert>
+	
+	 <update id="updateByPrimaryKeySelective" parameterType="com.visionvera.bean.ywcore.PortInfo" >
+	 update t_work_port_info
+    <set>
+    <trim suffixOverrides="," >
+    <if test="null != port">
+		port = #{port},
+	</if>
+	<if test="null != description">
+		description = #{description},
+	</if>
+	<if test="null != state">
+		state = #{state},
+	</if>
+	<if test="null != modifyTime">
+		modify_time = #{modifyTime},
+	</if>
+	</trim>
+</set>
+   WHERE id = #{id}
+  </update>
+	
+	 <update id="updateByPrimaryKey" parameterType="com.visionvera.bean.ywcore.PortInfo" >
+	 update t_work_port_info
+    <set>
+    <trim suffixOverrides="," >
+    		port = #{port},
+			description = #{description},
+			state = #{state},
+			modify_time = #{modifyTime},
+	</trim>
+</set>
+   WHERE id = #{id}
+  </update>
+  
+  <delete id="deleteByPrimaryKey" parameterType="java.lang.Integer" >
+    delete from t_work_port_info
+    where id = #{id}
+  </delete>
+  
+  <delete id="delete" parameterType="com.visionvera.bean.ywcore.PortInfo" >
+    delete from t_work_port_info
+    where 1=1
+    <if test="null != id">
+		and id = #{id}
+	</if>
+	<if test="null != port">
+		and port = #{port}
+	</if>
+	<if test="null != description">
+		and description = #{description}
+	</if>
+	<if test="null != state">
+		and state = #{state}
+	</if>
+	<if test="null != modifyTime">
+		and modify_time = #{modifyTime}
+	</if>
+	</delete>
+</mapper>

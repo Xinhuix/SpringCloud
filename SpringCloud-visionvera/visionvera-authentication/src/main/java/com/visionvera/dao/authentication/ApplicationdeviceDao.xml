@@ -1,0 +1,55 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd" >
+<mapper namespace="com.visionvera.dao.authentication.ApplicationdevicebDao">
+	<resultMap id="BaseResultMap"
+		type="com.visionvera.bean.datacore.TApplicationdevicebVO">
+		<id column="id" property="id" jdbcType="VARCHAR" />
+		<result column="devname" property="devname" jdbcType="VARCHAR" />
+		<result column="devtype" property="devtype" jdbcType="INTEGER" />
+		<result column="url" property="url" jdbcType="VARCHAR" />
+		<result column="ip" property="ip" jdbcType="VARCHAR" />
+		<result column="loginuser" property="loginuser" jdbcType="VARCHAR" />
+		<result column="loginpwd" property="loginpwd" jdbcType="VARCHAR" />
+		<result column="regionid" property="regionid" jdbcType="VARCHAR" />
+		<result column="xxdz" property="xxdz" jdbcType="VARCHAR" />
+		<result column="zbjd" property="zbjd" jdbcType="VARCHAR" />
+		<result column="zbwd" property="zbwd" jdbcType="VARCHAR" />
+		<result column="whfzr1" property="whfzr1" jdbcType="VARCHAR" />
+		<result column="whfzrtel1" property="whfzrtel1" jdbcType="VARCHAR" />
+		<result column="createid" property="createid" jdbcType="VARCHAR" />
+		<result column="createname" property="createname" jdbcType="VARCHAR" />
+		<result column="createtime" property="createtime" jdbcType="TIMESTAMP" />
+		<result column="updateid" property="updateid" jdbcType="VARCHAR" />
+		<result column="updatename" property="updatename" jdbcType="VARCHAR" />
+		<result column="updatetime" property="updatetime" jdbcType="TIMESTAMP" />
+	</resultMap>
+
+	<sql id="Base_Column_List">
+		id, devname, devtype, url, ip, loginuser, loginpwd, regionid, xxdz, zbjd,
+		zbwd, whfzr1, whfzrtel1, createid, createname, createtime, updateid, updatename, updatetime
+	</sql>
+	
+	<!-- 通过平台主键ID查询平台信息 -->
+	<select id="selectApplicationdevicebById" parameterType="java.lang.String" resultMap="BaseResultMap">
+		SELECT
+			<include refid="Base_Column_List"></include>
+		FROM
+			t_applicationdeviceb
+		WHERE
+			id = #{platformId}
+	</select>
+	
+	<!-- 通过角色ID查询平台信息 -->
+	<select id="selectPlatformByRoleId" parameterType="java.lang.String" resultMap="BaseResultMap">
+		SELECT
+			plat.id, plat.devtype, plat.devname
+		FROM
+			t_applicationdeviceb AS plat
+		LEFT JOIN
+			t_role_platform_rel AS rolePlat
+		ON 
+			plat.id = rolePlat.platform_uuid
+		WHERE
+			rolePlat.role_uuid = #{roleId}
+	</select>
+</mapper>

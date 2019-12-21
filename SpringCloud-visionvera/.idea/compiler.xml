@@ -1,0 +1,51 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<project version="4">
+  <component name="CompilerConfiguration">
+    <annotationProcessing>
+      <profile name="Maven default annotation processors profile" enabled="true">
+        <sourceOutputDir name="target/generated-sources/annotations" />
+        <sourceTestOutputDir name="target/generated-test-sources/test-annotations" />
+        <outputRelativeToContentRoot value="true" />
+        <module name="serverwatch" />
+        <module name="slweoms" />
+        <module name="visionvera-app-server" />
+        <module name="visionvera-authentication" />
+        <module name="visionvera-common" />
+        <module name="visionvera-common-api" />
+        <module name="visionvera-eureka-server" />
+        <module name="visionvera-gateway" />
+        <module name="visionvera-operation" />
+        <module name="visionvera-resource" />
+        <module name="visionvera-server-test" />
+        <module name="visionvera-serverwatch (1)" />
+        <module name="visionvera-serverwatch (2)" />
+      </profile>
+    </annotationProcessing>
+    <bytecodeTargetLevel>
+      <module name="serverwatch" target="1.7" />
+      <module name="slweoms" target="1.7" />
+      <module name="visionvera-alarm" target="1.8" />
+      <module name="visionvera-analysis" target="1.8" />
+      <module name="visionvera-app-server" target="1.8" />
+      <module name="visionvera-authentication" target="1.8" />
+      <module name="visionvera-common" target="1.8" />
+      <module name="visionvera-common-api" target="1.8" />
+      <module name="visionvera-device-manage" target="1.8" />
+      <module name="visionvera-dispatchment" target="1.8" />
+      <module name="visionvera-eureka-server" target="1.8" />
+      <module name="visionvera-gateway" target="1.8" />
+      <module name="visionvera-operation" target="1.8" />
+      <module name="visionvera-parent" target="1.8" />
+      <module name="visionvera-perception" target="1.8" />
+      <module name="visionvera-resource" target="1.8" />
+      <module name="visionvera-server-test" target="1.8" />
+      <module name="visionvera-serverwatch (1)" target="1.7" />
+      <module name="visionvera-serverwatch (2)" target="1.7" />
+    </bytecodeTargetLevel>
+  </component>
+  <component name="JavacSettings">
+    <option name="ADDITIONAL_OPTIONS_OVERRIDE">
+      <module name="serverwatch" options="-verbose -extdirs F:\SpringCloud-visionvera\serverwatchV2/src/main/webapp/WEB-INF/lib" />
+    </option>
+  </component>
+</project>

@@ -1,0 +1,39 @@
+#开发环境的配置文件
+#日志配置
+logging:
+  config: classpath:logback-development.xml
+
+#Redis配置信息
+jedis:
+  #连接池的配置
+  pool:
+    config:
+      #最大连接数
+      max-total: 100000
+      #最大空闲连接数
+      max-idle: 100
+      #最大等待时间，如果超过等待时间，则抛出：JedisConnectionException
+      max-wait-millis: 100
+      #每次释放连接的最大数目
+      num-tests-per-eviction-run: 1024
+      #释放连接的扫描间隔（毫秒）
+      time-between-eviction-runs-millis: 30000
+      #连接最小空闲时间
+      min-evictable-idle-time-millis: 1800000
+      #连接空闲多久后释放, 当空闲时间>该值 且 空闲连接>最大空闲连接数 时直接释放
+      soft-min-evictable-idle-time-millis: 10000
+      #在获取连接的时候检查有效性, 默认false
+      test-on-borrow: true
+      #在空闲时检查有效性, 默认false
+      test-while-idle: true
+      #连接耗尽时是否阻塞, false报异常,ture阻塞直到超时, 默认true
+      block-when-exhausted: false
+  #Redis的单机配置信息
+  single:
+    host: 10.1.24.197
+    port: 6379
+  cluster:
+    host01: 10.0.0.1
+    port01: 6379
+    host02: 10.0.0.2
+    port02: 6379

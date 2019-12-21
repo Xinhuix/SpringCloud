@@ -1,0 +1,22 @@
+server:
+  port: 8803
+
+spring:
+  application:
+    #项目的服务名称
+    name: visionvera-operation
+  http:
+    multipart:
+      max-file-size: 10Mb
+  #开发环境配置文件
+  profiles:
+    active:
+      #production
+      #192.168.112.83
+      #127.0.0.1
+      10.1.7.102
+  cloud:
+    inetutils:
+      ignored-interfaces: enp2s0
+      #192.168.109.209
+      #192.168.10.165

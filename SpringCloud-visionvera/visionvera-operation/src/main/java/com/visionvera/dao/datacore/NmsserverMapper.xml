@@ -1,0 +1,279 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.visionvera.dao.datacore.NmsserverDao">
+
+    <!-- 通用查询映射结果 -->
+    <resultMap id="BaseResultMap" type="com.visionvera.bean.datacore.Nmsserver">
+        <id column="omcid" property="omcid"/>
+        <result column="omcid2" property="omcid2"/>
+        <result column="regionid" property="regionid"/>
+        <result column="name" property="name"/>
+        <result column="weburl" property="weburl"/>
+        <result column="synctype" property="synctype"/>
+        <result column="recordtime" property="recordtime"/>
+    </resultMap>
+
+    <!-- 通用查询结果列 -->
+    <sql id="Base_Column_List">
+        omcid, omcid2, regionid, name, weburl, synctype, recordtime
+    </sql>
+
+  <!-- 通用查询条件 -->
+  <sql id="Where_Common">
+  		<if test="null != omcid">
+			AND omcid = #{omcid}
+		</if>
+		<if test="null != omcid2">
+			AND omcid2 = #{omcid2}
+		</if>
+		<if test="null != regionid">
+			AND regionid = #{regionid}
+		</if>
+		<if test="null != name">
+			AND name = #{name}
+		</if>
+		<if test="null != weburl">
+			AND weburl = #{weburl}
+		</if>
+		<if test="null != synctype">
+			AND synctype = #{synctype}
+		</if>
+		<if test="null != recordtime">
+			AND recordtime = #{recordtime}
+		</if>
+	   </sql>
+ 	<select id="selectByPrimaryKey" resultType="com.visionvera.bean.datacore.Nmsserver">
+		SELECT * FROM t_nmsserver WHERE omcid = #{omcid}
+	</select>
+	
+	<select id="get" resultType="com.visionvera.bean.datacore.Nmsserver">
+		SELECT * FROM t_nmsserver
+		<where>
+     		 <include refid="Where_Common"/>
+ 		</where>
+		limit 1
+	</select>
+	
+	<select id="queryList" resultType="com.visionvera.bean.datacore.Nmsserver" parameterType="com.visionvera.bean.datacore.Nmsserver">
+		SELECT * FROM t_nmsserver
+		 <where>
+     		 <include refid="Where_Common"/>
+ 		</where>
+	</select>
+	
+	<select id="queryCount" resultType="java.lang.Integer" parameterType="com.visionvera.bean.datacore.Nmsserver">
+		SELECT count(*) FROM t_nmsserver
+		<where>
+     		 <include refid="Where_Common"/>
+ 		</where>
+	</select>
+	
+    <insert id="insert" parameterType="com.visionvera.bean.datacore.Nmsserver">
+		INSERT INTO t_nmsserver
+		<trim prefix="(" suffix=")" suffixOverrides="," >
+			omcid2,
+			regionid,
+			name,
+			weburl,
+			synctype,
+			recordtime,
+		</trim>	
+		<trim prefix="values (" suffix=")" suffixOverrides="," >
+			#{omcid2},
+			#{regionid},
+			#{name},
+			#{weburl},
+			#{synctype},
+			#{recordtime},
+		</trim>	
+	</insert>
+	
+    <insert id="insertSelective" parameterType="com.visionvera.bean.datacore.Nmsserver">
+		INSERT INTO t_nmsserver
+		<trim prefix="(" suffix=")" suffixOverrides="," >
+		<if test="null != omcid">
+			omcid,
+		</if>
+		<if test="null != omcid2">
+			omcid2,
+		</if>
+		<if test="null != regionid">
+			regionid,
+		</if>
+		<if test="null != name">
+			name,
+		</if>
+		<if test="null != weburl">
+			weburl,
+		</if>
+		<if test="null != synctype">
+			synctype,
+		</if>
+		<if test="null != recordtime">
+			recordtime,
+		</if>
+	</trim>	
+	<trim prefix="values (" suffix=")" suffixOverrides="," >
+		<if test="null != omcid">
+			#{omcid},
+		</if>
+		<if test="null != omcid2">
+			#{omcid2},
+		</if>
+		<if test="null != regionid">
+			#{regionid},
+		</if>
+		<if test="null != name">
+			#{name},
+		</if>
+		<if test="null != weburl">
+			#{weburl},
+		</if>
+		<if test="null != synctype">
+			#{synctype},
+		</if>
+		<if test="null != recordtime">
+			#{recordtime},
+		</if>
+	</trim>	
+	</insert>
+	
+	 <update id="updateByPrimaryKeySelective" parameterType="com.visionvera.bean.datacore.Nmsserver" >
+	 update t_nmsserver
+    <set>
+    <trim suffixOverrides="," >
+    <if test="null != omcid2">
+		omcid2 = #{omcid2},
+	</if>
+	<if test="null != regionid">
+		regionid = #{regionid},
+	</if>
+	<if test="null != name">
+		name = #{name},
+	</if>
+	<if test="null != weburl">
+		weburl = #{weburl},
+	</if>
+	<if test="null != synctype">
+		synctype = #{synctype},
+	</if>
+	<if test="null != recordtime">
+		recordtime = #{recordtime},
+	</if>
+	</trim>
+</set>
+   WHERE omcid = #{omcid}
+  </update>
+	
+	 <update id="updateByPrimaryKey" parameterType="com.visionvera.bean.datacore.Nmsserver" >
+	 update t_nmsserver
+    <set>
+    <trim suffixOverrides="," >
+    		omcid2 = #{omcid2},
+			regionid = #{regionid},
+			name = #{name},
+			weburl = #{weburl},
+			synctype = #{synctype},
+			recordtime = #{recordtime},
+	</trim>
+</set>
+   WHERE omcid = #{omcid}
+  </update>
+  
+  <delete id="deleteByPrimaryKey" parameterType="java.lang.Integer" >
+    delete from t_nmsserver
+    where omcid = #{omcid}
+  </delete>
+  
+  <delete id="delete" parameterType="com.visionvera.bean.datacore.Nmsserver" >
+    delete from t_nmsserver
+    where 1=1
+    <if test="null != omcid">
+		and omcid = #{omcid}
+	</if>
+	<if test="null != omcid2">
+		and omcid2 = #{omcid2}
+	</if>
+	<if test="null != regionid">
+		and regionid = #{regionid}
+	</if>
+	<if test="null != name">
+		and name = #{name}
+	</if>
+	<if test="null != weburl">
+		and weburl = #{weburl}
+	</if>
+	<if test="null != synctype">
+		and synctype = #{synctype}
+	</if>
+	<if test="null != recordtime">
+		and recordtime = #{recordtime}
+	</if>
+	</delete>
+	
+	<!-- 获取网管下行政区域列表 -->
+	<select id="getRegionList" resultType="map" parameterType="java.lang.String">
+		SELECT tr.id,
+		tr. name,
+		tr.gradeid,
+		tr.detail FROM
+		<choose>
+		<when test="gradeid==0">
+		   (
+			SELECT DISTINCT (SUBSTRING(ts.regionid, 1, 2)) AS regionid
+			FROM t_serverinfob ts
+			LEFT JOIN t_nmsserver tn ON ts.omcid = tn.omcid
+			WHERE tn.omcid = #{omcid}
+			) t
+		    LEFT JOIN t_regionb tr ON CONCAT(t.regionid, '0000000000') = tr.id
+		
+		</when>
+		<when test="gradeid==1">
+		   (
+			SELECT DISTINCT (SUBSTRING(ts.regionid, 1, 4)) AS regionid
+			FROM t_serverinfob ts
+			LEFT JOIN t_nmsserver tn ON ts.omcid = tn.omcid
+			WHERE tn.omcid = #{omcid}
+			) t
+		    LEFT JOIN t_regionb tr ON CONCAT(t.regionid, '00000000') = tr.id
+		    where tr.pid=#{regionid}
+		</when>
+		<when test="gradeid==2">
+		   (
+			SELECT DISTINCT (SUBSTRING(ts.regionid, 1, 6)) AS regionid
+			FROM t_serverinfob ts
+			LEFT JOIN t_nmsserver tn ON ts.omcid = tn.omcid
+			WHERE tn.omcid = #{omcid}
+			) t
+		    LEFT JOIN t_regionb tr ON CONCAT(t.regionid, '000000') = tr.id
+		    where tr.pid=#{regionid}
+		</when>
+		<when test="gradeid==3">
+		   (
+			SELECT DISTINCT (SUBSTRING(ts.regionid, 1, 9)) AS regionid
+			FROM t_serverinfob ts
+			LEFT JOIN t_nmsserver tn ON ts.omcid = tn.omcid
+			WHERE tn.omcid = #{omcid}
+			) t
+		    LEFT JOIN t_regionb tr ON CONCAT(t.regionid, '000') = tr.id
+		    where tr.pid=#{regionid}
+		</when>
+		<when test="gradeid==4">
+		   (
+			SELECT DISTINCT (ts.regionid) AS regionid
+			FROM t_serverinfob ts
+			LEFT JOIN t_nmsserver tn ON ts.omcid = tn.omcid
+			WHERE tn.omcid = #{omcid}
+			) t
+		    LEFT JOIN t_regionb tr ON t.regionid = tr.id
+		    where tr.pid=#{regionid}
+		</when>
+		</choose>
+	</select>
+	
+	
+	 <!-- 根据行政区域查询服务器列表 -->
+	<select id="getNmsServerList" resultType="map" parameterType="map">
+		SELECT ts.omcid,ts.id AS serverId,ts.`name` AS serverName,IF(ts.id=ts.pid,'1','0') AS serverType FROM t_serverinfob ts WHERE ts.omcid=#{omcid} and ts.regionid  = #{regionid}
+	</select>
+</mapper>

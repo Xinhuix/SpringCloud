@@ -1,0 +1,157 @@
+spring:
+  http:
+    multipart:
+      max-file-size: 10Mb
+  application:
+    name: visionvera-gateway
+  profiles:
+    active: production
+
+http:
+  port: 8800
+server:
+  port: 8799
+  tomcat:
+    basedir: ./tmp
+  ssl:
+    key-store: classpath:server.jks
+    key-store-password: 123456
+    key-store-type: JKS
+#    key-alias: tomcat
+VISIONVERA-DEVICE-MANAGE:
+  ribbon:
+    #读取超时时间
+    ReadTimeout: 60000
+    ConnectTimeout: 60000
+    #Socket连接时间
+    SocketTimeout: 60000
+VISIONVERA-ALARM:
+  ribbon:
+    #读取超时时间
+    ReadTimeout: 60000
+    ConnectTimeout: 60000
+    #Socket连接时间
+    SocketTimeout: 60000
+
+ribbon:
+  #读取超时时间
+  ReadTimeout: 20000
+  #Socket连接时间
+  SocketTimeout: 20000
+hystrix:
+  command:
+    #默认熔断超时时间
+    default:
+      execution:
+        isolation:
+          thread:
+            timeoutInMilliseconds: 18000
+    VISIONVERA-DEVICE-MANAGE:
+      execution:
+        isolation:
+          thread:
+            timeoutInMilliseconds: 180000
+    VISIONVERA-ALARM:
+      execution:
+        isolation:
+          thread:
+            timeoutInMilliseconds: 180000
+
+zuul:
+  #忽略所有的服务，明确在下面指定的不会被忽略,配合饥饿加载使用
+  ignored-services:
+    "*"
+  #开启Zuul的Ribbon饥饿加载，避免第一次请求,需要创建RibbonClient消耗时间而接口超时
+  ribbon:
+    eager-load:
+      enabled: true
+  routes:
+    #所有以resource开头的请求都会转发到/resource/服务上
+    resource:
+      path:
+        /resource/**
+      service-id:
+        VISIONVERA-RESOURCE
+      #将指定路由的敏感信头设置为空，即可以传递Cookie等信息
+      sensitive-headers:
+
+    #所有以authentication开头的请求都会转发到/authentication/服务上
+    authentication:
+      path:
+        /authentication/**
+      service-id:
+        VISIONVERA-AUTHENTICATION
+      #将指定路由的敏感信头设置为空，即可以传递Cookie等信息
+      sensitive-headers:
+
+    #所有以dispatchment开头的请求都会转发到/dispatchment/服务上
+    dispatchment:
+      path:
+        /dispatchment/**
+      service-id:
+        VISIONVERA-DISPATCHMENT
+      #将指定路由的敏感信头设置为空，即可以传递Cookie等信息
+      sensitive-headers:
+
+    #所有以dispatchment开头的请求都会转发到/dispatchment/服务上
+    operation:
+      path:
+        /operation/**
+      service-id:
+        VISIONVERA-OPERATION
+      #将指定路由的敏感信头设置为空，即可以传递Cookie等信息
+      sensitive-headers:
+
+    #所有以alarm开头的请求都会转发到/alarm/服务上
+    alarm:
+      path:
+        /alarm/**
+      service-id:
+        VISIONVERA-ALARM
+      #将指定路由的敏感信头设置为空，即可以传递Cookie等信息
+      sensitive-headers:
+    #所有以analysis开头的请求都会转发到/analysis/服务上
+    analysis:
+      path:
+        /analysis/**
+      service-id:
+        VISIONVERA-ANALYSIS
+      #将指定路由的敏感信头设置为空，即可以传递Cookie等信息
+      sensitive-headers:
+    #所有以app-server开头的请求都会转发到/app-server/服务上
+    app-server:
+      path:
+        /app-server/**
+      service-id:
+        VISIONVERA-APP-SERVER
+      #将指定路由的敏感信头设置为空，即可以传递Cookie等信息
+      sensitive-headers:
+    #所有以perception开头的请求都会转发到/perception/服务上
+    perception:
+      path:
+        /perception/**
+      service-id:
+        VISIONVERA-PERCEPTION
+      #将指定路由的敏感信头设置为空，即可以传递Cookie等信息
+      sensitive-headers:
+    deviceManage:
+      path:
+        /device-manage/**
+      service-id:
+        VISIONVERA-DEVICE-MANAGE
+      #将指定路由的敏感信头设置为空，即可以传递Cookie等信息
+      sensitive-headers:
+
+eureka:
+  instance:
+    #Eureka Client向Eureka Server使用真实的IP地址，而不是计算机名
+    prefer-ip-address: true
+    #Eureka Client向Eureka Server使用真实IP后，显示真实的IP地址和端口号
+    instance-id: ${spring.cloud.client.ipAddress}:${server.port}
+  client:
+    service-url:
+      defaultZone: http://192.168.112.83:8761/eureka
+    #从Eureka服务端获取注册信息的间隔时间
+    registry-fetch-interval-seconds: 5
+    #初始化实例信息到Eureka服务端的间隔时间
+    initial-instance-info-replication-interval-seconds: 10

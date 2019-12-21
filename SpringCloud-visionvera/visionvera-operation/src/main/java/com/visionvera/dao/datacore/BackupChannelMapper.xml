@@ -1,0 +1,314 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.visionvera.dao.datacore.BackupChannelDao">
+
+    <!-- 通用查询映射结果 -->
+    <resultMap id="BaseResultMap" type="com.visionvera.bean.datacore.BackupChannel">
+        <id column="omcid" property="omcid"/>
+        <result column="id" property="id"/>
+        <result column="url" property="url"/>
+        <result column="create_user" property="createUser"/>
+        <result column="update_user" property="updateUser"/>
+        <result column="create_time" property="createTime"/>
+        <result column="update_time" property="updateTime"/>
+        <result column="remark" property="remark"/>
+        <result column="field1" property="field1"/>
+        <result column="field2" property="field2"/>
+        <result column="field3" property="field3"/>
+        <result column="field4" property="field4"/>
+    </resultMap>
+
+    <!-- 通用查询结果�? -->
+    <sql id="Base_Column_List">
+        omcid, id, url, create_user AS createUser, update_user AS updateUser, create_time AS createTime, update_time AS updateTime, remark, field1, field2, field3, field4
+    </sql>
+
+  <!-- 通用查询条件 -->
+  <sql id="Where_Common">
+  		<if test="null != omcid">
+			AND omcid = #{omcid}
+		</if>
+		<if test="null != id">
+			AND id = #{id}
+		</if>
+		<if test="null != url">
+			AND url = #{url}
+		</if>
+		<if test="null != createUser">
+			AND create_user = #{createUser}
+		</if>
+		<if test="null != updateUser">
+			AND update_user = #{updateUser}
+		</if>
+		<if test="null != createTime">
+			AND create_time = #{createTime}
+		</if>
+		<if test="null != updateTime">
+			AND update_time = #{updateTime}
+		</if>
+		<if test="null != remark">
+			AND remark = #{remark}
+		</if>
+		<if test="null != field1">
+			AND field1 = #{field1}
+		</if>
+		<if test="null != field2">
+			AND field2 = #{field2}
+		</if>
+		<if test="null != field3">
+			AND field3 = #{field3}
+		</if>
+		<if test="null != field4">
+			AND field4 = #{field4}
+		</if>
+	   </sql>
+ 	<select id="selectByPrimaryKey" resultType="com.visionvera.bean.datacore.BackupChannel">
+		SELECT <include refid="Base_Column_List"></include> FROM t_backup_channel WHERE omcid = #{omcid}  AND id = #{id}
+	</select>
+	
+	<select id="get" resultType="com.visionvera.bean.datacore.BackupChannel">
+		SELECT <include refid="Base_Column_List"></include> FROM t_backup_channel
+		<where>
+     		 <include refid="Where_Common"/>
+ 		</where>
+		limit 1
+	</select>
+	<select id="queryList" resultType="com.visionvera.bean.datacore.BackupChannel" parameterType="com.visionvera.bean.datacore.BackupChannel">
+		SELECT <include refid="Base_Column_List"></include> FROM t_backup_channel
+		 <where>
+     		 <include refid="Where_Common"/>
+ 		</where>
+	</select>
+	
+	<select id="queryCount" resultType="java.lang.Integer" parameterType="com.visionvera.bean.datacore.BackupChannel">
+		SELECT count(1) FROM t_backup_channel
+		<where>
+     		 <include refid="Where_Common"/>
+ 		</where>
+	</select>
+	
+    <insert id="insert" parameterType="com.visionvera.bean.datacore.BackupChannel">
+		INSERT INTO t_backup_channel
+		<trim prefix="(" suffix=")" suffixOverrides="," >
+			id,
+			url,
+			create_user,
+			update_user,
+			create_time,
+			update_time,
+			remark,
+			field1,
+			field2,
+			field3,
+			field4,
+		</trim>	
+		<trim prefix="values (" suffix=")" suffixOverrides="," >
+			#{id},
+			#{url},
+			#{createUser},
+			#{updateUser},
+			#{createTime},
+			#{updateTime},
+			#{remark},
+			#{field1},
+			#{field2},
+			#{field3},
+			#{field4},
+		</trim>	
+	</insert>
+	
+    <insert id="insertSelective" parameterType="com.visionvera.bean.datacore.BackupChannel">
+		INSERT INTO t_backup_channel
+		<trim prefix="(" suffix=")" suffixOverrides="," >
+		<if test="null != omcid">
+			omcid,
+		</if>
+		<if test="null != id">
+			id,
+		</if>
+		<if test="null != url">
+			url,
+		</if>
+		<if test="null != createUser">
+			create_user,
+		</if>
+		<if test="null != updateUser">
+			update_user,
+		</if>
+		<if test="null != createTime">
+			create_time,
+		</if>
+		<if test="null != updateTime">
+			update_time,
+		</if>
+		<if test="null != remark">
+			remark,
+		</if>
+		<if test="null != field1">
+			field1,
+		</if>
+		<if test="null != field2">
+			field2,
+		</if>
+		<if test="null != field3">
+			field3,
+		</if>
+		<if test="null != field4">
+			field4,
+		</if>
+	</trim>	
+	<trim prefix="values (" suffix=")" suffixOverrides="," >
+		<if test="null != omcid">
+			#{omcid},
+		</if>
+		<if test="null != id">
+			#{id},
+		</if>
+		<if test="null != url">
+			#{url},
+		</if>
+		<if test="null != createUser">
+			#{createUser},
+		</if>
+		<if test="null != updateUser">
+			#{updateUser},
+		</if>
+		<if test="null != createTime">
+			#{createTime},
+		</if>
+		<if test="null != updateTime">
+			#{updateTime},
+		</if>
+		<if test="null != remark">
+			#{remark},
+		</if>
+		<if test="null != field1">
+			#{field1},
+		</if>
+		<if test="null != field2">
+			#{field2},
+		</if>
+		<if test="null != field3">
+			#{field3},
+		</if>
+		<if test="null != field4">
+			#{field4},
+		</if>
+	</trim>	
+	</insert>
+	
+	 <update id="updateByPrimaryKeySelective" parameterType="com.visionvera.bean.datacore.BackupChannel" >
+	 update t_backup_channel
+    <set>
+    <trim suffixOverrides="," >
+    <if test="null != id">
+		id = #{id},
+	</if>
+	<if test="null != url">
+		url = #{url},
+	</if>
+	<if test="null != createUser">
+		create_user = #{createUser},
+	</if>
+	<if test="null != updateUser">
+		update_user = #{updateUser},
+	</if>
+	<if test="null != createTime">
+		create_time = #{createTime},
+	</if>
+	<if test="null != updateTime">
+		update_time = #{updateTime},
+	</if>
+	<if test="null != remark">
+		remark = #{remark},
+	</if>
+	<if test="null != field1">
+		field1 = #{field1},
+	</if>
+	<if test="null != field2">
+		field2 = #{field2},
+	</if>
+	<if test="null != field3">
+		field3 = #{field3},
+	</if>
+	<if test="null != field4">
+		field4 = #{field4},
+	</if>
+	</trim>
+</set>
+   WHERE omcid = #{omcid} and id = #{id}
+  </update>
+	
+	 <update id="updateByPrimaryKey" parameterType="com.visionvera.bean.datacore.BackupChannel" >
+	 update t_backup_channel
+    <set>
+    <trim suffixOverrides="," >
+    		id = #{id},
+			url = #{url},
+			create_user = #{createUser},
+			update_user = #{updateUser},
+			create_time = #{createTime},
+			update_time = #{updateTime},
+			remark = #{remark},
+			field1 = #{field1},
+			field2 = #{field2},
+			field3 = #{field3},
+			field4 = #{field4},
+	</trim>
+</set>
+   WHERE omcid = #{omcid} and  id = #{id}
+  </update>
+  
+  <delete id="deleteByPrimaryKey" parameterType="java.lang.Integer" >
+    delete from t_backup_channel
+    where omcid = #{omcid}
+  </delete>
+  
+  <delete id="delete" parameterType="com.visionvera.bean.datacore.BackupChannel" >
+    delete from t_backup_channel
+    where 1=1
+    <if test="null != omcid">
+		and omcid = #{omcid}
+	</if>
+	<if test="null != id">
+		and id = #{id}
+	</if>
+	<if test="null != url">
+		and url = #{url}
+	</if>
+	<if test="null != createUser">
+		and create_user = #{createUser}
+	</if>
+	<if test="null != updateUser">
+		and update_user = #{updateUser}
+	</if>
+	<if test="null != createTime">
+		and create_time = #{createTime}
+	</if>
+	<if test="null != updateTime">
+		and update_time = #{updateTime}
+	</if>
+	<if test="null != remark">
+		and remark = #{remark}
+	</if>
+	<if test="null != field1">
+		and field1 = #{field1}
+	</if>
+	<if test="null != field2">
+		and field2 = #{field2}
+	</if>
+	<if test="null != field3">
+		and field3 = #{field3}
+	</if>
+	<if test="null != field4">
+		and field4 = #{field4}
+	</if>
+	</delete>
+	
+	<!-- 获取ocmid和serverId -->
+	<select id="getBackupChannelBySelective" resultType="com.visionvera.bean.datacore.BackupChannel" parameterType="map">
+	    SELECT <include refid="Base_Column_List"></include> from t_backup_channel bc 
+	    WHERE (bc.omcid,bc.id)=(SELECT t.omcid AS omcid,t.svrid AS id from t_terminalinfob  t  
+		WHERE t.omcid=(SELECT n.omcid from t_nmsserver n  WHERE n.omcid2=#{zoneno} LIMIT 1 ) and t.devno=#{devno} LIMIT 1)
+	</select>
+</mapper>

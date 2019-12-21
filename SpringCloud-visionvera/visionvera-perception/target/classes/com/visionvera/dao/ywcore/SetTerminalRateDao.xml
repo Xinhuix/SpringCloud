@@ -1,0 +1,40 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.visionvera.dao.ywcore.SetTerminalRateDao">
+	<!-- 通过条件查询链路的数据流量 Start -->
+	<select id="selectSetTerminalRateByCondition" parameterType="com.visionvera.bean.ywcore.SetTerminalRateVO" resultType="com.visionvera.bean.ywcore.SetTerminalRateVO">
+		SELECT
+			DATE_FORMAT(terminalRate.`datetime`,'%Y-%m-%d %H:%i:%s') AS datetime,
+			terminalRate.bit AS bit,
+			terminalRate.terminalregion AS terminalRegion,
+			terminalRate.terminaldevno AS terminalDevno,
+			terminalRate.terminalmac AS terminalMac,
+			terminalRate.direction AS direction,
+			terminalRate.terminal AS terminal,
+			terminalRate.fromprov AS fromProv,
+			terminalRate.dname AS dName,
+			terminalRate.toprov AS toProv,
+			terminalRate.allrate AS allRate,
+			businessTable.state AS businessType,
+			businessTable.peerno AS destDevno,
+			terminalRate.fromprovid,
+			terminalRate.toprovid,
+			IF(LENGTH(terminalRate.zonecode)=2 ,CONCAT('1',terminalRate.zonecode,LPAD(terminalRate.terminaldevno, 5, 0)) ,CONCAT(terminalRate.zonecode,LPAD(terminalRate.terminaldevno, 5, 0)))AS zonecode
+		FROM
+			t_setterminalratert AS terminalRate
+		LEFT JOIN
+			t_trmbusstateb AS businessTable
+		ON
+			terminalRate.omcid = businessTable.omcid AND terminalRate.terminaldevno = businessTable.devno
+		<where>
+			<if test="regionId != null and regionId.length() > 0">
+				AND (terminalRate.fromprovid = substring_index(#{regionId},0,1) OR terminalRate.toprovid = substring_index(#{regionId},0,1))
+			</if>
+			<if test="life != null and life.length() > 0">
+				AND terminalRate.life = #{life}
+			</if>
+			AND terminalRate.terminaldevno != '0'
+		</where>
+	</select>
+	<!-- 通过条件查询链路的数据流量 End -->
+</mapper>

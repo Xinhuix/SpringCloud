@@ -1,0 +1,167 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+        "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.visionvera.dao.operation.LogDao">
+	<!-- 通过条件查询日志 -->
+	<select id="selectLogByCondition" resultType="com.visionvera.bean.cms.LogVO" parameterType="com.visionvera.bean.cms.LogVO">
+		SELECT 
+			vc_log.uuid,
+			vc_user.`login_name` AS operateUser, 
+			vc_log_type.`name` AS opertateName, 
+			DATE_FORMAT(vc_log.createTime ,'%Y-%m-%d %H:%i') AS operateTime,
+			vc_log.description,
+			vc_log.result,
+			vc_schedule.name AS meetName
+		FROM 
+			vc_log
+		LEFT JOIN 
+			vc_log_type 
+		ON
+			vc_log_type.id = vc_log.operator_id
+		INNER JOIN 
+			vc_user on vc_user.uuid = vc_log.user_id
+		LEFT JOIN 
+			vc_schedule ON 
+		vc_schedule.uuid = vc_log.schedule_id 
+		<where>
+			<if test="types != null and types != '' ">
+				AND vc_log.operator_id IN 
+				<foreach item="type" index="index" collection="typesArr" open="(" separator="," close=")">
+					#{type}
+				</foreach>
+			</if>
+			<if test="loginName != null and loginName != '' ">
+				AND vc_user.login_name like CONCAT('%',#{loginName},'%')
+			</if>
+			<if test="operateType != null and operateType != '' ">
+				AND vc_log.operator_id = #{operateType} 
+			</if>
+			<if test="description != null and description != '' ">
+				AND vc_log.description LIKE CONCAT('%',#{description},'%') 
+			</if>
+			<if test="meetName != null and meetName != '' ">
+				AND vc_schedule.name LIKE CONCAT('%',#{meetName},'%') 
+			</if>
+			<if test="startCreateTime != null and startCreateTime.length() > 0">
+				AND vc_log.createTime &gt;= #{startCreateTime}
+			</if>
+			<if test="endCreateTime != null and endCreateTime.length() > 0">
+				AND vc_log.createTime &lt;= #{endCreateTime}
+			</if>
+		</where>
+		ORDER BY vc_log.createTime desc
+	</select>
+	
+	<!-- 查询所有日志类型 -->
+	<!-- 获取操作类型列表 -->
+	<select id="selectLogType" resultType="com.visionvera.bean.cms.LogTypeVO">
+		select id, name, description from vc_log_type
+	</select>
+	
+	<!-- 分页获取日志 -->
+	<select id="getLogList" resultType="LogVO" parameterType="map">
+		select vc_log.uuid,
+		vc_user.`login_name` as operateUser, vc_log_type.`name`
+		as opertateName, 
+		date_format(vc_log.createTime ,'%Y-%m-%d %H:%i') as operateTime,
+		vc_log.description,
+		vc_log.result,
+		vc_schedule.name as meetName
+		from vc_log
+		LEFT JOIN vc_log_type on
+		vc_log_type.id =
+		vc_log.operator_id
+		INNER JOIN vc_user on vc_user.uuid =
+		vc_log.user_id
+		LEFT JOIN vc_schedule on vc_schedule.uuid = vc_log.schedule_id 
+		<where>
+			<if test="types != null and types != '' ">
+				and vc_log.operator_id in 
+				<foreach item="type" index="index" collection="types" open="("
+						separator="," close=")">
+						#{type}
+				</foreach>
+			</if>
+			<if test="loginName != null and loginName != '' ">
+				and vc_user.login_name like CONCAT('%',#{loginName},'%')
+			</if>
+			<if test="operateType != null and operateType != '' ">
+				and vc_log.operator_id = #{operateType} 
+			</if>
+			<if test="scheduleId != null and scheduleId != '' ">
+				and vc_log.schedule_id = #{scheduleId} 
+			</if>
+			<if test="operateDesc != null and operateDesc != '' ">
+				and vc_log.description like
+				CONCAT('%',#{operateDesc},'%') 
+			</if>
+			<if test="meetName != null and meetName != '' ">
+				and vc_schedule.name like
+				CONCAT('%',#{meetName},'%') 
+			</if>
+			<if test="operateTime != null and operateTime != '' ">
+				and vc_log.createTime &gt; #{operateTime}
+			</if>
+		</where>
+		order by vc_log.createTime desc
+	</select>
+	
+	<!-- 获取日志总数 -->
+	<select id="getLogListCount"  resultType="int" parameterType="map">
+		select count(1) from vc_log
+		LEFT JOIN vc_log_type on
+		vc_log_type.id =
+		vc_log.operator_id
+		INNER JOIN vc_user on vc_user.uuid =
+		vc_log.user_id
+		LEFT JOIN vc_schedule on vc_schedule.uuid = vc_log.schedule_id 
+		<where>
+			<if test="types != null and types != '' ">
+				and vc_log.operator_id in 
+				<foreach item="type" index="index" collection="types" open="("
+						separator="," close=")">
+						#{type}
+				</foreach>
+			</if>
+			<if test="loginName != null and loginName != '' ">
+				and vc_user.login_name like CONCAT('%',#{loginName},'%')
+			</if>
+			<if test="operateType != null and operateType != '' ">
+				and vc_log.operator_id = #{operateType} 
+			</if>
+			<if test="scheduleId != null and scheduleId != '' ">
+				and vc_log.schedule_id = #{scheduleId} 
+			</if>
+			<if test="operateDesc != null and operateDesc != '' ">
+				and vc_log.description like
+				CONCAT('%',#{operateDesc},'%') 
+			</if>
+			<if test="meetName != null and meetName != '' ">
+				and vc_schedule.name like
+				CONCAT('%',#{meetName},'%') 
+			</if>
+			<if test="operateTime != null and operateTime != '' ">
+				and vc_log.createTime &gt; #{operateTime}
+			</if>
+		</where>
+		order by vc_log.createTime desc
+	</select>
+	
+	<!-- 根据会议ID查询会议纪要列表 -->
+	<select id="getRecordList"  resultType="MeetRecordVO" parameterType="map">
+		SELECT uuid,
+		schedule_id AS scheduleId,
+		schedule_name AS scheduleName,
+		creator_id AS creatorId,
+		creator_name AS creatorName,
+		record,
+		type,
+		date_format(create_time, '%H:%i:%s') AS createTime
+		FROM vc_meeting_record
+		<where>
+			schedule_id = #{scheduleId}
+		</where>
+		order by create_time desc
+	</select>
+	
+</mapper>

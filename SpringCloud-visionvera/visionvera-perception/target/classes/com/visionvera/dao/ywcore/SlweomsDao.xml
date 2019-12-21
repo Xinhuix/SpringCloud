@@ -1,0 +1,473 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+        "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.visionvera.dao.ywcore.SlweomsDao">
+	<resultMap type="com.visionvera.bean.slweoms.ServerBasics" id="serverBasicsMap">
+     	<id property="id" column="id"/>
+     	<result property="serverName" column="serverName"/>
+     	<result property="serverUnique" column="serverUnique"/>
+     	<result property="serverHostname" column="serverHostname"/>
+     	<result property="serverSite" column="serverSite"/>
+     	<result property="serverHostGroup" column="serverHostGroup"/>
+     	<result property="serverManageIp" column="serverManageIp"/>
+     	<result property="serverElseIp" column="serverElseIp"/>
+     	<result property="serverTheirRoom" column="serverTheirRoom"/>
+     	<result property="serverManufacturer" column="serverManufacturer"/>
+     	<result property="serverProvince" column="serverProvince"/>
+     	<result property="serverDistrict" column="serverDistrict"/>
+     	<result property="serverOs" column="serverOs"/>
+     	<result property="serverPrincipal" column="serverPrincipal"/>
+     	<result property="serverPhone" column="serverPhone"/>
+     	<result property="serverNETIP" column="serverNETIP"/>
+     	<result property="netWorkMacAddr" column="netWorkMacAddr"/>
+     	<result property="serverOnLine" column="serverOnLine"/>
+		<result property="transferType" column="transferType"/>
+		<result property="bits" column="bits"/>
+		<result property="yw_uuid" column="ywUuid"/>
+     	<collection property="platformVOList" ofType="com.visionvera.bean.slweoms.PlatformVO">
+             <id property="tposId" column="tposId"/>
+             <result property="tposRegisterid" column="tposRegisterid"/>
+             <result property="tposName" column="tposName"/>
+             <result property="tposProcessState" column="tposProcessState"/>
+             <result property="tposPlatformType" column="tposPlatformType"/>
+         </collection>
+     </resultMap>
+	
+	<!-- 查询平台类型列表 -->
+	<select id="getPlatFormTypeList" resultType="PlatformTypeVO">
+		SELECT
+			DISTINCT a.platformName,a.platformType
+		FROM
+			t_platform_type a JOIN t_platform_tpos b ON a.platformType = b.tpos_platform_type
+		WHERE
+			a.state = 0 AND b.tpos_state = 0
+		AND b.server_unique IN (SELECT serverUnique FROM t_server_basics WHERE openState = 1 AND state !=3)
+		AND b.server_unique IN (SELECT serverUnique FROM t_server_hardware_relation)
+	</select>
+	
+	<!-- 根据区域编码查询下级含有服务器区域列表 -->
+	<select id="getRegionList" parameterType="map" resultType="RegionVO">
+		SELECT DISTINCT c.id,c.name,c.pid,c.gradeid gradeId 
+		FROM t_server_basics a 
+		JOIN t_server_hardware_relation relat ON a.serverUnique = relat.serverUnique
+		JOIN t_servers_hardware sh ON relat.hardware_id = sh.id
+		LEFT JOIN t_platform_tpos b 
+		ON a.serverUnique = b.server_unique AND b.tpos_state = 0
+		JOIN t_regioncodeb c ON
+		<if test="gradeid == 0">
+			a.serverProvince=c.id
+		</if>
+		<if test="gradeid == 1">
+			SUBSTRING( a.serverDistrict,14,12)=c.id
+		</if>
+		<if test="gradeid == 2">
+			false
+		</if>
+		<where>
+			a.openState = 1 AND a.state != 3 
+			<!-- AND a.serverUnique in (select distinct serverUnique from t_servers_hardware) -->
+			<if test="platFormType != null">
+				AND b.tpos_platform_type = #{platFormType}
+			</if>
+			<if test="district != null and district != ''">
+				AND c.pid = #{district}
+			</if>
+		</where>
+		ORDER BY c.id
+	</select>
+	
+	<!-- 查询区域下服务器总数 -->
+	<select id="getRegionServerCount" parameterType="map" resultType="map">
+		SELECT 
+			COUNT(DISTINCT(a.serverUnique)) count,
+			<if test="gradeid == 0">
+				a.serverProvince
+			</if>
+			<if test="gradeid==1">
+				SUBSTRING( a.serverDistrict,14,12)
+			</if> districtCode
+		FROM t_server_basics a 	
+		JOIN t_server_hardware_relation relat ON a.serverUnique = relat.serverUnique
+		JOIN t_servers_hardware sh ON relat.hardware_id = sh.id	
+		LEFT JOIN t_platform_tpos b ON a.serverUnique = b.server_unique and b.tpos_state = 0
+		<where>
+			a.openState = 1 AND a.state != 3 
+			<!-- AND a.serverUnique in (select distinct serverUnique from t_servers_hardware) -->
+			<if test="platFormType != null">
+				AND b.tpos_platform_type = #{platFormType}
+			</if>
+		</where>
+		<if test="gradeid == 0">
+			Group By a.serverProvince
+		</if>
+		<if test="gradeid==1">
+			AND a.gradeid = 2 and a.serverProvince = #{district} 
+			group by SUBSTRING( a.serverDistrict,14,12)
+		</if>
+	</select>
+	
+	<select id="getRegionServerOnlineCount" parameterType="map" resultType="map">
+		SELECT 
+			COUNT(DISTINCT(a.serverUnique)) count,
+			<if test="gradeid == 0">
+				a.serverProvince
+			</if>
+			<if test="gradeid==1">
+				SUBSTRING( a.serverDistrict,14,12)
+			</if> districtCode
+		FROM t_server_basics a 	
+		JOIN t_server_hardware_relation relat ON a.serverUnique = relat.serverUnique
+		JOIN t_servers_hardware sh ON relat.hardware_id = sh.id	
+		LEFT JOIN t_platform_tpos b ON a.serverUnique = b.server_unique and b.tpos_state = 0
+		<where>
+			a.openState = 1 AND a.state != 3
+			<!-- AND a.serverUnique in (select distinct serverUnique from t_servers_hardware) -->
+			AND a.serverOnLine = 1
+			<if test="platFormType != null">
+				AND b.tpos_platform_type = #{platFormType}
+			</if>
+		</where>
+		<if test="gradeid == 0">
+			Group By a.serverProvince
+		</if>
+		<if test="gradeid==1">
+			AND a.gradeid = 2 and a.serverProvince = #{district} 
+			group by SUBSTRING( a.serverDistrict,14,12)
+		</if>
+	</select>
+	
+	<!-- 根据区域查询下级服务器基本信息列表 -->
+	<select id="getServerBasicsListOfRegion" parameterType="map" resultType="ServerBasics">
+		SELECT 
+			DISTINCT a.id,a.serverName,a.serverUnique,a.serverOnLine,#{district} pid
+		FROM 
+			t_server_basics a 
+			JOIN t_server_hardware_relation relat ON a.serverUnique = relat.serverUnique
+			JOIN t_servers_hardware sh ON relat.hardware_id = sh.id
+			LEFT JOIN t_platform_tpos b
+			ON a.serverUnique = b.server_unique AND b.tpos_state = 0
+		<where>
+			a.openState = 1 AND a.state != 3
+			<!-- AND a.serverUnique in (select distinct serverUnique from t_servers_hardware) -->
+			<if test="platFormType != null">
+				AND b.tpos_platform_type = #{platFormType}
+			</if>
+			<if test="gradeid == 0">
+				AND false
+			</if>
+			<if test="gradeid == 1">
+				AND a.gradeid =1 and a.serverProvince = #{district}
+			</if>
+			<if test="gradeid == 2">
+				AND a.gradeid =2 and SUBSTRING( a.serverDistrict,14,12)=#{district}
+			</if>
+		</where>		
+		ORDER BY a.id
+	</select>
+	
+	<select id="getRegionServerList" parameterType="map" resultType="ServerHardwareVO">
+		SELECT 
+			DISTINCT a.id,a.serverName,a.serverProvince,a.serverDistrict,a.serverSite,a.serverOnLine,c.serverCPUType,c.serverCPUSumRate,c.serverDDRUsable,c.serverDDRGross,
+				(c.serverDDRGross - c.serverDDRUsable) serverDDRUsage,
+				c.serverDDRRate,c.serverHDDUsage,c.serverHDDGross,c.serverHDDAllRate,c.netWorkMacAddr,c.serverNETIP,
+				c.serverNETUpData,c.serverNETDownData,c.serverUnique		
+		FROM 
+			t_server_basics a 
+			JOIN  t_server_hardware_relation b ON a.serverUnique = b.serverUnique
+			JOIN  t_servers_hardware c ON b.hardware_id = c.id		
+			LEFT JOIN t_platform_tpos d ON a.serverUnique = d.server_unique and d.tpos_state = 0
+		<where>
+			a.openState = 1 AND a.state != 3
+			<if test="platFormType != null">
+				AND d.tpos_platform_type = #{platFormType}
+			</if>
+			<if test="gradeid == 0">
+				AND true
+			</if>
+			<if test="gradeid==1">
+				AND a.serverProvince =#{district}
+			</if>
+			<if test="gradeid==2">
+				AND a.gradeid=#{gradeid} and SUBSTRING( a.serverDistrict,14,12)=#{district}
+			</if>
+			<if test="serverName != null and serverName != ''">
+				AND a.serverName LIKE concat(concat('%',#{serverName}),'%')
+			</if>
+			<if test="platFormName != null and platFormName != ''">
+				AND d.tpos_name LIKE concat(concat('%',#{platFormName}),'%')
+			</if>
+			<if test="serverNetIp != null and serverNetIp != ''">
+				AND c.serverNETIP LIKE concat(concat('%',#{serverNetIp}),'%')
+			</if>
+			<if test="serverOnLine != null">
+				AND a.serverOnLine = #{serverOnLine}
+			</if>
+		</where>
+		<if test="sortField !=null and sortField != '' and sortMode !=null and sortMode !=''">
+			ORDER BY ${sortField}+0 ${sortMode}
+		</if> 
+	</select>
+	
+	<select id="getPlatFormVOListByServerKey" parameterType="string" resultType="PlatformVO">
+		SELECT 
+			c.tpos_id tposId,c.tpos_registerid tposRegisterid,c.tpos_name tposName,
+			c.tpos_platform_type tposPlatformType,c.tpos_process_state tposProcessState
+		FROM 
+			t_platform_tpos c
+		WHERE 
+			server_unique=#{serverKey} AND tpos_state = 0
+		ORDER BY c.tpos_process_state DESC
+	</select>
+	
+	<select id="getServerHardwareInfo" parameterType="map" resultType="ServerHardwareVO">
+		SELECT 
+			a.id,a.serverName,a.serverProvince,a.serverDistrict,a.serverSite,a.serverUnique,a.serverOnLine,b.serverCPUType,b.serverCPUSumRate,b.serverDDRUsable,b.serverDDRGross,
+			(b.serverDDRGross - b.serverDDRUsable) serverDDRUsage,
+			b.serverDDRRate,b.serverHDDUsage,b.serverHDDGross,b.serverHDDAllRate,b.netWorkMacAddr,b.serverNETIP,
+			b.serverNETUpData,b.serverNETDownData
+		FROM t_server_basics a 
+		JOIN t_server_hardware_relation relat ON a.serverUnique = relat.serverUnique
+		JOIN t_servers_hardware b ON relat.hardware_id = b.id
+		<!-- LEFT JOIN t_platform_tpos c ON a.serverUnique = c.server_unique and c.tpos_state = 0 -->
+		<where>
+			<!-- b.id = (SELECT MAX(id) FROM t_servers_hardware c WHERE a.serverUnique = c.serverUnique) -->
+			<if test="serverKey != null and serverKey != ''">
+				AND a.serverUnique = #{serverKey}
+			</if>
+		</where>
+	</select>
+	
+	<select id="getServerBasicsById" parameterType="int" resultMap="serverBasicsMap">
+		SELECT 
+			a.id,a.serverName,a.serverUnique,a.serverHostname,a.serverSite,a.serverHostGroup,a.serverManageIp,a.serverElseIp,
+			a.serverTheirRoom,a.serverManufacturer,a.serverProvince,a.serverDistrict,a.serverOs,
+			a.serverPrincipal,a.serverPhone,a.serverOnLine,a.transferType,a.yw_uuid as yw_uuid,
+			b.serverNETIP,b.netWorkMacAddr,c.tpos_id tposId,
+			c.tpos_registerid tposRegisterid,c.tpos_process_state tposProcessState,c.tpos_name tposName,c.tpos_platform_type tposPlatformType
+		FROM 
+			t_server_basics a 
+			JOIN t_server_hardware_relation relat ON a.serverUnique = relat.serverUnique
+			LEFT JOIN t_servers_hardware b
+			ON relat.hardware_id = b.id
+			LEFT JOIN t_platform_tpos c ON c.server_unique = a.serverUnique AND c.tpos_state = 0
+		<where>
+			<if test="id != null">
+				AND a.id = #{id}
+			</if>
+		</where>		
+	</select>
+	
+	<!-- 根据Id获取行政区域对象 -->
+	<select id="getRegionVOById" parameterType="string" resultType="RegionVO">
+		SELECT 
+			id,pid,name,gradeid gradeId
+		FROM 
+			t_regioncodeb
+		WHERE 
+			id = #{districtCode}
+	</select>
+	
+	<!-- 根据名称获取行政区域Bean -->
+	<select id="getRegionVOByName" resultType="RegionVO">
+		SELECT 
+			id,pid,name,gradeid gradeId
+		FROM 
+			t_regioncodeb
+		WHERE 
+			name = #{districtName} and pid = #{pid}
+	</select>
+	
+	<!-- 查询全国服务器的在线数/离线数 -->
+	<select id="getAllServerCount" resultType="map">
+		SELECT 
+			count(1) num,serverOnLine 
+		FROM 
+			t_server_basics
+		WHERE
+			serverUnique in (select distinct serverUnique from t_servers_hardware)
+		GROUP BY 
+			serverOnLine
+	</select>
+	<!-- 根据平台id查询服务器信息 -->
+	<select id="getServerBasicsByRegisterid" parameterType="string" resultType="ServerBasics">
+		SELECT 
+			a.id,a.serverName,a.serverUnique,a.serverHostname,a.serverSite,a.serverHostGroup,a.serverManageIp,a.port,a.serverElseIp,
+			a.serverTheirRoom,a.serverManufacturer,a.serverProvince,a.serverDistrict,a.serverOs,
+			a.serverPrincipal,a.serverPhone
+		FROM 
+			t_server_basics a LEFT JOIN t_platform_tpos b ON a.serverUnique = b.server_unique
+		WHERE 
+			b.tpos_registerid = #{registerid}
+	</select>
+	
+	<!-- 根据平台唯一标识查询平台信息 -->
+	<select id="getPlatformVoByRegisterid" parameterType="java.lang.String" resultType="com.visionvera.bean.slweoms.PlatformVO">
+		SELECT 
+			tpos_id tposId,tpos_registerid tposRegisterid,
+			tpos_name tposName,tpos_platform_type tposPlatformType,
+			tpos_process_state tposProcessState
+		FROM 
+			t_platform_tpos 
+		WHERE 
+			tpos_registerid = #{registerid}
+	</select>
+	
+	<!-- 修改平台信息 -->
+	<select id="updatePlatform" parameterType="PlatformVo">
+		UPDATE 
+			t_platform_tpos
+		<set>
+			<if test="tposName != null and tposName !=''">tpos_name = #{tposName},</if>
+			<if test="tposPlatformType != null and tposPlatformType !=''">tpos_platform_type = #{tposPlatformType},</if>
+			<if test="tposProcessState != null">tpos_process_state = #{tposProcessState},</if>
+		</set>
+		WHERE tpos_registerid = #{tposRegisterid}
+	</select>
+
+	<select id="selectRegionServerList" resultType="ServerHardwareVO" parameterType="com.visionvera.vo.Slweoms">
+		SELECT
+		DISTINCT a.id,a.serverName,a.serverProvince,a.serverDistrict,a.serverSite,a.serverOnLine,CASE a.yw_uuid WHEN '' THEN '64' ELSE '16' END AS bits,
+		c.serverCPUType,c.serverCPUSumRate,c.serverDDRUsable,c.serverDDRGross,
+		(c.serverDDRGross - c.serverDDRUsable) serverDDRUsage,
+		c.serverDDRRate,c.serverHDDUsage,c.serverHDDGross,c.serverHDDAllRate,c.netWorkMacAddr,c.serverNETIP,
+		c.serverNETUpData,c.serverNETDownData,c.serverUnique
+		FROM
+		t_server_basics a
+		JOIN  t_server_hardware_relation b ON a.serverUnique = b.serverUnique
+		JOIN  t_servers_hardware c ON b.hardware_id = c.id and b.yw_uuid=c.yw_uuid
+		LEFT JOIN t_platform_tpos d ON a.serverUnique = d.server_unique and d.tpos_state = 0
+		<where>
+			a.openState = 1 AND a.state != 3
+			<if test="platFormType != null">
+				AND d.tpos_platform_type = #{platFormType}
+			</if>
+			<if test="gradeId == 0">
+				AND true
+			</if>
+			<if test="gradeId==1">
+				AND a.serverProvince =#{district}
+			</if>
+			<if test="gradeId==2">
+				AND a.gradeid=#{gradeId} and SUBSTRING( a.serverDistrict,14,12)=#{district}
+			</if>
+			<if test="serverName != null and serverName != ''">
+				AND a.serverName LIKE concat(concat('%',#{serverName}),'%')
+			</if>
+			<if test="platFormName != null and platFormName != ''">
+				AND d.tpos_name LIKE concat(concat('%',#{platFormName}),'%')
+			</if>
+			<if test="serverNetIp != null and serverNetIp != ''">
+				AND c.serverNETIP LIKE concat(concat('%',#{serverNetIp}),'%')
+			</if>
+			<if test="serverOnLine != null">
+				AND a.serverOnLine = #{serverOnLine}
+			</if>
+		</where>
+		<if test="sortField !=null and sortField != '' and sortMode !=null and sortMode !=''">
+			ORDER BY ${sortField}+0 ${sortMode}
+		</if>
+	</select>
+
+
+	<select id="selectRegion" resultType="com.visionvera.bean.cms.RegionVO" parameterType="com.visionvera.vo.Slweoms">
+		SELECT DISTINCT
+			c.id, c.`name`, c.pid, c.gradeid gradeId,
+			COUNT(DISTINCT(a.serverUnique)) serverCount,
+			COUNT( DISTINCT (CASE serverOnLine WHEN 1 THEN a.serverUnique ELSE NULL END )) serverOnlineCount
+		FROM
+			t_server_basics a
+		JOIN t_server_hardware_relation relat ON a.serverUnique = relat.serverUnique
+		JOIN t_servers_hardware sh ON relat.hardware_id = sh.id
+		LEFT JOIN t_platform_tpos b ON a.serverUnique = b.server_unique
+		AND b.tpos_state = 0
+		LEFT JOIN t_platform_tpos d ON a.serverUnique = d.server_unique and d.tpos_state = 0
+		<if test="gradeId == 0">
+			JOIN t_regioncodeb c ON a.serverProvince = c.id
+		</if>
+		<if test="gradeId==1">
+			JOIN t_regioncodeb c ON SUBSTRING(a.serverDistrict, 14, 12) = c.id
+		</if>
+		WHERE
+			a.openState = 1
+		AND a.state != 3
+		<if test="platFormType != null">
+			AND b.tpos_platform_type = #{platFormType}
+		</if>
+		<if test="district != null and district != ''">
+			AND c.pid = #{district}
+		</if>
+		<if test="serverName != null and serverName != ''">
+			AND a.serverName LIKE concat(concat('%',#{serverName}),'%')
+		</if>
+		<if test="platFormName != null and platFormName != ''">
+			AND d.tpos_name LIKE concat(concat('%',#{platFormName}),'%')
+		</if>
+		<if test="serverNetIp != null and serverNetIp != ''">
+			AND sh.serverNETIP LIKE concat(concat('%',#{serverNetIp}),'%')
+		</if>
+		<if test="gradeId == 0">
+			GROUP BY a.serverProvince
+		</if>
+		<if test="gradeId==1">
+		 	GROUP BY c.id
+		</if>
+		ORDER BY c.id
+	</select>
+	<select id="selectServerHardwareHistory" resultType="java.util.Map" parameterType="java.lang.Integer">
+		SELECT
+			<if test="time==60">
+				DATE_FORMAT(createTime,'%Y-%m-%d %H:00:00') AS time,
+            </if>
+			<if test="time==30">
+				DATE_FORMAT(concat(date(createTime),' ',HOUR(createTime),':',floor(MINUTE(createTime)/30)*30),'%Y-%m-%d %H:%i:00') AS time,
+			</if>
+			<if test="time==15">
+				DATE_FORMAT(concat(date(createTime),' ',HOUR(createTime),':',floor(MINUTE(createTime)/15)*15),'%Y-%m-%d %H:%i:00') AS time,
+			</if>
+			<if test="time == 1 ">
+				DATE_FORMAT(createTime,'%Y-%m-%d %H:%i:00') AS time,
+			</if>
+			TRUNCATE (AVG(serverCPUSumRate), 2) cpuUsed,
+			TRUNCATE (AVG(serverHDDAllRate), 2) diskUsed,
+			TRUNCATE (AVG(serverDDRRate), 2) ramUsed,
+			serverNETDownData as networkInRate,
+			serverNETUpData as networkOutRate,
+			serverUnique as serviceUnique
+		FROM t_servers_hardware
+		WHERE DATE_FORMAT(createTime,'%Y-%m-%d') = DATE_FORMAT( #{now,jdbcType=TIMESTAMP},'%Y-%m-%d')
+		<if test="serverUnique!=null">
+			and serverUnique = #{serverUnique}
+		</if>
+		GROUP BY time
+		ORDER BY time;
+	</select>
+	<select id="selectThreshold" resultType="java.util.Map" parameterType="java.lang.String">
+		SELECT
+			IF(cpuThreshold='',-1,cpuThreshold) AS cpuUsed,
+			IF(hddThreshold='',-1,cpuThreshold) diskUsed,
+			IF(ddrThreshold='',-1,cpuThreshold) ramUsed,
+			IF(netUpThreshold='',-1,cpuThreshold) networkInRate,
+			IF(netDownThreshold='',-1,cpuThreshold) networkOutRate
+		FROM
+			t_server_basics
+		where serverUnique = #{serverUnique}
+	</select>
+	<select id="selectServerBasics" resultType="java.lang.String" parameterType="java.lang.String">
+		SELECT
+			serverUnique
+		FROM
+			t_server_basics
+		WHERE
+			state in (1,2)
+	</select>
+	<select id="selectServerHardwareHistoryMinute" resultType="java.util.Map" parameterType="java.lang.Object">
+		SELECT
+		serverNETDownData as networkInRate,
+		serverNETUpData as networkOutRate
+		FROM t_servers_hardware
+		WHERE
+		    createTime <![CDATA[>=]]>  #{startTime,jdbcType=TIMESTAMP}
+			and createTime <![CDATA[<=]]>  #{endTime,jdbcType=TIMESTAMP}
+			and serverUnique = #{serverUnique}
+	</select>
+</mapper>

@@ -1,0 +1,1 @@
+{"timestamp":1570678004150,"status":400,"error":"Bad Request","exception":"org.springframework.web.bind.MissingServletRequestParameterException","message":"Required Integer parameter 'userid' is not present","path":"/rest/tglRest/getMonitorByOrganization"}

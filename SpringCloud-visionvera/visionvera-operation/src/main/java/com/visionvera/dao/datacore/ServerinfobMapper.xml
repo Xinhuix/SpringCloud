@@ -1,0 +1,1101 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.visionvera.dao.datacore.ServerinfobDao">
+
+    <!-- 通用查询映射结果 -->
+    <resultMap id="BaseResultMap" type="com.visionvera.bean.datacore.Serverinfob">
+        <id column="omcid" property="omcid"/>
+        <result column="id" property="id"/>
+        <result column="pid" property="pid"/>
+        <result column="network" property="network"/>
+        <result column="sn" property="sn"/>
+        <result column="name" property="name"/>
+        <result column="mac0" property="mac0"/>
+        <result column="mac1" property="mac1"/>
+        <result column="devtype" property="devtype"/>
+        <result column="svrno" property="svrno"/>
+        <result column="bandwith0" property="bandwith0"/>
+        <result column="bandwith1" property="bandwith1"/>
+        <result column="ssxmid" property="ssxmid"/>
+        <result column="ktywqf" property="ktywqf"/>
+        <result column="ktywsj" property="ktywsj"/>
+        <result column="groupno" property="groupno"/>
+        <result column="regionid" property="regionid"/>
+        <result column="jfxxdz" property="jfxxdz"/>
+        <result column="jgh" property="jgh"/>
+        <result column="longitude" property="longitude"/>
+        <result column="latitude" property="latitude"/>
+        <result column="yysm" property="yysm"/>
+        <result column="yyslxr" property="yyslxr"/>
+        <result column="yyslxrdh" property="yyslxrdh"/>
+        <result column="khlxr" property="khlxr"/>
+        <result column="khlxrdh" property="khlxrdh"/>
+        <result column="verno" property="verno"/>
+        <result column="lockflg" property="lockflg"/>
+        <result column="locktime" property="locktime"/>
+        <result column="whfzr1" property="whfzr1"/>
+        <result column="whfzrtel1" property="whfzrtel1"/>
+        <result column="azr" property="azr"/>
+        <result column="azrtel" property="azrtel"/>
+        <result column="online" property="online"/>
+        <result column="servertime" property="servertime"/>
+        <result column="reachable" property="reachable"/>
+        <result column="ethernettype" property="ethernettype"/>
+        <result column="frametype" property="frametype"/>
+        <result column="refreshtime" property="refreshtime"/>
+        <result column="linelevel" property="linelevel"/>
+        <result column="linebw" property="linebw"/>
+        <result column="openid" property="openid"/>
+        <result column="linkid0" property="linkid0"/>
+        <result column="linkid1" property="linkid1"/>
+        <result column="deleteflg" property="deleteflg"/>
+        <result column="createid" property="createid"/>
+        <result column="createtime" property="createtime"/>
+        <result column="updateid" property="updateid"/>
+        <result column="updatetime" property="updatetime"/>
+        <result column="isfirst" property="isfirst"/>
+        <result column="syncdatatime" property="syncdatatime"/>
+    </resultMap>
+
+    <!-- 通用查询结果 -->
+    <sql id="Base_Column_List">
+        omcid, id, pid, network, sn, name, mac0, mac1, devtype, svrno, bandwith0, bandwith1, ssxmid, ktywqf, ktywsj, groupno, regionid, jfxxdz, jgh, longitude, latitude, yysm, yyslxr, yyslxrdh, khlxr, khlxrdh, verno, lockflg, locktime, whfzr1, whfzrtel1, azr, azrtel, online, servertime, reachable, ethernettype, frametype, refreshtime, linelevel, linebw, openid, linkid0, linkid1, deleteflg, createid, createtime, updateid, updatetime, isfirst, syncdatatime
+    </sql>
+
+  <!-- 通用查询条件 -->
+  <sql id="Where_Common">
+  		<if test="null != omcid">
+			AND omcid = #{omcid}
+		</if>
+		<if test="null != id">
+			AND id = #{id}
+		</if>
+		<if test="null != pid">
+			AND pid = #{pid}
+		</if>
+		<if test="null != network">
+			AND network = #{network}
+		</if>
+		<if test="null != sn">
+			AND sn = #{sn}
+		</if>
+		<if test="null != name">
+			AND name = #{name}
+		</if>
+		<if test="null != mac0">
+			AND mac0 = #{mac0}
+		</if>
+		<if test="null != mac1">
+			AND mac1 = #{mac1}
+		</if>
+		<if test="null != devtype">
+			AND devtype = #{devtype}
+		</if>
+		<if test="null != svrno">
+			AND svrno = #{svrno}
+		</if>
+		<if test="null != bandwith0">
+			AND bandwith0 = #{bandwith0}
+		</if>
+		<if test="null != bandwith1">
+			AND bandwith1 = #{bandwith1}
+		</if>
+		<if test="null != ssxmid">
+			AND ssxmid = #{ssxmid}
+		</if>
+		<if test="null != ktywqf">
+			AND ktywqf = #{ktywqf}
+		</if>
+		<if test="null != ktywsj">
+			AND ktywsj = #{ktywsj}
+		</if>
+		<if test="null != groupno">
+			AND groupno = #{groupno}
+		</if>
+		<if test="null != regionid">
+			AND regionid = #{regionid}
+		</if>
+		<if test="null != jfxxdz">
+			AND jfxxdz = #{jfxxdz}
+		</if>
+		<if test="null != jgh">
+			AND jgh = #{jgh}
+		</if>
+		<if test="null != longitude">
+			AND longitude = #{longitude}
+		</if>
+		<if test="null != latitude">
+			AND latitude = #{latitude}
+		</if>
+		<if test="null != yysm">
+			AND yysm = #{yysm}
+		</if>
+		<if test="null != yyslxr">
+			AND yyslxr = #{yyslxr}
+		</if>
+		<if test="null != yyslxrdh">
+			AND yyslxrdh = #{yyslxrdh}
+		</if>
+		<if test="null != khlxr">
+			AND khlxr = #{khlxr}
+		</if>
+		<if test="null != khlxrdh">
+			AND khlxrdh = #{khlxrdh}
+		</if>
+		<if test="null != verno">
+			AND verno = #{verno}
+		</if>
+		<if test="null != lockflg">
+			AND lockflg = #{lockflg}
+		</if>
+		<if test="null != locktime">
+			AND locktime = #{locktime}
+		</if>
+		<if test="null != whfzr1">
+			AND whfzr1 = #{whfzr1}
+		</if>
+		<if test="null != whfzrtel1">
+			AND whfzrtel1 = #{whfzrtel1}
+		</if>
+		<if test="null != azr">
+			AND azr = #{azr}
+		</if>
+		<if test="null != azrtel">
+			AND azrtel = #{azrtel}
+		</if>
+		<if test="null != online">
+			AND online = #{online}
+		</if>
+		<if test="null != servertime">
+			AND servertime = #{servertime}
+		</if>
+		<if test="null != reachable">
+			AND reachable = #{reachable}
+		</if>
+		<if test="null != ethernettype">
+			AND ethernettype = #{ethernettype}
+		</if>
+		<if test="null != frametype">
+			AND frametype = #{frametype}
+		</if>
+		<if test="null != refreshtime">
+			AND refreshtime = #{refreshtime}
+		</if>
+		<if test="null != linelevel">
+			AND linelevel = #{linelevel}
+		</if>
+		<if test="null != linebw">
+			AND linebw = #{linebw}
+		</if>
+		<if test="null != openid">
+			AND openid = #{openid}
+		</if>
+		<if test="null != linkid0">
+			AND linkid0 = #{linkid0}
+		</if>
+		<if test="null != linkid1">
+			AND linkid1 = #{linkid1}
+		</if>
+		<if test="null != deleteflg">
+			AND deleteflg = #{deleteflg}
+		</if>
+		<if test="null != createid">
+			AND createid = #{createid}
+		</if>
+		<if test="null != createtime">
+			AND createtime = #{createtime}
+		</if>
+		<if test="null != updateid">
+			AND updateid = #{updateid}
+		</if>
+		<if test="null != updatetime">
+			AND updatetime = #{updatetime}
+		</if>
+		<if test="null != isfirst">
+			AND isfirst = #{isfirst}
+		</if>
+		<if test="null != syncdatatime">
+			AND syncdatatime = #{syncdatatime}
+		</if>
+	   </sql>
+ 	<select id="selectByPrimaryKey" resultType="com.visionvera.bean.datacore.Serverinfob">
+		SELECT <include refid="Base_Column_List"></include> FROM t_serverinfob WHERE omcid = #{omcid} AND id = #{id} limit 1
+	</select>
+	
+	<select id="get" resultType="com.visionvera.bean.datacore.Serverinfob">
+		SELECT <include refid="Base_Column_List"></include> FROM t_serverinfob
+		<where>
+     		 <include refid="Where_Common"/>
+ 		</where>
+		limit 1
+	</select>
+	
+	<select id="queryList" resultType="com.visionvera.bean.datacore.Serverinfob" parameterType="com.visionvera.bean.datacore.Serverinfob">
+		SELECT <include refid="Base_Column_List"></include> FROM t_serverinfob
+		 <where>
+     		 <include refid="Where_Common"/>
+ 		</where>
+	</select>
+	
+	<select id="queryCount" resultType="java.lang.Integer" parameterType="com.visionvera.bean.datacore.Serverinfob">
+		SELECT count(1) FROM t_serverinfob
+		<where>
+     		 <include refid="Where_Common"/>
+ 		</where>
+	</select>
+	
+    <insert id="insert" parameterType="com.visionvera.bean.datacore.Serverinfob">
+		INSERT INTO t_serverinfob
+		<trim prefix="(" suffix=")" suffixOverrides="," >
+			id,
+			pid,
+			network,
+			sn,
+			name,
+			mac0,
+			mac1,
+			devtype,
+			svrno,
+			bandwith0,
+			bandwith1,
+			ssxmid,
+			ktywqf,
+			ktywsj,
+			groupno,
+			regionid,
+			jfxxdz,
+			jgh,
+			longitude,
+			latitude,
+			yysm,
+			yyslxr,
+			yyslxrdh,
+			khlxr,
+			khlxrdh,
+			verno,
+			lockflg,
+			locktime,
+			whfzr1,
+			whfzrtel1,
+			azr,
+			azrtel,
+			online,
+			servertime,
+			reachable,
+			ethernettype,
+			frametype,
+			refreshtime,
+			linelevel,
+			linebw,
+			openid,
+			linkid0,
+			linkid1,
+			deleteflg,
+			createid,
+			createtime,
+			updateid,
+			updatetime,
+			isfirst,
+			syncdatatime,
+		</trim>	
+		<trim prefix="values (" suffix=")" suffixOverrides="," >
+			#{id},
+			#{pid},
+			#{network},
+			#{sn},
+			#{name},
+			#{mac0},
+			#{mac1},
+			#{devtype},
+			#{svrno},
+			#{bandwith0},
+			#{bandwith1},
+			#{ssxmid},
+			#{ktywqf},
+			#{ktywsj},
+			#{groupno},
+			#{regionid},
+			#{jfxxdz},
+			#{jgh},
+			#{longitude},
+			#{latitude},
+			#{yysm},
+			#{yyslxr},
+			#{yyslxrdh},
+			#{khlxr},
+			#{khlxrdh},
+			#{verno},
+			#{lockflg},
+			#{locktime},
+			#{whfzr1},
+			#{whfzrtel1},
+			#{azr},
+			#{azrtel},
+			#{online},
+			#{servertime},
+			#{reachable},
+			#{ethernettype},
+			#{frametype},
+			#{refreshtime},
+			#{linelevel},
+			#{linebw},
+			#{openid},
+			#{linkid0},
+			#{linkid1},
+			#{deleteflg},
+			#{createid},
+			#{createtime},
+			#{updateid},
+			#{updatetime},
+			#{isfirst},
+			#{syncdatatime},
+		</trim>	
+	</insert>
+	
+    <insert id="insertSelective" parameterType="com.visionvera.bean.datacore.Serverinfob">
+		INSERT INTO t_serverinfob
+		<trim prefix="(" suffix=")" suffixOverrides="," >
+		<if test="null != omcid">
+			omcid,
+		</if>
+		<if test="null != id">
+			id,
+		</if>
+		<if test="null != pid">
+			pid,
+		</if>
+		<if test="null != network">
+			network,
+		</if>
+		<if test="null != sn">
+			sn,
+		</if>
+		<if test="null != name">
+			name,
+		</if>
+		<if test="null != mac0">
+			mac0,
+		</if>
+		<if test="null != mac1">
+			mac1,
+		</if>
+		<if test="null != devtype">
+			devtype,
+		</if>
+		<if test="null != svrno">
+			svrno,
+		</if>
+		<if test="null != bandwith0">
+			bandwith0,
+		</if>
+		<if test="null != bandwith1">
+			bandwith1,
+		</if>
+		<if test="null != ssxmid">
+			ssxmid,
+		</if>
+		<if test="null != ktywqf">
+			ktywqf,
+		</if>
+		<if test="null != ktywsj">
+			ktywsj,
+		</if>
+		<if test="null != groupno">
+			groupno,
+		</if>
+		<if test="null != regionid">
+			regionid,
+		</if>
+		<if test="null != jfxxdz">
+			jfxxdz,
+		</if>
+		<if test="null != jgh">
+			jgh,
+		</if>
+		<if test="null != longitude">
+			longitude,
+		</if>
+		<if test="null != latitude">
+			latitude,
+		</if>
+		<if test="null != yysm">
+			yysm,
+		</if>
+		<if test="null != yyslxr">
+			yyslxr,
+		</if>
+		<if test="null != yyslxrdh">
+			yyslxrdh,
+		</if>
+		<if test="null != khlxr">
+			khlxr,
+		</if>
+		<if test="null != khlxrdh">
+			khlxrdh,
+		</if>
+		<if test="null != verno">
+			verno,
+		</if>
+		<if test="null != lockflg">
+			lockflg,
+		</if>
+		<if test="null != locktime">
+			locktime,
+		</if>
+		<if test="null != whfzr1">
+			whfzr1,
+		</if>
+		<if test="null != whfzrtel1">
+			whfzrtel1,
+		</if>
+		<if test="null != azr">
+			azr,
+		</if>
+		<if test="null != azrtel">
+			azrtel,
+		</if>
+		<if test="null != online">
+			online,
+		</if>
+		<if test="null != servertime">
+			servertime,
+		</if>
+		<if test="null != reachable">
+			reachable,
+		</if>
+		<if test="null != ethernettype">
+			ethernettype,
+		</if>
+		<if test="null != frametype">
+			frametype,
+		</if>
+		<if test="null != refreshtime">
+			refreshtime,
+		</if>
+		<if test="null != linelevel">
+			linelevel,
+		</if>
+		<if test="null != linebw">
+			linebw,
+		</if>
+		<if test="null != openid">
+			openid,
+		</if>
+		<if test="null != linkid0">
+			linkid0,
+		</if>
+		<if test="null != linkid1">
+			linkid1,
+		</if>
+		<if test="null != deleteflg">
+			deleteflg,
+		</if>
+		<if test="null != createid">
+			createid,
+		</if>
+		<if test="null != createtime">
+			createtime,
+		</if>
+		<if test="null != updateid">
+			updateid,
+		</if>
+		<if test="null != updatetime">
+			updatetime,
+		</if>
+		<if test="null != isfirst">
+			isfirst,
+		</if>
+		<if test="null != syncdatatime">
+			syncdatatime,
+		</if>
+	</trim>	
+	<trim prefix="values (" suffix=")" suffixOverrides="," >
+		<if test="null != omcid">
+			#{omcid},
+		</if>
+		<if test="null != id">
+			#{id},
+		</if>
+		<if test="null != pid">
+			#{pid},
+		</if>
+		<if test="null != network">
+			#{network},
+		</if>
+		<if test="null != sn">
+			#{sn},
+		</if>
+		<if test="null != name">
+			#{name},
+		</if>
+		<if test="null != mac0">
+			#{mac0},
+		</if>
+		<if test="null != mac1">
+			#{mac1},
+		</if>
+		<if test="null != devtype">
+			#{devtype},
+		</if>
+		<if test="null != svrno">
+			#{svrno},
+		</if>
+		<if test="null != bandwith0">
+			#{bandwith0},
+		</if>
+		<if test="null != bandwith1">
+			#{bandwith1},
+		</if>
+		<if test="null != ssxmid">
+			#{ssxmid},
+		</if>
+		<if test="null != ktywqf">
+			#{ktywqf},
+		</if>
+		<if test="null != ktywsj">
+			#{ktywsj},
+		</if>
+		<if test="null != groupno">
+			#{groupno},
+		</if>
+		<if test="null != regionid">
+			#{regionid},
+		</if>
+		<if test="null != jfxxdz">
+			#{jfxxdz},
+		</if>
+		<if test="null != jgh">
+			#{jgh},
+		</if>
+		<if test="null != longitude">
+			#{longitude},
+		</if>
+		<if test="null != latitude">
+			#{latitude},
+		</if>
+		<if test="null != yysm">
+			#{yysm},
+		</if>
+		<if test="null != yyslxr">
+			#{yyslxr},
+		</if>
+		<if test="null != yyslxrdh">
+			#{yyslxrdh},
+		</if>
+		<if test="null != khlxr">
+			#{khlxr},
+		</if>
+		<if test="null != khlxrdh">
+			#{khlxrdh},
+		</if>
+		<if test="null != verno">
+			#{verno},
+		</if>
+		<if test="null != lockflg">
+			#{lockflg},
+		</if>
+		<if test="null != locktime">
+			#{locktime},
+		</if>
+		<if test="null != whfzr1">
+			#{whfzr1},
+		</if>
+		<if test="null != whfzrtel1">
+			#{whfzrtel1},
+		</if>
+		<if test="null != azr">
+			#{azr},
+		</if>
+		<if test="null != azrtel">
+			#{azrtel},
+		</if>
+		<if test="null != online">
+			#{online},
+		</if>
+		<if test="null != servertime">
+			#{servertime},
+		</if>
+		<if test="null != reachable">
+			#{reachable},
+		</if>
+		<if test="null != ethernettype">
+			#{ethernettype},
+		</if>
+		<if test="null != frametype">
+			#{frametype},
+		</if>
+		<if test="null != refreshtime">
+			#{refreshtime},
+		</if>
+		<if test="null != linelevel">
+			#{linelevel},
+		</if>
+		<if test="null != linebw">
+			#{linebw},
+		</if>
+		<if test="null != openid">
+			#{openid},
+		</if>
+		<if test="null != linkid0">
+			#{linkid0},
+		</if>
+		<if test="null != linkid1">
+			#{linkid1},
+		</if>
+		<if test="null != deleteflg">
+			#{deleteflg},
+		</if>
+		<if test="null != createid">
+			#{createid},
+		</if>
+		<if test="null != createtime">
+			#{createtime},
+		</if>
+		<if test="null != updateid">
+			#{updateid},
+		</if>
+		<if test="null != updatetime">
+			#{updatetime},
+		</if>
+		<if test="null != isfirst">
+			#{isfirst},
+		</if>
+		<if test="null != syncdatatime">
+			#{syncdatatime},
+		</if>
+	</trim>	
+	</insert>
+	
+	 <update id="updateByPrimaryKeySelective" parameterType="com.visionvera.bean.datacore.Serverinfob" >
+	 update t_serverinfob
+    <set>
+    <trim suffixOverrides="," >
+    <if test="null != id">
+		id = #{id},
+	</if>
+	<if test="null != pid">
+		pid = #{pid},
+	</if>
+	<if test="null != network">
+		network = #{network},
+	</if>
+	<if test="null != sn">
+		sn = #{sn},
+	</if>
+	<if test="null != name">
+		name = #{name},
+	</if>
+	<if test="null != mac0">
+		mac0 = #{mac0},
+	</if>
+	<if test="null != mac1">
+		mac1 = #{mac1},
+	</if>
+	<if test="null != devtype">
+		devtype = #{devtype},
+	</if>
+	<if test="null != svrno">
+		svrno = #{svrno},
+	</if>
+	<if test="null != bandwith0">
+		bandwith0 = #{bandwith0},
+	</if>
+	<if test="null != bandwith1">
+		bandwith1 = #{bandwith1},
+	</if>
+	<if test="null != ssxmid">
+		ssxmid = #{ssxmid},
+	</if>
+	<if test="null != ktywqf">
+		ktywqf = #{ktywqf},
+	</if>
+	<if test="null != ktywsj">
+		ktywsj = #{ktywsj},
+	</if>
+	<if test="null != groupno">
+		groupno = #{groupno},
+	</if>
+	<if test="null != regionid">
+		regionid = #{regionid},
+	</if>
+	<if test="null != jfxxdz">
+		jfxxdz = #{jfxxdz},
+	</if>
+	<if test="null != jgh">
+		jgh = #{jgh},
+	</if>
+	<if test="null != longitude">
+		longitude = #{longitude},
+	</if>
+	<if test="null != latitude">
+		latitude = #{latitude},
+	</if>
+	<if test="null != yysm">
+		yysm = #{yysm},
+	</if>
+	<if test="null != yyslxr">
+		yyslxr = #{yyslxr},
+	</if>
+	<if test="null != yyslxrdh">
+		yyslxrdh = #{yyslxrdh},
+	</if>
+	<if test="null != khlxr">
+		khlxr = #{khlxr},
+	</if>
+	<if test="null != khlxrdh">
+		khlxrdh = #{khlxrdh},
+	</if>
+	<if test="null != verno">
+		verno = #{verno},
+	</if>
+	<if test="null != lockflg">
+		lockflg = #{lockflg},
+	</if>
+	<if test="null != locktime">
+		locktime = #{locktime},
+	</if>
+	<if test="null != whfzr1">
+		whfzr1 = #{whfzr1},
+	</if>
+	<if test="null != whfzrtel1">
+		whfzrtel1 = #{whfzrtel1},
+	</if>
+	<if test="null != azr">
+		azr = #{azr},
+	</if>
+	<if test="null != azrtel">
+		azrtel = #{azrtel},
+	</if>
+	<if test="null != online">
+		online = #{online},
+	</if>
+	<if test="null != servertime">
+		servertime = #{servertime},
+	</if>
+	<if test="null != reachable">
+		reachable = #{reachable},
+	</if>
+	<if test="null != ethernettype">
+		ethernettype = #{ethernettype},
+	</if>
+	<if test="null != frametype">
+		frametype = #{frametype},
+	</if>
+	<if test="null != refreshtime">
+		refreshtime = #{refreshtime},
+	</if>
+	<if test="null != linelevel">
+		linelevel = #{linelevel},
+	</if>
+	<if test="null != linebw">
+		linebw = #{linebw},
+	</if>
+	<if test="null != openid">
+		openid = #{openid},
+	</if>
+	<if test="null != linkid0">
+		linkid0 = #{linkid0},
+	</if>
+	<if test="null != linkid1">
+		linkid1 = #{linkid1},
+	</if>
+	<if test="null != deleteflg">
+		deleteflg = #{deleteflg},
+	</if>
+	<if test="null != createid">
+		createid = #{createid},
+	</if>
+	<if test="null != createtime">
+		createtime = #{createtime},
+	</if>
+	<if test="null != updateid">
+		updateid = #{updateid},
+	</if>
+	<if test="null != updatetime">
+		updatetime = #{updatetime},
+	</if>
+	<if test="null != isfirst">
+		isfirst = #{isfirst},
+	</if>
+	<if test="null != syncdatatime">
+		syncdatatime = #{syncdatatime},
+	</if>
+	</trim>
+</set>
+   WHERE omcid = #{omcid}
+  </update>
+	
+	 <update id="updateByPrimaryKey" parameterType="com.visionvera.bean.datacore.Serverinfob" >
+	 update t_serverinfob
+    <set>
+    <trim suffixOverrides="," >
+    		id = #{id},
+			pid = #{pid},
+			network = #{network},
+			sn = #{sn},
+			name = #{name},
+			mac0 = #{mac0},
+			mac1 = #{mac1},
+			devtype = #{devtype},
+			svrno = #{svrno},
+			bandwith0 = #{bandwith0},
+			bandwith1 = #{bandwith1},
+			ssxmid = #{ssxmid},
+			ktywqf = #{ktywqf},
+			ktywsj = #{ktywsj},
+			groupno = #{groupno},
+			regionid = #{regionid},
+			jfxxdz = #{jfxxdz},
+			jgh = #{jgh},
+			longitude = #{longitude},
+			latitude = #{latitude},
+			yysm = #{yysm},
+			yyslxr = #{yyslxr},
+			yyslxrdh = #{yyslxrdh},
+			khlxr = #{khlxr},
+			khlxrdh = #{khlxrdh},
+			verno = #{verno},
+			lockflg = #{lockflg},
+			locktime = #{locktime},
+			whfzr1 = #{whfzr1},
+			whfzrtel1 = #{whfzrtel1},
+			azr = #{azr},
+			azrtel = #{azrtel},
+			online = #{online},
+			servertime = #{servertime},
+			reachable = #{reachable},
+			ethernettype = #{ethernettype},
+			frametype = #{frametype},
+			refreshtime = #{refreshtime},
+			linelevel = #{linelevel},
+			linebw = #{linebw},
+			openid = #{openid},
+			linkid0 = #{linkid0},
+			linkid1 = #{linkid1},
+			deleteflg = #{deleteflg},
+			createid = #{createid},
+			createtime = #{createtime},
+			updateid = #{updateid},
+			updatetime = #{updatetime},
+			isfirst = #{isfirst},
+			syncdatatime = #{syncdatatime},
+	</trim>
+</set>
+   WHERE omcid = #{omcid}
+  </update>
+  
+  <delete id="deleteByPrimaryKey" parameterType="java.lang.Integer" >
+    delete from t_serverinfob
+    where omcid = #{omcid}
+  </delete>
+  
+  <delete id="delete" parameterType="com.visionvera.bean.datacore.Serverinfob" >
+    delete from t_serverinfob
+    where 1=1
+    <if test="null != omcid">
+		and omcid = #{omcid}
+	</if>
+	<if test="null != id">
+		and id = #{id}
+	</if>
+	<if test="null != pid">
+		and pid = #{pid}
+	</if>
+	<if test="null != network">
+		and network = #{network}
+	</if>
+	<if test="null != sn">
+		and sn = #{sn}
+	</if>
+	<if test="null != name">
+		and name = #{name}
+	</if>
+	<if test="null != mac0">
+		and mac0 = #{mac0}
+	</if>
+	<if test="null != mac1">
+		and mac1 = #{mac1}
+	</if>
+	<if test="null != devtype">
+		and devtype = #{devtype}
+	</if>
+	<if test="null != svrno">
+		and svrno = #{svrno}
+	</if>
+	<if test="null != bandwith0">
+		and bandwith0 = #{bandwith0}
+	</if>
+	<if test="null != bandwith1">
+		and bandwith1 = #{bandwith1}
+	</if>
+	<if test="null != ssxmid">
+		and ssxmid = #{ssxmid}
+	</if>
+	<if test="null != ktywqf">
+		and ktywqf = #{ktywqf}
+	</if>
+	<if test="null != ktywsj">
+		and ktywsj = #{ktywsj}
+	</if>
+	<if test="null != groupno">
+		and groupno = #{groupno}
+	</if>
+	<if test="null != regionid">
+		and regionid = #{regionid}
+	</if>
+	<if test="null != jfxxdz">
+		and jfxxdz = #{jfxxdz}
+	</if>
+	<if test="null != jgh">
+		and jgh = #{jgh}
+	</if>
+	<if test="null != longitude">
+		and longitude = #{longitude}
+	</if>
+	<if test="null != latitude">
+		and latitude = #{latitude}
+	</if>
+	<if test="null != yysm">
+		and yysm = #{yysm}
+	</if>
+	<if test="null != yyslxr">
+		and yyslxr = #{yyslxr}
+	</if>
+	<if test="null != yyslxrdh">
+		and yyslxrdh = #{yyslxrdh}
+	</if>
+	<if test="null != khlxr">
+		and khlxr = #{khlxr}
+	</if>
+	<if test="null != khlxrdh">
+		and khlxrdh = #{khlxrdh}
+	</if>
+	<if test="null != verno">
+		and verno = #{verno}
+	</if>
+	<if test="null != lockflg">
+		and lockflg = #{lockflg}
+	</if>
+	<if test="null != locktime">
+		and locktime = #{locktime}
+	</if>
+	<if test="null != whfzr1">
+		and whfzr1 = #{whfzr1}
+	</if>
+	<if test="null != whfzrtel1">
+		and whfzrtel1 = #{whfzrtel1}
+	</if>
+	<if test="null != azr">
+		and azr = #{azr}
+	</if>
+	<if test="null != azrtel">
+		and azrtel = #{azrtel}
+	</if>
+	<if test="null != online">
+		and online = #{online}
+	</if>
+	<if test="null != servertime">
+		and servertime = #{servertime}
+	</if>
+	<if test="null != reachable">
+		and reachable = #{reachable}
+	</if>
+	<if test="null != ethernettype">
+		and ethernettype = #{ethernettype}
+	</if>
+	<if test="null != frametype">
+		and frametype = #{frametype}
+	</if>
+	<if test="null != refreshtime">
+		and refreshtime = #{refreshtime}
+	</if>
+	<if test="null != linelevel">
+		and linelevel = #{linelevel}
+	</if>
+	<if test="null != linebw">
+		and linebw = #{linebw}
+	</if>
+	<if test="null != openid">
+		and openid = #{openid}
+	</if>
+	<if test="null != linkid0">
+		and linkid0 = #{linkid0}
+	</if>
+	<if test="null != linkid1">
+		and linkid1 = #{linkid1}
+	</if>
+	<if test="null != deleteflg">
+		and deleteflg = #{deleteflg}
+	</if>
+	<if test="null != createid">
+		and createid = #{createid}
+	</if>
+	<if test="null != createtime">
+		and createtime = #{createtime}
+	</if>
+	<if test="null != updateid">
+		and updateid = #{updateid}
+	</if>
+	<if test="null != updatetime">
+		and updatetime = #{updatetime}
+	</if>
+	<if test="null != isfirst">
+		and isfirst = #{isfirst}
+	</if>
+	<if test="null != syncdatatime">
+		and syncdatatime = #{syncdatatime}
+	</if>
+	</delete>
+	
+	
+	<!--服务器列表 -->
+	<select id="getServers" resultType="map">
+		SELECT t.omcid,t.id AS serverId,t.name AS serverName,t.openid,t.sn,t.mac0,t.mac1,t.`online` AS serverStatus,IF(t.id=t.pid,'1','0') AS serverType,IFNULL(tb.url,"") AS channelUrl  
+		FROM t_serverinfob  t
+		LEFT JOIN t_backup_channel tb on  t.omcid=tb.omcid and t.id =tb.id 
+		<where>
+     		 <if test="omcid != null and omcid !=''">
+			 AND t.omcid = #{omcid}
+		    </if>
+     		 <if test="serverId != null and serverId !=''">
+			 AND t.id = #{serverId}
+		    </if>
+     		 <if test="serverName != null and serverName !=''">
+			 AND t.name like CONCAT('%',#{serverName},'%')
+		    </if>
+     		 <if test="serverMac != null and serverMac !=''">
+			 AND (t.mac0 =#{serverMac} or t.mac1 =#{serverMac} ) 
+		    </if>
+     		 <if test="serverStatus != null and serverStatus !=''">
+			 AND t.`online` = #{serverStatus}
+		    </if>
+     		 <if test="regionid != null and regionid !=''">
+	     		 <if test="gradeid==1">
+	     		 AND t.regionid like CONCAT('%',SUBSTRING(#{regionid},1,2),'%')
+	     		 </if>
+	     		 <if test="gradeid==2">
+	     		 AND t.regionid like CONCAT('%',SUBSTRING(#{regionid},1,4),'%')
+	     		 </if>
+	     		 <if test="gradeid==3">
+	     		 AND t.regionid like CONCAT('%',SUBSTRING(#{regionid},1,6),'%')
+	     		 </if>
+	     		 <if test="gradeid==4">
+	     		 AND t.regionid like CONCAT('%',SUBSTRING(#{regionid},1,9),'%')
+	     		 </if>
+	     		 <if test="gradeid==5">
+	     		 AND t.regionid like CONCAT('%',#{regionid},'%')
+	     		 </if>
+     		 
+		    </if>
+     		 <if test="serverType != null and serverType !=''">
+	     		  <if test="serverType==1">
+	     		   AND  t.id =t.pid
+	     		  </if>
+				  <if test="serverType==0">
+				   AND  t.id !=t.pid
+			     </if>
+			 </if>
+ 		</where>
+	</select>
+	
+</mapper>
