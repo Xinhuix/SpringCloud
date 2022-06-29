@@ -11,7 +11,7 @@
 	<description>感知中心服务</description>
 	<properties>
 		<mapstruct.version>1.2.0.Final</mapstruct.version>
-		<poi.version>3.15</poi.version>
+		<poi.version>4.1.1</poi.version>
 		<easypoi.version>3.3.0</easypoi.version>
 	</properties>
 	<dependencies>
